@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package jarviscorepb;
+
+enum CODE {
+    OK = 0;
+
+    INVALID_TOKEN_NAME = 1;    // token/name fail 
+    ALREADY_IN = 2;    // already in
+}
+
+enum NODETYPE {
+    NORMAL = 0;
+}
+
+enum CHANNELTYPE {
+    NODEINFO = 0;
+}
+
+message Join {
+    string servaddr = 1;
+    string token = 2;
+    string name = 3;
+    NODETYPE nodetype = 4;
+}
+
+message ReplyJoin {
+    CODE code = 1;
+}
+
+message Subscribe {
+    CHANNELTYPE channeltype = 1;
+}
+
+message NodeInfo {
+    string servaddr = 1;
+    string token = 2;
+    string name = 3;
+    NODETYPE nodetype = 4;
+}
+
+message ChannelInfo {
+    CHANNELTYPE channeltype = 1;
+    NodeInfo nodeinfo = 2;
+}
+
+service JarvisCoreServ {
+    rpc join (Join) returns (ReplyJoin) {}
+    rpc subscribe (Subscribe) returns (stream ChannelInfo) {}
+}
