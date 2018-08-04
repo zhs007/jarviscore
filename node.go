@@ -9,8 +9,8 @@ import (
 // Node -
 type Node struct {
 	myinfo NodeInfo
-	client Client
-	serv   server
+	client JarvisClient
+	serv   *JarvisServer
 	gen    *fortuna.Generator
 }
 
@@ -61,6 +61,28 @@ func (n *Node) SetMyInfo(servaddr string, name string, token string) error {
 
 	n.myinfo.ServAddr = servaddr
 	n.myinfo.Name = name
+
+	return nil
+}
+
+// Close -
+func (n *Node) Close() error {
+
+	return nil
+}
+
+// Start -
+func (n *Node) Start(servaddr string, name string, token string) (err error) {
+	n.SetMyInfo(servaddr, name, token)
+
+	n.serv, err = NewServer(servaddr)
+	if err != nil {
+		return err
+	}
+
+	go n.serv.Start()
+
+	<-n.serv.servchan
 
 	return nil
 }

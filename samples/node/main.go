@@ -6,4 +6,5 @@ import (
 
 func main() {
 	node := jarviscore.NewNode()
+	node.Start("127.0.0.1:7788", "node001", "")
 }

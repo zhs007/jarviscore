@@ -8,13 +8,14 @@ import (
 	"google.golang.org/grpc"
 )
 
-type Client struct {
+// JarvisClient -
+type JarvisClient struct {
 	mapConn   map[string]*grpc.ClientConn
 	mapClient map[string]pb.JarvisCoreServClient
 }
 
 //
-func (c *Client) Connect(servaddr string) error {
+func (c *JarvisClient) Connect(servaddr string) error {
 	var curconn *grpc.ClientConn
 	if _, ok := c.mapConn[servaddr]; ok {
 		curconn = c.mapConn[servaddr]
