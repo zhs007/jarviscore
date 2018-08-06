@@ -1,12 +1,12 @@
 package jarviscore
 
-import (
-	pb "github.com/zhs007/jarviscore/proto"
-)
-
+// NodeInfo -
 type NodeInfo struct {
-	Name     string
-	ServAddr string
-	Token    string
-	NodeType pb.NODETYPE
+	baseinfo  BaseInfo
+	mapclient map[string]BaseInfo
+}
+
+// NewNodeInfo -
+func NewNodeInfo() *NodeInfo {
+	return &NodeInfo{mapclient: make(map[string]BaseInfo)}
 }

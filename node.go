@@ -6,26 +6,30 @@ import (
 	"github.com/seehuhn/fortuna"
 )
 
-// Node -
-type Node struct {
-	myinfo NodeInfo
-	client JarvisClient
-	serv   *JarvisServer
-	gen    *fortuna.Generator
+// jarvisNode -
+type jarvisNode struct {
+	myinfo   BaseInfo
+	client   jarvisClient
+	serv     *jarvisServer
+	gen      *fortuna.Generator
+	lstother []*NodeInfo
 }
 
-const tokenLen = 32
-const randomMax int64 = 0x7fffffffffffffff
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-const letterBytesLen = int64(len(letterBytes))
+const (
+	nodeinfoCacheSize       = 32
+	tokenLen                = 32
+	randomMax         int64 = 0x7fffffffffffffff
+	letterBytes             = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	letterBytesLen          = int64(len(letterBytes))
+)
 
 // NewNode -
-func NewNode() *Node {
-	return &Node{}
+func NewNode() *jarvisNode {
+	return &jarvisNode{lstother: make([]*NodeInfo, nodeinfoCacheSize)}
 }
 
 // RandomInt64 -
-func (n *Node) RandomInt64(maxval int64) int64 {
+func (n *jarvisNode) RandomInt64(maxval int64) int64 {
 	if n.gen == nil {
 		n.gen = fortuna.NewGenerator(aes.NewCipher)
 	}
@@ -40,7 +44,7 @@ func (n *Node) RandomInt64(maxval int64) int64 {
 }
 
 // GeneratorToken -
-func (n *Node) GeneratorToken() string {
+func (n *jarvisNode) GeneratorToken() string {
 	if n.gen == nil {
 		n.gen = fortuna.NewGenerator(aes.NewCipher)
 	}
@@ -54,7 +58,7 @@ func (n *Node) GeneratorToken() string {
 }
 
 // SetMyInfo -
-func (n *Node) SetMyInfo(servaddr string, name string, token string) error {
+func (n *jarvisNode) SetMyInfo(servaddr string, name string, token string) error {
 	if token == "" {
 		n.myinfo.Token = n.GeneratorToken()
 	}
@@ -66,13 +70,13 @@ func (n *Node) SetMyInfo(servaddr string, name string, token string) error {
 }
 
 // Close -
-func (n *Node) Close() error {
+func (n *jarvisNode) Close() error {
 
 	return nil
 }
 
 // Start -
-func (n *Node) Start(servaddr string, name string, token string) (err error) {
+func (n *jarvisNode) Start(servaddr string, name string, token string) (err error) {
 	n.SetMyInfo(servaddr, name, token)
 
 	n.serv, err = NewServer(servaddr)
