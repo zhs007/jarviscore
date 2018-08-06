@@ -6,6 +6,11 @@ import (
 	"github.com/seehuhn/fortuna"
 )
 
+// JarvisNode -
+type JarvisNode interface {
+	Start(servaddr string, name string, token string) (err error)
+}
+
 // jarvisNode -
 type jarvisNode struct {
 	myinfo   BaseInfo
@@ -24,7 +29,7 @@ const (
 )
 
 // NewNode -
-func NewNode() *jarvisNode {
+func NewNode() JarvisNode {
 	return &jarvisNode{lstother: make([]*NodeInfo, nodeinfoCacheSize)}
 }
 
@@ -79,7 +84,7 @@ func (n *jarvisNode) Close() error {
 func (n *jarvisNode) Start(servaddr string, name string, token string) (err error) {
 	n.SetMyInfo(servaddr, name, token)
 
-	n.serv, err = NewServer(servaddr)
+	n.serv, err = newServer(servaddr)
 	if err != nil {
 		return err
 	}

@@ -10,12 +10,31 @@ import (
 
 // jarvisClient -
 type jarvisClient struct {
-	mapConn   map[string]*grpc.ClientConn
-	mapClient map[string]pb.JarvisCoreServClient
+	lstpeeraddr []string
+	mapConn     map[string]*grpc.ClientConn
+	mapClient   map[string]pb.JarvisCoreServClient
+	clientchan  chan int
+}
+
+func newClient() *jarvisClient {
+	return &jarvisClient{
+		mapConn:    make(map[string]*grpc.ClientConn),
+		mapClient:  make(map[string]pb.JarvisCoreServClient),
+		clientchan: make(chan int)}
+}
+
+func (c *jarvisClient) Start(lstpeeraddr []string, myinfo *BaseInfo) error {
+	c.lstpeeraddr = lstpeeraddr
+
+	for _, v := range lstpeeraddr {
+		c.connect(v, myinfo)
+	}
+
+	return nil
 }
 
 //
-func (c *jarvisClient) Connect(servaddr string) error {
+func (c *jarvisClient) connect(servaddr string, myinfo *BaseInfo) error {
 	var curconn *grpc.ClientConn
 	if _, ok := c.mapConn[servaddr]; ok {
 		curconn = c.mapConn[servaddr]
@@ -32,7 +51,7 @@ func (c *jarvisClient) Connect(servaddr string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	r, err1 := jarvisclient.Join(ctx, &pb.Join{Servaddr: "", Token: "", Name: "", Nodetype: pb.NODETYPE_NORMAL})
+	r, err1 := jarvisclient.Join(ctx, &pb.Join{Servaddr: myinfo.ServAddr, Token: myinfo.Token, Name: myinfo.Name, Nodetype: myinfo.NodeType})
 	if err1 != nil {
 		return err1
 	}

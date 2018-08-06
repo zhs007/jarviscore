@@ -16,7 +16,8 @@ type jarvisServer struct {
 	servchan chan int
 }
 
-func NewServer(servaddr string) (*jarvisServer, error) {
+// NewServer -
+func newServer(servaddr string) (*jarvisServer, error) {
 	lis, err := net.Listen("tcp", servaddr)
 	if err != nil {
 		return nil, err
