@@ -2,6 +2,8 @@ package jarviscore
 
 import (
 	"github.com/zhs007/jarviscore/errcode"
+	"github.com/zhs007/jarviscore/log"
+	"go.uber.org/zap"
 )
 
 // JarvisError -
@@ -24,7 +26,11 @@ func (err *jarvisError) ErrCode() int {
 }
 
 func newError(errcode int) JarvisError {
-	return &jarvisError{errcode: errcode}
+	err := &jarvisError{errcode: errcode}
+
+	log.Error(err.Error(), zap.Int("ErrCode", errcode))
+
+	return err
 }
 
 // IsJarvisError -
@@ -34,4 +40,22 @@ func IsJarvisError(err interface{}) bool {
 	}
 
 	return false
+}
+
+// errorLog -
+func errorLog(msg string, err error) {
+	if jerr, ok := err.(JarvisError); ok {
+		log.Error(msg, zap.String("err", jerr.Error()), zap.Int("errcode", jerr.ErrCode()))
+	} else {
+		log.Error(msg, zap.String("err", err.Error()))
+	}
+}
+
+// warnLog -
+func warnLog(msg string, err error) {
+	if jerr, ok := err.(JarvisError); ok {
+		log.Warn(msg, zap.String("err", jerr.Error()), zap.Int("errcode", jerr.ErrCode()))
+	} else {
+		log.Warn(msg, zap.String("err", err.Error()))
+	}
 }

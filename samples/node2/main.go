@@ -6,5 +6,5 @@ import (
 
 func main() {
 	node := jarviscore.NewNode()
-	node.Start("127.0.0.1:7789", "node002", "")
+	node.Start("127.0.0.1:7789", "node002", "", "./peeraddr.yaml", "127.0.0.1:7788")
 }

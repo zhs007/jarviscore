@@ -4,20 +4,23 @@ import (
 	"crypto/aes"
 
 	"github.com/seehuhn/fortuna"
+	"github.com/zhs007/jarviscore/log"
+	"go.uber.org/zap"
 )
 
 // JarvisNode -
 type JarvisNode interface {
-	Start(servaddr string, name string, token string) (err error)
+	Start() (err error)
 }
 
 // jarvisNode -
 type jarvisNode struct {
-	myinfo   BaseInfo
-	client   jarvisClient
-	serv     *jarvisServer
-	gen      *fortuna.Generator
-	lstother []*NodeInfo
+	myinfo      BaseInfo
+	client      jarvisClient
+	serv        *jarvisServer
+	gen         *fortuna.Generator
+	lstother    []*NodeInfo
+	peeraddrmgr *peeraddrmgr
 }
 
 const (
@@ -29,8 +32,12 @@ const (
 )
 
 // NewNode -
-func NewNode() JarvisNode {
-	return &jarvisNode{lstother: make([]*NodeInfo, nodeinfoCacheSize)}
+func NewNode(baseinfo BaseInfo) JarvisNode {
+	node := &jarvisNode{lstother: make([]*NodeInfo, nodeinfoCacheSize)}
+
+	node.setMyInfo(baseinfo.ServAddr, baseinfo.Name, baseinfo.Token)
+
+	return node
 }
 
 // RandomInt64 -
@@ -48,8 +55,8 @@ func (n *jarvisNode) RandomInt64(maxval int64) int64 {
 	return cr % maxval
 }
 
-// GeneratorToken -
-func (n *jarvisNode) GeneratorToken() string {
+// generatorToken -
+func (n *jarvisNode) generatorToken() string {
 	b := make([]byte, tokenLen)
 	for i := range b {
 		b[i] = letterBytes[n.RandomInt64(letterBytesLen)]
@@ -58,10 +65,12 @@ func (n *jarvisNode) GeneratorToken() string {
 	return string(b)
 }
 
-// SetMyInfo -
-func (n *jarvisNode) SetMyInfo(servaddr string, name string, token string) error {
+// setMyInfo -
+func (n *jarvisNode) setMyInfo(servaddr string, name string, token string) error {
 	if token == "" {
-		n.myinfo.Token = n.GeneratorToken()
+		n.myinfo.Token = n.generatorToken()
+
+		log.Info("generatorToken", zap.String("Token", n.myinfo.Token))
 	}
 
 	n.myinfo.ServAddr = servaddr
@@ -77,10 +86,14 @@ func (n *jarvisNode) Close() error {
 }
 
 // Start -
-func (n *jarvisNode) Start(servaddr string, name string, token string) (err error) {
-	n.SetMyInfo(servaddr, name, token)
+func (n *jarvisNode) Start() (err error) {
+	n.peeraddrmgr, err = newPeerAddrMgr(config.PeerAddrFile, config.DefPeerAddr)
+	if err != nil {
+		return err
+	}
 
-	n.serv, err = newServer(servaddr)
+	log.Info("StartServer", zap.String("ServAddr", n.myinfo.ServAddr))
+	n.serv, err = newServer(n.myinfo.ServAddr)
 	if err != nil {
 		return err
 	}
