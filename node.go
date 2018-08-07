@@ -45,15 +45,11 @@ func (n *jarvisNode) RandomInt64(maxval int64) int64 {
 		cr = n.gen.Int63()
 	}
 
-	return cr
+	return cr % maxval
 }
 
 // GeneratorToken -
 func (n *jarvisNode) GeneratorToken() string {
-	if n.gen == nil {
-		n.gen = fortuna.NewGenerator(aes.NewCipher)
-	}
-
 	b := make([]byte, tokenLen)
 	for i := range b {
 		b[i] = letterBytes[n.RandomInt64(letterBytesLen)]
