@@ -2,6 +2,7 @@ package jarviscore
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	pb "github.com/zhs007/jarviscore/proto"
@@ -14,27 +15,36 @@ type jarvisClient struct {
 	mapConn     map[string]*grpc.ClientConn
 	mapClient   map[string]pb.JarvisCoreServClient
 	clientchan  chan int
+	wg          sync.WaitGroup
 }
 
 func newClient() *jarvisClient {
 	return &jarvisClient{
 		mapConn:    make(map[string]*grpc.ClientConn),
 		mapClient:  make(map[string]pb.JarvisCoreServClient),
-		clientchan: make(chan int)}
+		clientchan: make(chan int, 1)}
 }
 
 func (c *jarvisClient) Start(lstpeeraddr []string, myinfo *BaseInfo) error {
 	c.lstpeeraddr = lstpeeraddr
 
 	for _, v := range lstpeeraddr {
-		c.connect(v, myinfo)
+		go c.connect(v, myinfo)
+		time.Sleep(time.Second)
 	}
+
+	c.wg.Wait()
+
+	c.clientchan <- 0
 
 	return nil
 }
 
 //
 func (c *jarvisClient) connect(servaddr string, myinfo *BaseInfo) error {
+	c.wg.Add(1)
+	defer c.wg.Done()
+
 	var curconn *grpc.ClientConn
 	if _, ok := c.mapConn[servaddr]; ok {
 		curconn = c.mapConn[servaddr]

@@ -45,6 +45,12 @@ func (s *jarvisServer) Start() (err error) {
 	return
 }
 
+func (s *jarvisServer) Stop() {
+	s.lis.Close()
+
+	return
+}
+
 // Join implements jarviscorepb.JarvisCoreServ
 func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, error) {
 	return &pb.ReplyJoin{Code: pb.CODE_OK}, nil

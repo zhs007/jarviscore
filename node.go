@@ -19,12 +19,15 @@ type JarvisNode interface {
 // jarvisNode -
 type jarvisNode struct {
 	myinfo      BaseInfo
-	client      jarvisClient
+	client      *jarvisClient
 	serv        *jarvisServer
 	gen         *fortuna.Generator
 	lstother    []*NodeInfo
 	peeraddrmgr *peeraddrmgr
 	signalchan  chan os.Signal
+	servstate   int
+	clientstate int
+	nodechan    chan int
 	// wg          sync.WaitGroup
 }
 
@@ -34,6 +37,12 @@ const (
 	randomMax         int64 = 0x7fffffffffffffff
 	letterBytes             = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	letterBytesLen          = int64(len(letterBytes))
+	servStateNormal         = 0
+	servStateStart          = 1
+	servStateEnd            = 2
+	clientStateNormal       = 0
+	clientStateStart        = 1
+	clientStateEnd          = 2
 )
 
 // NewNode -
@@ -96,6 +105,10 @@ func (n *jarvisNode) StopWithSignal(signal string) error {
 
 // Stop -
 func (n *jarvisNode) Stop() error {
+	if n.serv != nil {
+		n.serv.Stop()
+	}
+
 	n.peeraddrmgr.savePeerAddrFile()
 
 	return nil
@@ -108,6 +121,37 @@ func (n *jarvisNode) Stop() error {
 // 	s := <-c
 // 	log.Info("Signal", zap.String("signal", s.String()))
 // }
+
+func (n *jarvisNode) onStateChg() bool {
+	if n.servstate == servStateEnd && n.clientstate == clientStateEnd {
+		return true
+	}
+
+	return false
+}
+
+func (n *jarvisNode) waitEnd() {
+	for {
+		select {
+		case signal := <-n.signalchan:
+			n.StopWithSignal(signal.String())
+		case <-n.serv.servchan:
+			log.Info("ServEnd")
+			n.servstate = servStateEnd
+			if n.onStateChg() {
+				return
+			}
+		case <-n.client.clientchan:
+			log.Info("ClientEnd")
+			n.clientstate = clientStateEnd
+			if n.onStateChg() {
+				return
+			}
+		case <-n.nodechan:
+			log.Info("SafeEnd")
+		}
+	}
+}
 
 // Start -
 func (n *jarvisNode) Start() (err error) {
@@ -122,14 +166,12 @@ func (n *jarvisNode) Start() (err error) {
 		return err
 	}
 
-	go n.serv.Start()
+	n.client = newClient()
 
-	select {
-	case signal := <-n.signalchan:
-		n.StopWithSignal(signal.String())
-	case <-n.serv.servchan:
-		log.Info("ServEnd")
-	}
+	go n.serv.Start()
+	go n.client.Start(n.peeraddrmgr.arr.PeerAddr, &n.myinfo)
+
+	n.waitEnd()
 
 	return nil
 }
