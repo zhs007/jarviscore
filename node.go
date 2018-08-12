@@ -11,6 +11,7 @@ import (
 // JarvisNode -
 type JarvisNode interface {
 	Start() (err error)
+	Stop() (err error)
 }
 
 // jarvisNode -
@@ -79,8 +80,9 @@ func (n *jarvisNode) setMyInfo(servaddr string, name string, token string) error
 	return nil
 }
 
-// Close -
-func (n *jarvisNode) Close() error {
+// Stop -
+func (n *jarvisNode) Stop() error {
+	n.peeraddrmgr.savePeerAddrFile()
 
 	return nil
 }
@@ -100,7 +102,7 @@ func (n *jarvisNode) Start() (err error) {
 
 	go n.serv.Start()
 
-	<-n.serv.servchan
+	// <-n.serv.servchan
 
 	return nil
 }
