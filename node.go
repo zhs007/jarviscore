@@ -2,6 +2,8 @@ package jarviscore
 
 import (
 	"crypto/aes"
+	"os"
+	"os/signal"
 
 	"github.com/seehuhn/fortuna"
 	"github.com/zhs007/jarviscore/log"
@@ -22,6 +24,8 @@ type jarvisNode struct {
 	gen         *fortuna.Generator
 	lstother    []*NodeInfo
 	peeraddrmgr *peeraddrmgr
+	signalchan  chan os.Signal
+	// wg          sync.WaitGroup
 }
 
 const (
@@ -34,7 +38,8 @@ const (
 
 // NewNode -
 func NewNode(baseinfo BaseInfo) JarvisNode {
-	node := &jarvisNode{lstother: make([]*NodeInfo, nodeinfoCacheSize)}
+	node := &jarvisNode{lstother: make([]*NodeInfo, nodeinfoCacheSize), signalchan: make(chan os.Signal, 1)}
+	signal.Notify(node.signalchan, os.Interrupt, os.Kill)
 
 	node.setMyInfo(baseinfo.ServAddr, baseinfo.Name, baseinfo.Token)
 
@@ -80,12 +85,29 @@ func (n *jarvisNode) setMyInfo(servaddr string, name string, token string) error
 	return nil
 }
 
+// StopWithSignal -
+func (n *jarvisNode) StopWithSignal(signal string) error {
+	log.Info("StopWithSignal", zap.String("signal", signal))
+
+	n.Stop()
+
+	return nil
+}
+
 // Stop -
 func (n *jarvisNode) Stop() error {
 	n.peeraddrmgr.savePeerAddrFile()
 
 	return nil
 }
+
+// func (n *jarvisNode) waitSignal() {
+// 	c := make(chan os.Signal, 1)
+// 	signal.Notify(c, os.Interrupt, os.Kill)
+
+// 	s := <-c
+// 	log.Info("Signal", zap.String("signal", s.String()))
+// }
 
 // Start -
 func (n *jarvisNode) Start() (err error) {
@@ -102,7 +124,12 @@ func (n *jarvisNode) Start() (err error) {
 
 	go n.serv.Start()
 
-	<-n.serv.servchan
+	select {
+	case signal := <-n.signalchan:
+		n.StopWithSignal(signal.String())
+	case <-n.serv.servchan:
+		log.Info("ServEnd")
+	}
 
 	return nil
 }

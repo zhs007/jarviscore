@@ -4,6 +4,9 @@ import (
 	"context"
 	"net"
 
+	"go.uber.org/zap"
+
+	"github.com/zhs007/jarviscore/log"
 	pb "github.com/zhs007/jarviscore/proto"
 	"google.golang.org/grpc"
 )
@@ -20,11 +23,15 @@ type jarvisServer struct {
 func newServer(servaddr string) (*jarvisServer, error) {
 	lis, err := net.Listen("tcp", servaddr)
 	if err != nil {
+		errorLog("newServer", err)
+
 		return nil, err
 	}
 
+	log.Info("Listen", zap.String("addr", servaddr))
+
 	grpcServ := grpc.NewServer()
-	s := &jarvisServer{servaddr: servaddr, lis: lis, grpcServ: grpcServ, servchan: make(chan int)}
+	s := &jarvisServer{servaddr: servaddr, lis: lis, grpcServ: grpcServ, servchan: make(chan int, 1)}
 	pb.RegisterJarvisCoreServServer(grpcServ, s)
 
 	return s, nil
@@ -32,7 +39,9 @@ func newServer(servaddr string) (*jarvisServer, error) {
 
 func (s *jarvisServer) Start() (err error) {
 	err = s.grpcServ.Serve(s.lis)
+
 	s.servchan <- 0
+
 	return
 }
 
