@@ -102,7 +102,7 @@ func (n *jarvisNode) Start() (err error) {
 
 	go n.serv.Start()
 
-	// <-n.serv.servchan
+	<-n.serv.servchan
 
 	return nil
 }
