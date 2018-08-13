@@ -48,7 +48,8 @@ const (
 // NewNode -
 func NewNode(baseinfo BaseInfo) JarvisNode {
 	node := &jarvisNode{lstother: make([]*NodeInfo, nodeinfoCacheSize), signalchan: make(chan os.Signal, 1)}
-	signal.Notify(node.signalchan, os.Interrupt, os.Kill)
+	signal.Notify(node.signalchan)
+	// signal.Notify(node.signalchan, os.Interrupt, os.Kill, syscall.SIGSTOP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGTSTP)
 
 	node.setMyInfo(baseinfo.ServAddr, baseinfo.Name, baseinfo.Token)
 
