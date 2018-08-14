@@ -23,7 +23,7 @@ type jarvisNode struct {
 	serv        *jarvisServer
 	gen         *fortuna.Generator
 	lstother    []*NodeInfo
-	peeraddrmgr *peeraddrmgr
+	peeraddrmgr *peerAddrMgr
 	signalchan  chan os.Signal
 	servstate   int
 	clientstate int
@@ -170,7 +170,7 @@ func (n *jarvisNode) Start() (err error) {
 	n.client = newClient()
 
 	go n.serv.Start()
-	go n.client.Start(n.peeraddrmgr.arr.PeerAddr, &n.myinfo)
+	go n.client.Start(n.peeraddrmgr, &n.myinfo)
 
 	n.waitEnd()
 

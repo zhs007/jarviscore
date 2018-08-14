@@ -11,7 +11,7 @@ import (
 
 // jarvisClient -
 type jarvisClient struct {
-	lstpeeraddr []string
+	peeraddrmgr *peerAddrMgr
 	mapConn     map[string]*grpc.ClientConn
 	mapClient   map[string]pb.JarvisCoreServClient
 	clientchan  chan int
@@ -25,10 +25,10 @@ func newClient() *jarvisClient {
 		clientchan: make(chan int, 1)}
 }
 
-func (c *jarvisClient) Start(lstpeeraddr []string, myinfo *BaseInfo) error {
-	c.lstpeeraddr = lstpeeraddr
+func (c *jarvisClient) Start(peeraddrmgr *peerAddrMgr, myinfo *BaseInfo) error {
+	c.peeraddrmgr = peeraddrmgr
 
-	for _, v := range lstpeeraddr {
+	for _, v := range peeraddrmgr.arr.PeerAddr {
 		go c.connect(v, myinfo)
 		time.Sleep(time.Second)
 	}
@@ -51,6 +51,8 @@ func (c *jarvisClient) connect(servaddr string, myinfo *BaseInfo) error {
 	} else {
 		conn, err := grpc.Dial(servaddr, grpc.WithInsecure())
 		if err != nil {
+			warnLog("JarvisClient.connect", err)
+
 			return err
 		}
 		curconn = conn
@@ -63,6 +65,8 @@ func (c *jarvisClient) connect(servaddr string, myinfo *BaseInfo) error {
 
 	r, err1 := jarvisclient.Join(ctx, &pb.Join{Servaddr: myinfo.ServAddr, Token: myinfo.Token, Name: myinfo.Name, Nodetype: myinfo.NodeType})
 	if err1 != nil {
+		warnLog("JarvisClient.connect", err1)
+
 		return err1
 	}
 

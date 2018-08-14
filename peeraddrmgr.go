@@ -9,14 +9,14 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// peeraddrmgr
-type peeraddrmgr struct {
-	arr *peeraddrarr
-	lst []peerinfo
+// peerAddrMgr
+type peerAddrMgr struct {
+	arr *peerAddrArr
+	lst []peerInfo
 }
 
-func newPeerAddrMgr(peeraddrfile string, defpeeraddr string) (*peeraddrmgr, error) {
-	mgr := &peeraddrmgr{}
+func newPeerAddrMgr(peeraddrfile string, defpeeraddr string) (*peerAddrMgr, error) {
+	mgr := &peerAddrMgr{}
 
 	var err error
 	mgr.arr, err = loadPeerAddrFile(path.Join(config.RunPath, peeraddrfile))
@@ -24,7 +24,7 @@ func newPeerAddrMgr(peeraddrfile string, defpeeraddr string) (*peeraddrmgr, erro
 		if len(defpeeraddr) > 0 {
 			warnLog("loadPeerAddrFile", err)
 
-			mgr.arr = &peeraddrarr{}
+			mgr.arr = &peerAddrArr{}
 			// log.Debug("arrlen", zap.Int("len", len(mgr.arr.PeerAddr)))
 
 			mgr.arr.insPeerAddr(defpeeraddr)
@@ -42,14 +42,14 @@ func newPeerAddrMgr(peeraddrfile string, defpeeraddr string) (*peeraddrmgr, erro
 		return nil, newError(jarviserrcode.PEERADDREMPTY)
 	}
 
-	mgr.lst = make([]peerinfo, 0, arrlen)
+	mgr.lst = make([]peerInfo, 0, arrlen)
 
 	// log.Debug("arrlen", zap.Int("len", len(mgr.lst)))
 
 	return mgr, nil
 }
 
-func (mgr *peeraddrmgr) canConnect(peeraddr string) bool {
+func (mgr *peerAddrMgr) canConnect(peeraddr string) bool {
 	for i := 0; i < len(mgr.lst); i++ {
 		if peeraddr == mgr.lst[i].peeraddr {
 			return false
@@ -59,8 +59,8 @@ func (mgr *peeraddrmgr) canConnect(peeraddr string) bool {
 	return true
 }
 
-func (mgr *peeraddrmgr) savePeerAddrFile() error {
-	arr := &peeraddrarr{}
+func (mgr *peerAddrMgr) savePeerAddrFile() error {
+	arr := &peerAddrArr{}
 
 	for _, v := range mgr.lst {
 		arr.insPeerAddr(v.peeraddr)

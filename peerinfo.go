@@ -4,24 +4,24 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// peeraddrarr -
-type peeraddrarr struct {
+// peerAddrArr -
+type peerAddrArr struct {
 	PeerAddr []string `yaml:"peeraddr"`
 }
 
-type peerinfo struct {
+type peerInfo struct {
 	peeraddr      string
 	connectnums   int
 	connectednums int
 }
 
-func loadPeerAddrFile(filename string) (*peeraddrarr, error) {
+func loadPeerAddrFile(filename string) (*peerAddrArr, error) {
 	buf, err := loadFile(filename)
 	if err != nil {
 		return nil, err
 	}
 
-	paa := peeraddrarr{}
+	paa := peerAddrArr{}
 	err1 := yaml.Unmarshal(buf, &paa)
 	if err1 != nil {
 		return nil, err1
@@ -30,14 +30,14 @@ func loadPeerAddrFile(filename string) (*peeraddrarr, error) {
 	return &paa, nil
 }
 
-func (paa *peeraddrarr) rmPeerAddrIndex(i int) {
+func (paa *peerAddrArr) rmPeerAddrIndex(i int) {
 	if i >= 0 && i < len(paa.PeerAddr) {
 		narr := append(paa.PeerAddr[:i], paa.PeerAddr[i+1:]...)
 		paa.PeerAddr = narr
 	}
 }
 
-func (paa *peeraddrarr) rmPeerAddr(peeraddr string) {
+func (paa *peerAddrArr) rmPeerAddr(peeraddr string) {
 	for i := 0; i < len(paa.PeerAddr); {
 		if paa.PeerAddr[i] == peeraddr {
 			paa.rmPeerAddrIndex(i)
@@ -47,7 +47,7 @@ func (paa *peeraddrarr) rmPeerAddr(peeraddr string) {
 	}
 }
 
-func (paa *peeraddrarr) insPeerAddr(peeraddr string) {
+func (paa *peerAddrArr) insPeerAddr(peeraddr string) {
 	for i := 0; i < len(paa.PeerAddr); i++ {
 		if paa.PeerAddr[i] == peeraddr {
 			return
