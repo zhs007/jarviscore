@@ -162,7 +162,7 @@ func (n *jarvisNode) Start() (err error) {
 	}
 
 	log.Info("StartServer", zap.String("ServAddr", n.myinfo.ServAddr))
-	n.serv, err = newServer(n.myinfo.ServAddr)
+	n.serv, err = newServer(n)
 	if err != nil {
 		return err
 	}
@@ -175,4 +175,11 @@ func (n *jarvisNode) Start() (err error) {
 	n.waitEnd()
 
 	return nil
+}
+
+// onAddNode
+func (n *jarvisNode) onAddNode(peeraddr string) {
+	if n.peeraddrmgr.canConnect(peeraddr) {
+		go n.client.connect(peeraddr, &n.myinfo)
+	}
 }

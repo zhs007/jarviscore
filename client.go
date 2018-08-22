@@ -53,7 +53,7 @@ func (c *jarvisClient) connect(servaddr string, myinfo *BaseInfo) error {
 
 	conn, err := mgrconn.getConn(servaddr)
 	if err != nil {
-		warnLog("JarvisClient.connect", err)
+		warnLog("JarvisClient.connect:getConn", err)
 
 		return err
 	}
@@ -65,10 +65,14 @@ func (c *jarvisClient) connect(servaddr string, myinfo *BaseInfo) error {
 
 	r, err1 := ci.client.Join(ctx, &pb.Join{Servaddr: myinfo.ServAddr, Token: myinfo.Token, Name: myinfo.Name, Nodetype: myinfo.NodeType})
 	if err1 != nil {
-		warnLog("JarvisClient.connect", err1)
+		warnLog("JarvisClient.connect:Join", err1)
+
+		mgrconn.delConn(servaddr)
 
 		return err1
 	}
+
+	c.peeraddrmgr.addPeerAddr(servaddr)
 
 	if r.Code == pb.CODE_OK {
 		return nil

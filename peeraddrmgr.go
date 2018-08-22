@@ -11,6 +11,7 @@ import (
 
 // peerAddrMgr
 type peerAddrMgr struct {
+	// load & save
 	arr *peerAddrArr
 	lst []peerInfo
 }
@@ -78,4 +79,17 @@ func (mgr *peerAddrMgr) savePeerAddrFile() error {
 	ioutil.WriteFile(path.Join(config.RunPath, "peeraddr.yaml"), d, 0755)
 
 	return nil
+}
+
+// addPeerAddr - if already in local buf, return false
+func (mgr *peerAddrMgr) addPeerAddr(peeraddr string) bool {
+	for i := 0; i < len(mgr.lst); i++ {
+		if peeraddr == mgr.lst[i].peeraddr {
+			return false
+		}
+	}
+
+	mgr.lst = append(mgr.lst, peerInfo{peeraddr: peeraddr})
+
+	return true
 }

@@ -13,25 +13,25 @@ import (
 
 // jarvisServer
 type jarvisServer struct {
-	servaddr string
+	node     *jarvisNode
 	lis      net.Listener
 	grpcServ *grpc.Server
 	servchan chan int
 }
 
 // NewServer -
-func newServer(servaddr string) (*jarvisServer, error) {
-	lis, err := net.Listen("tcp", servaddr)
+func newServer(node *jarvisNode) (*jarvisServer, error) {
+	lis, err := net.Listen("tcp", node.myinfo.ServAddr)
 	if err != nil {
 		errorLog("newServer", err)
 
 		return nil, err
 	}
 
-	log.Info("Listen", zap.String("addr", servaddr))
+	log.Info("Listen", zap.String("addr", node.myinfo.ServAddr))
 
 	grpcServ := grpc.NewServer()
-	s := &jarvisServer{servaddr: servaddr, lis: lis, grpcServ: grpcServ, servchan: make(chan int, 1)}
+	s := &jarvisServer{node: node, lis: lis, grpcServ: grpcServ, servchan: make(chan int, 1)}
 	pb.RegisterJarvisCoreServServer(grpcServ, s)
 
 	return s, nil
@@ -53,7 +53,13 @@ func (s *jarvisServer) Stop() {
 
 // Join implements jarviscorepb.JarvisCoreServ
 func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, error) {
-	log.Debug("JarvisServ.Join")
+	log.Info("JarvisServ.Join",
+		zap.String("Servaddr", in.Servaddr),
+		zap.String("Token", in.Token),
+		zap.String("Name", in.Name),
+		zap.Int("Nodetype", int(in.Nodetype)))
+
+	s.node.onAddNode(in.Servaddr)
 
 	return &pb.ReplyJoin{Code: pb.CODE_OK}, nil
 }
