@@ -23,7 +23,7 @@ type jarvisNode struct {
 	serv        *jarvisServer
 	gen         *fortuna.Generator
 	lstother    []*NodeInfo
-	peeraddrmgr *peerAddrMgr
+	mgrpeeraddr *peerAddrMgr
 	signalchan  chan os.Signal
 	servstate   int
 	clientstate int
@@ -110,7 +110,7 @@ func (n *jarvisNode) Stop() error {
 		n.serv.Stop()
 	}
 
-	n.peeraddrmgr.savePeerAddrFile()
+	n.mgrpeeraddr.savePeerAddrFile()
 
 	return nil
 }
@@ -156,7 +156,7 @@ func (n *jarvisNode) waitEnd() {
 
 // Start -
 func (n *jarvisNode) Start() (err error) {
-	n.peeraddrmgr, err = newPeerAddrMgr(config.PeerAddrFile, config.DefPeerAddr)
+	n.mgrpeeraddr, err = newPeerAddrMgr(config.PeerAddrFile, config.DefPeerAddr)
 	if err != nil {
 		return err
 	}
@@ -170,7 +170,7 @@ func (n *jarvisNode) Start() (err error) {
 	n.client = newClient()
 
 	go n.serv.Start()
-	go n.client.Start(n.peeraddrmgr, &n.myinfo)
+	go n.client.Start(n.mgrpeeraddr, &n.myinfo)
 
 	n.waitEnd()
 
@@ -179,7 +179,7 @@ func (n *jarvisNode) Start() (err error) {
 
 // onAddNode
 func (n *jarvisNode) onAddNode(peeraddr string) {
-	if n.peeraddrmgr.canConnect(peeraddr) {
+	if n.mgrpeeraddr.canConnect(peeraddr) {
 		go n.client.connect(peeraddr, &n.myinfo)
 	}
 }

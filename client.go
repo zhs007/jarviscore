@@ -16,7 +16,7 @@ type clientInfo struct {
 
 // jarvisClient -
 type jarvisClient struct {
-	peeraddrmgr *peerAddrMgr
+	mgrpeeraddr *peerAddrMgr
 	mapClient   map[string]*clientInfo
 	clientchan  chan int
 	wg          sync.WaitGroup
@@ -31,10 +31,10 @@ func newClient() *jarvisClient {
 func (c *jarvisClient) onConnectFail(addr string) {
 }
 
-func (c *jarvisClient) Start(peeraddrmgr *peerAddrMgr, myinfo *BaseInfo) error {
-	c.peeraddrmgr = peeraddrmgr
+func (c *jarvisClient) Start(mgrpeeraddr *peerAddrMgr, myinfo *BaseInfo) error {
+	c.mgrpeeraddr = mgrpeeraddr
 
-	for _, v := range peeraddrmgr.arr.PeerAddr {
+	for _, v := range mgrpeeraddr.arr.PeerAddr {
 		go c.connect(v, myinfo)
 		time.Sleep(time.Second)
 	}
@@ -50,6 +50,8 @@ func (c *jarvisClient) Start(peeraddrmgr *peerAddrMgr, myinfo *BaseInfo) error {
 func (c *jarvisClient) connect(servaddr string, myinfo *BaseInfo) error {
 	c.wg.Add(1)
 	defer c.wg.Done()
+
+	c.mgrpeeraddr.onStartConnect(servaddr)
 
 	conn, err := mgrconn.getConn(servaddr)
 	if err != nil {
@@ -72,7 +74,7 @@ func (c *jarvisClient) connect(servaddr string, myinfo *BaseInfo) error {
 		return err1
 	}
 
-	c.peeraddrmgr.addPeerAddr(servaddr)
+	c.mgrpeeraddr.onConnected(servaddr)
 
 	if r.Code == pb.CODE_OK {
 		return nil

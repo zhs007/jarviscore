@@ -3,6 +3,7 @@ package jarviscore
 import (
 	"io/ioutil"
 	"path"
+	"sort"
 
 	"github.com/zhs007/jarviscore/errcode"
 
@@ -13,7 +14,7 @@ import (
 type peerAddrMgr struct {
 	// load & save
 	arr *peerAddrArr
-	lst []peerInfo
+	lst peerInfoSlice
 }
 
 func newPeerAddrMgr(peeraddrfile string, defpeeraddr string) (*peerAddrMgr, error) {
@@ -63,6 +64,8 @@ func (mgr *peerAddrMgr) canConnect(peeraddr string) bool {
 func (mgr *peerAddrMgr) savePeerAddrFile() error {
 	arr := &peerAddrArr{}
 
+	sort.Sort(peerInfoSlice(mgr.lst))
+
 	for _, v := range mgr.lst {
 		arr.insPeerAddr(v.peeraddr)
 	}
@@ -81,15 +84,28 @@ func (mgr *peerAddrMgr) savePeerAddrFile() error {
 	return nil
 }
 
-// addPeerAddr - if already in local buf, return false
-func (mgr *peerAddrMgr) addPeerAddr(peeraddr string) bool {
+// onStartConnect
+func (mgr *peerAddrMgr) onStartConnect(peeraddr string) {
 	for i := 0; i < len(mgr.lst); i++ {
 		if peeraddr == mgr.lst[i].peeraddr {
-			return false
+			mgr.lst[i].connectnums++
+
+			return
 		}
 	}
 
-	mgr.lst = append(mgr.lst, peerInfo{peeraddr: peeraddr})
+	mgr.lst = append(mgr.lst, peerInfo{peeraddr: peeraddr, connectnums: 1})
 
-	return true
+	return
+}
+
+// onConnected
+func (mgr *peerAddrMgr) onConnected(peeraddr string) {
+	for i := 0; i < len(mgr.lst); i++ {
+		if peeraddr == mgr.lst[i].peeraddr {
+			mgr.lst[i].connectednums++
+
+			return
+		}
+	}
 }

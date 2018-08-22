@@ -15,6 +15,20 @@ type peerInfo struct {
 	connectednums int
 }
 
+type peerInfoSlice []peerInfo
+
+func (s peerInfoSlice) Len() int {
+	return len(s)
+}
+
+func (s peerInfoSlice) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s peerInfoSlice) Less(i, j int) bool {
+	return s[j].connectnums-s[j].connectednums > s[i].connectnums-s[i].connectednums
+}
+
 func loadPeerAddrFile(filename string) (*peerAddrArr, error) {
 	buf, err := loadFile(filename)
 	if err != nil {
