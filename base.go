@@ -32,3 +32,29 @@ func loadFile(filename string) ([]byte, error) {
 
 	return buffer, nil
 }
+
+// // GetDNSPulicIP -
+// func GetDNSPulicIP() string {
+// 	conn, err := net.Dial("udp", "8.8.8.8:53")
+// 	if err != nil {
+// 		return ""
+// 	}
+// 	defer conn.Close()
+// 	localAddr := conn.LocalAddr().String()
+// 	idx := strings.LastIndex(localAddr, ":")
+// 	return localAddr[0:idx]
+// }
+
+// // GetHTTPPulicIP -
+// func GetHTTPPulicIP() string {
+// 	resp, err := http.Get("http://ifconfig.me")
+// 	if err != nil {
+// 		return ""
+// 	}
+// 	defer resp.Body.Close()
+// 	// content, _ := ioutil.ReadAll(resp.Body)
+// 	buf := new(bytes.Buffer)
+// 	buf.ReadFrom(resp.Body)
+// 	//s := buf.String()
+// 	return string(buf.String())
+// }

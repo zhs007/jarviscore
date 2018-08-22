@@ -22,6 +22,14 @@ func main() {
 	jarviscore.InitJarvisCore(cfg)
 	defer jarviscore.ReleaseJarvisCore()
 
+	// pubip := jarviscore.GetHTTPPulicIP()
+	// log.Debug(pubip)
+	// ip := net.ParseIP(":7788")
+	// log.Debug(ip.String())
+
+	// ip1 := net.ParseIP("127.0.0.1:7788")
+	// log.Debug(ip1.String())
+
 	node := jarviscore.NewNode(myinfo)
 	defer node.Stop()
 
