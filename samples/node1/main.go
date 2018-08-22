@@ -9,7 +9,7 @@ func main() {
 	cfg := jarviscore.Config{
 		RunPath:      "./",
 		PeerAddrFile: "peeraddr.yaml",
-		DefPeerAddr:  "127.0.0.1:7789",
+		DefPeerAddr:  "jarvis.heyalgo.io:7788",
 	}
 
 	myinfo := jarviscore.BaseInfo{

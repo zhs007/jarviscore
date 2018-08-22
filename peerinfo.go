@@ -62,6 +62,10 @@ func (paa *peerAddrArr) rmPeerAddr(peeraddr string) {
 }
 
 func (paa *peerAddrArr) insPeerAddr(peeraddr string) {
+	if len(peeraddr) == 0 {
+		return
+	}
+
 	for i := 0; i < len(paa.PeerAddr); i++ {
 		if paa.PeerAddr[i] == peeraddr {
 			return

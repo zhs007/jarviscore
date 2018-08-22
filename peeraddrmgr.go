@@ -28,16 +28,14 @@ func newPeerAddrMgr(peeraddrfile string, defpeeraddr string) (*peerAddrMgr, erro
 
 			mgr.arr = &peerAddrArr{}
 			// log.Debug("arrlen", zap.Int("len", len(mgr.arr.PeerAddr)))
-
-			mgr.arr.insPeerAddr(defpeeraddr)
-
-			// log.Debug("arrlen", zap.Int("len", len(mgr.arr.PeerAddr)))
 		} else {
 			errorLog("loadPeerAddrFile", err)
 
 			return nil, err
 		}
 	}
+
+	mgr.arr.insPeerAddr(defpeeraddr)
 
 	arrlen := len(mgr.arr.PeerAddr)
 	if arrlen == 0 {
