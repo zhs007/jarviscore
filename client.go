@@ -9,20 +9,26 @@ import (
 	"google.golang.org/grpc"
 )
 
+type clientInfo struct {
+	conn   *grpc.ClientConn
+	client pb.JarvisCoreServClient
+}
+
 // jarvisClient -
 type jarvisClient struct {
 	peeraddrmgr *peerAddrMgr
-	mapConn     map[string]*grpc.ClientConn
-	mapClient   map[string]pb.JarvisCoreServClient
+	mapClient   map[string]*clientInfo
 	clientchan  chan int
 	wg          sync.WaitGroup
 }
 
 func newClient() *jarvisClient {
 	return &jarvisClient{
-		mapConn:    make(map[string]*grpc.ClientConn),
-		mapClient:  make(map[string]pb.JarvisCoreServClient),
+		mapClient:  make(map[string]*clientInfo),
 		clientchan: make(chan int, 1)}
+}
+
+func (c *jarvisClient) onConnectFail(addr string) {
 }
 
 func (c *jarvisClient) Start(peeraddrmgr *peerAddrMgr, myinfo *BaseInfo) error {
@@ -45,25 +51,19 @@ func (c *jarvisClient) connect(servaddr string, myinfo *BaseInfo) error {
 	c.wg.Add(1)
 	defer c.wg.Done()
 
-	var curconn *grpc.ClientConn
-	if _, ok := c.mapConn[servaddr]; ok {
-		curconn = c.mapConn[servaddr]
-	} else {
-		conn, err := grpc.Dial(servaddr, grpc.WithInsecure())
-		if err != nil {
-			warnLog("JarvisClient.connect", err)
+	conn, err := mgrconn.getConn(servaddr)
+	if err != nil {
+		warnLog("JarvisClient.connect", err)
 
-			return err
-		}
-		curconn = conn
+		return err
 	}
 
-	jarvisclient := pb.NewJarvisCoreServClient(curconn)
+	ci := clientInfo{conn: conn, client: pb.NewJarvisCoreServClient(conn)}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	r, err1 := jarvisclient.Join(ctx, &pb.Join{Servaddr: myinfo.ServAddr, Token: myinfo.Token, Name: myinfo.Name, Nodetype: myinfo.NodeType})
+	r, err1 := ci.client.Join(ctx, &pb.Join{Servaddr: myinfo.ServAddr, Token: myinfo.Token, Name: myinfo.Name, Nodetype: myinfo.NodeType})
 	if err1 != nil {
 		warnLog("JarvisClient.connect", err1)
 
