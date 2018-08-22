@@ -7,6 +7,7 @@ import (
 // BaseInfo -
 type BaseInfo struct {
 	Name     string
+	BindAddr string
 	ServAddr string
 	Token    string
 	NodeType pb.NODETYPE

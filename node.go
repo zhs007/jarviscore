@@ -51,7 +51,7 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 	signal.Notify(node.signalchan)
 	// signal.Notify(node.signalchan, os.Interrupt, os.Kill, syscall.SIGSTOP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGTSTP)
 
-	node.setMyInfo(baseinfo.ServAddr, baseinfo.Name, baseinfo.Token)
+	node.setMyInfo(baseinfo.ServAddr, baseinfo.BindAddr, baseinfo.Name, baseinfo.Token)
 
 	return node
 }
@@ -82,7 +82,7 @@ func (n *jarvisNode) generatorToken() string {
 }
 
 // setMyInfo -
-func (n *jarvisNode) setMyInfo(servaddr string, name string, token string) error {
+func (n *jarvisNode) setMyInfo(servaddr string, bindaddr string, name string, token string) error {
 	if token == "" {
 		n.myinfo.Token = n.generatorToken()
 
@@ -90,6 +90,7 @@ func (n *jarvisNode) setMyInfo(servaddr string, name string, token string) error
 	}
 
 	n.myinfo.ServAddr = servaddr
+	n.myinfo.BindAddr = bindaddr
 	n.myinfo.Name = name
 
 	return nil

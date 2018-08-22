@@ -21,14 +21,14 @@ type jarvisServer struct {
 
 // NewServer -
 func newServer(node *jarvisNode) (*jarvisServer, error) {
-	lis, err := net.Listen("tcp", node.myinfo.ServAddr)
+	lis, err := net.Listen("tcp", node.myinfo.BindAddr)
 	if err != nil {
 		errorLog("newServer", err)
 
 		return nil, err
 	}
 
-	log.Info("Listen", zap.String("addr", node.myinfo.ServAddr))
+	log.Info("Listen", zap.String("addr", node.myinfo.BindAddr))
 
 	grpcServ := grpc.NewServer()
 	s := &jarvisServer{node: node, lis: lis, grpcServ: grpcServ, servchan: make(chan int, 1)}

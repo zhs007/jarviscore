@@ -13,7 +13,8 @@ func main() {
 	}
 
 	myinfo := jarviscore.BaseInfo{
-		Name:     "node001",
+		Name:     "node002",
+		BindAddr: ":7789",
 		ServAddr: "127.0.0.1:7789",
 		NodeType: pb.NODETYPE_NORMAL,
 	}
