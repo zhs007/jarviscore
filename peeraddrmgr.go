@@ -2,7 +2,6 @@ package jarviscore
 
 import (
 	"io/ioutil"
-	"path"
 	"sort"
 
 	"github.com/zhs007/jarviscore/errcode"
@@ -17,11 +16,13 @@ type peerAddrMgr struct {
 	lst peerInfoSlice
 }
 
-func newPeerAddrMgr(peeraddrfile string, defpeeraddr string) (*peerAddrMgr, error) {
+const peeraddrFilename = "peeraddr.yaml"
+
+func newPeerAddrMgr(defpeeraddr string) (*peerAddrMgr, error) {
 	mgr := &peerAddrMgr{}
 
 	var err error
-	mgr.arr, err = loadPeerAddrFile(path.Join(config.RunPath, peeraddrfile))
+	mgr.arr, err = loadPeerAddrFile(getRealPath(peeraddrFilename))
 	if err != nil {
 		if len(defpeeraddr) > 0 {
 			warnLog("loadPeerAddrFile", err)
@@ -77,7 +78,7 @@ func (mgr *peerAddrMgr) savePeerAddrFile() error {
 		return err
 	}
 
-	ioutil.WriteFile(path.Join(config.RunPath, "peeraddr.yaml"), d, 0755)
+	ioutil.WriteFile(getRealPath(peeraddrFilename), d, 0755)
 
 	return nil
 }

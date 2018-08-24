@@ -2,7 +2,6 @@ package jarviscore
 
 import (
 	"path"
-	"sync"
 
 	"go.uber.org/zap"
 
@@ -11,23 +10,23 @@ import (
 
 // Config - config
 type Config struct {
-	RunPath      string
-	PeerAddrFile string
-	DefPeerAddr  string
+	RunPath     string
+	DefPeerAddr string
 }
 
-var config *Config
-var onceConfig sync.Once
+const normalLogFilename = "output.log"
+const errLogFilename = "error.log"
+
+var config = Config{RunPath: "./", DefPeerAddr: "jarvis.heyalgo.io:7788"}
 
 // InitJarvisCore -
-func InitJarvisCore(cfg Config) (err error) {
-	onceConfig.Do(func() {
-		config = &Config{RunPath: cfg.RunPath, PeerAddrFile: cfg.PeerAddrFile, DefPeerAddr: cfg.DefPeerAddr}
+func InitJarvisCore(cfg Config) {
+	config.RunPath = cfg.RunPath
+	config.DefPeerAddr = cfg.DefPeerAddr
 
-		log.InitLogger(path.Join(config.RunPath, "output.log"), path.Join(config.RunPath, "error.log"))
+	log.InitLogger(getRealPath(normalLogFilename), getRealPath(errLogFilename))
 
-		log.Info("InitJarvisCore", zap.String("RunPath", cfg.RunPath), zap.String("PeerAddrFile", cfg.PeerAddrFile), zap.String("DefPeerAddr", cfg.DefPeerAddr))
-	})
+	log.Info("InitJarvisCore", zap.String("RunPath", cfg.RunPath), zap.String("DefPeerAddr", cfg.DefPeerAddr))
 
 	return
 }
@@ -37,4 +36,8 @@ func ReleaseJarvisCore() error {
 	log.ReleaseLogger()
 
 	return nil
+}
+
+func getRealPath(filename string) string {
+	return path.Join(config.RunPath, filename)
 }

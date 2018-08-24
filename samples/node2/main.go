@@ -7,9 +7,8 @@ import (
 
 func main() {
 	cfg := jarviscore.Config{
-		RunPath:      "./",
-		PeerAddrFile: "peeraddr.yaml",
-		DefPeerAddr:  "127.0.0.1:7788",
+		RunPath:     "./",
+		DefPeerAddr: "127.0.0.1:7788",
 	}
 
 	myinfo := jarviscore.BaseInfo{

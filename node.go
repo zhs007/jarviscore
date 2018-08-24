@@ -51,7 +51,23 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 	signal.Notify(node.signalchan)
 	// signal.Notify(node.signalchan, os.Interrupt, os.Kill, syscall.SIGSTOP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGTSTP)
 
-	node.setMyInfo(baseinfo.ServAddr, baseinfo.BindAddr, baseinfo.Name, baseinfo.Token)
+	var token string
+	var prikey *privatekey
+	var err error
+
+	prikey, err = loadPrivateKeyFile()
+	if err != nil {
+		token = node.generatorToken()
+
+		log.Info("generatorToken", zap.String("Token", token))
+
+		prikey = &privatekey{Token: token}
+		savePrivateKeyFile(prikey)
+	}
+
+	token = prikey.Token
+
+	node.setMyInfo(baseinfo.ServAddr, baseinfo.BindAddr, baseinfo.Name, token)
 
 	return node
 }
@@ -83,11 +99,11 @@ func (n *jarvisNode) generatorToken() string {
 
 // setMyInfo -
 func (n *jarvisNode) setMyInfo(servaddr string, bindaddr string, name string, token string) error {
-	if token == "" {
-		n.myinfo.Token = n.generatorToken()
+	// if token == "" {
+	// 	n.myinfo.Token = n.generatorToken()
 
-		log.Info("generatorToken", zap.String("Token", n.myinfo.Token))
-	}
+	// 	log.Info("generatorToken", zap.String("Token", n.myinfo.Token))
+	// }
 
 	n.myinfo.ServAddr = servaddr
 	n.myinfo.BindAddr = bindaddr
@@ -157,7 +173,7 @@ func (n *jarvisNode) waitEnd() {
 
 // Start -
 func (n *jarvisNode) Start() (err error) {
-	n.mgrpeeraddr, err = newPeerAddrMgr(config.PeerAddrFile, config.DefPeerAddr)
+	n.mgrpeeraddr, err = newPeerAddrMgr(config.DefPeerAddr)
 	if err != nil {
 		return err
 	}
