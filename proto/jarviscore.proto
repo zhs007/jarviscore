@@ -11,6 +11,8 @@ enum CODE {
 
 enum NODETYPE {
     NORMAL = 0;
+    SH = 1;
+    TELEBOT = 2;
 }
 
 enum CHANNELTYPE {
