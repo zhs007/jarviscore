@@ -195,8 +195,12 @@ func (n *jarvisNode) Start() (err error) {
 }
 
 // onAddNode
-func (n *jarvisNode) onAddNode(peeraddr string) {
-	if n.mgrpeeraddr.canConnect(peeraddr) {
-		go n.client.connect(peeraddr, &n.myinfo)
+func (n *jarvisNode) onAddNode(bi *BaseInfo) {
+	if bi.Token == n.myinfo.Token {
+		return
+	}
+
+	if n.mgrpeeraddr.canConnect(bi.ServAddr) {
+		go n.client.connect(bi.ServAddr, &n.myinfo)
 	}
 }

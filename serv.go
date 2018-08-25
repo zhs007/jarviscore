@@ -59,7 +59,14 @@ func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, er
 		zap.String("Name", in.Name),
 		zap.Int("Nodetype", int(in.Nodetype)))
 
-	s.node.onAddNode(in.Servaddr)
+	bi := BaseInfo{
+		Name:     in.Name,
+		ServAddr: in.Servaddr,
+		Token:    in.Token,
+		NodeType: in.Nodetype,
+	}
+
+	s.node.onAddNode(&bi)
 
 	return &pb.ReplyJoin{Code: pb.CODE_OK}, nil
 }
