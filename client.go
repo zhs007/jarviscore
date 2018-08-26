@@ -14,7 +14,7 @@ import (
 )
 
 type clientInfo struct {
-	ctx    *context.Context
+	// ctx    *context.Context
 	conn   *grpc.ClientConn
 	client pb.JarvisCoreServClient
 }
@@ -70,7 +70,11 @@ func (c *jarvisClient) connect(servaddr string) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	ci := clientInfo{ctx: &ctx, conn: conn, client: pb.NewJarvisCoreServClient(conn)}
+	ci := clientInfo{
+		// ctx: &ctx,
+		conn:   conn,
+		client: pb.NewJarvisCoreServClient(conn),
+	}
 
 	r, err1 := ci.client.Join(ctx, &pb.Join{
 		ServAddr: c.node.myinfo.ServAddr,
