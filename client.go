@@ -14,6 +14,7 @@ import (
 )
 
 type clientInfo struct {
+	ctx    *context.Context
 	conn   *grpc.ClientConn
 	client pb.JarvisCoreServClient
 }
@@ -37,11 +38,11 @@ func newClient(node *jarvisNode) *jarvisClient {
 func (c *jarvisClient) onConnectFail(addr string) {
 }
 
-func (c *jarvisClient) Start(mgrpeeraddr *peerAddrMgr, myinfo *BaseInfo) error {
+func (c *jarvisClient) Start(mgrpeeraddr *peerAddrMgr) error {
 	c.mgrpeeraddr = mgrpeeraddr
 
 	for _, v := range mgrpeeraddr.arr.PeerAddr {
-		go c.connect(v, myinfo)
+		go c.connect(v)
 		time.Sleep(time.Second)
 	}
 
@@ -53,7 +54,7 @@ func (c *jarvisClient) Start(mgrpeeraddr *peerAddrMgr, myinfo *BaseInfo) error {
 }
 
 //
-func (c *jarvisClient) connect(servaddr string, myinfo *BaseInfo) error {
+func (c *jarvisClient) connect(servaddr string) error {
 	c.wg.Add(1)
 	defer c.wg.Done()
 
@@ -66,12 +67,16 @@ func (c *jarvisClient) connect(servaddr string, myinfo *BaseInfo) error {
 		return err
 	}
 
-	ci := clientInfo{conn: conn, client: pb.NewJarvisCoreServClient(conn)}
-
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	r, err1 := ci.client.Join(ctx, &pb.Join{ServAddr: myinfo.ServAddr, Token: myinfo.Token, Name: myinfo.Name, NodeType: myinfo.NodeType})
+	ci := clientInfo{ctx: &ctx, conn: conn, client: pb.NewJarvisCoreServClient(conn)}
+
+	r, err1 := ci.client.Join(ctx, &pb.Join{
+		ServAddr: c.node.myinfo.ServAddr,
+		Token:    c.node.myinfo.Token,
+		Name:     c.node.myinfo.Name,
+		NodeType: c.node.myinfo.NodeType})
 	if err1 != nil {
 		warnLog("JarvisClient.connect:Join", err1)
 

@@ -190,7 +190,7 @@ func (n *jarvisNode) Start() (err error) {
 	n.client = newClient(n)
 
 	go n.serv.Start()
-	go n.client.Start(n.mgrpeeraddr, &n.myinfo)
+	go n.client.Start(n.mgrpeeraddr)
 
 	n.waitEnd()
 
@@ -212,7 +212,7 @@ func (n *jarvisNode) onAddNode(bi *BaseInfo) {
 	}
 
 	if n.mgrpeeraddr.canConnect(bi.ServAddr) {
-		go n.client.connect(bi.ServAddr, &n.myinfo)
+		go n.client.connect(bi.ServAddr)
 	}
 }
 
