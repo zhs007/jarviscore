@@ -2,6 +2,7 @@ package jarviscore
 
 import (
 	"context"
+	"io"
 	"sync"
 	"time"
 
@@ -67,7 +68,7 @@ func (c *jarvisClient) connect(servaddr string, myinfo *BaseInfo) error {
 
 	ci := clientInfo{conn: conn, client: pb.NewJarvisCoreServClient(conn)}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	r, err1 := ci.client.Join(ctx, &pb.Join{ServAddr: myinfo.ServAddr, Token: myinfo.Token, Name: myinfo.Name, NodeType: myinfo.NodeType})
@@ -89,12 +90,57 @@ func (c *jarvisClient) connect(servaddr string, myinfo *BaseInfo) error {
 
 		c.mgrpeeraddr.onConnected(servaddr)
 
+		c.subscribe(ctx, &ci, pb.CHANNELTYPE_NODEINFO)
+
 		return nil
 	}
 
 	log.Info("JarvisClient.Join", zap.Int("code", int(r.Code)))
 
 	mgrconn.delConn(servaddr)
+
+	return nil
+}
+
+func (c *jarvisClient) subscribe(ctx context.Context, ci *clientInfo, ct pb.CHANNELTYPE) error {
+	curctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	stream, err := ci.client.Subscribe(curctx, &pb.Subscribe{
+		ChannelType: ct,
+		Token:       c.node.myinfo.Token,
+	})
+	if err != nil {
+		return err
+	}
+
+	for {
+		reply, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+
+		if reply.ChannelType == ct && reply.NodeInfo != nil {
+			log.Info("JarvisClient.subscribe:NODEINFO",
+				zap.String("Servaddr", reply.NodeInfo.ServAddr),
+				zap.String("Token", reply.NodeInfo.Token),
+				zap.String("Name", reply.NodeInfo.Name),
+				zap.Int("Nodetype", int(reply.NodeInfo.NodeType)))
+
+			bi := BaseInfo{
+				Name:     reply.NodeInfo.Name,
+				ServAddr: reply.NodeInfo.ServAddr,
+				Token:    reply.NodeInfo.Token,
+				NodeType: reply.NodeInfo.NodeType,
+			}
+
+			c.node.onAddNode(&bi)
+		}
+		// log.Printf("Greeting: %s", reply.Message)
+	}
 
 	return nil
 }
