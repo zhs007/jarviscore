@@ -35,6 +35,7 @@ message ReplyJoin {
 
 message Subscribe {
     CHANNELTYPE channelType = 1;
+    string token = 2;
 }
 
 message NodeInfo {
@@ -51,5 +52,5 @@ message ChannelInfo {
 
 service JarvisCoreServ {
     rpc join (Join) returns (ReplyJoin) {}
-    // rpc subscribe (Subscribe) returns (stream ChannelInfo) {}
+    rpc subscribe (Subscribe) returns (stream ChannelInfo) {}
 }

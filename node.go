@@ -22,7 +22,7 @@ type jarvisNode struct {
 	client      *jarvisClient
 	serv        *jarvisServer
 	gen         *fortuna.Generator
-	lstother    []*NodeInfo
+	mgrNodeInfo *nodeInfoMgr
 	mgrpeeraddr *peerAddrMgr
 	signalchan  chan os.Signal
 	servstate   int
@@ -47,7 +47,10 @@ const (
 
 // NewNode -
 func NewNode(baseinfo BaseInfo) JarvisNode {
-	node := &jarvisNode{lstother: make([]*NodeInfo, nodeinfoCacheSize), signalchan: make(chan os.Signal, 1)}
+	node := &jarvisNode{
+		mgrNodeInfo: newNodeInfoMgr(),
+		signalchan:  make(chan os.Signal, 1),
+	}
 	signal.Notify(node.signalchan)
 	// signal.Notify(node.signalchan, os.Interrupt, os.Kill, syscall.SIGSTOP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGTSTP)
 
@@ -199,13 +202,7 @@ func (n *jarvisNode) hasNodeToken(token string) bool {
 		return true
 	}
 
-	for _, v := range n.lstother {
-		if v.baseinfo.Token == token {
-			return true
-		}
-	}
-
-	return false
+	return n.mgrNodeInfo.hasNodeInfo(token)
 }
 
 // onAddNode
@@ -225,5 +222,5 @@ func (n *jarvisNode) addNode(bi *BaseInfo) {
 		return
 	}
 
-	n.lstother = append(n.lstother, NewNodeInfo(bi))
+	n.mgrNodeInfo.addNodeInfo(bi)
 }

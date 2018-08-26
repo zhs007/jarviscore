@@ -3,6 +3,7 @@ package jarviscore
 import (
 	"context"
 	"net"
+	"sync"
 
 	"go.uber.org/zap"
 
@@ -13,10 +14,12 @@ import (
 
 // jarvisServer
 type jarvisServer struct {
-	node     *jarvisNode
-	lis      net.Listener
-	grpcServ *grpc.Server
-	servchan chan int
+	sync.RWMutex
+	node            *jarvisNode
+	lis             net.Listener
+	grpcServ        *grpc.Server
+	servchan        chan int
+	mapChanNodeInfo map[string]chan BaseInfo
 }
 
 // NewServer -
@@ -31,7 +34,13 @@ func newServer(node *jarvisNode) (*jarvisServer, error) {
 	log.Info("Listen", zap.String("addr", node.myinfo.BindAddr))
 
 	grpcServ := grpc.NewServer()
-	s := &jarvisServer{node: node, lis: lis, grpcServ: grpcServ, servchan: make(chan int, 1)}
+	s := &jarvisServer{
+		node:            node,
+		lis:             lis,
+		grpcServ:        grpcServ,
+		servchan:        make(chan int, 1),
+		mapChanNodeInfo: make(map[string]chan BaseInfo),
+	}
 	pb.RegisterJarvisCoreServServer(grpcServ, s)
 
 	return s, nil
@@ -74,4 +83,69 @@ func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, er
 		Token:    s.node.myinfo.Token,
 		NodeType: s.node.myinfo.NodeType,
 	}, nil
+}
+
+func (s *jarvisServer) onAddNode(bi *BaseInfo) {
+	s.RLock()
+	defer s.RUnlock()
+
+	for _, v := range s.mapChanNodeInfo {
+		v <- *bi
+	}
+}
+
+// Subscribe implements jarviscorepb.JarvisCoreServ
+func (s *jarvisServer) Subscribe(in *pb.Subscribe, stream pb.JarvisCoreServ_SubscribeServer) error {
+	if !s.node.hasNodeToken(in.Token) {
+		return nil
+	}
+
+	s.node.mgrNodeInfo.foreach(func(cn *NodeInfo) {
+		ni := pb.NodeInfo{
+			ServAddr: cn.baseinfo.ServAddr,
+			Token:    cn.baseinfo.Token,
+			Name:     cn.baseinfo.Name,
+			NodeType: cn.baseinfo.NodeType,
+		}
+
+		stream.SendMsg(&pb.ChannelInfo{
+			ChannelType: in.ChannelType,
+			NodeInfo:    &ni,
+		})
+	})
+
+	s.Lock()
+	if _, ok := s.mapChanNodeInfo[in.Token]; ok {
+		s.mapChanNodeInfo[in.Token] <- BaseInfo{}
+	}
+
+	chanNodeInfo := make(chan BaseInfo)
+	s.mapChanNodeInfo[in.Token] = chanNodeInfo
+	s.Unlock()
+
+	for {
+		select {
+		case <-stream.Context().Done():
+			return nil
+		case bi := <-chanNodeInfo:
+			if bi.Token == "" {
+				return nil
+			}
+
+			ni := pb.NodeInfo{
+				ServAddr: bi.ServAddr,
+				Token:    bi.Token,
+				Name:     bi.Name,
+				NodeType: bi.NodeType,
+			}
+
+			stream.SendMsg(&pb.ChannelInfo{
+				ChannelType: in.ChannelType,
+				NodeInfo:    &ni,
+			})
+		}
+
+		// gs.Send(&pb.HelloReply{Message: "Hello " + in.Name})
+	}
+	// return nil
 }
