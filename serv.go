@@ -54,19 +54,24 @@ func (s *jarvisServer) Stop() {
 // Join implements jarviscorepb.JarvisCoreServ
 func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, error) {
 	log.Info("JarvisServ.Join",
-		zap.String("Servaddr", in.Servaddr),
+		zap.String("Servaddr", in.ServAddr),
 		zap.String("Token", in.Token),
 		zap.String("Name", in.Name),
-		zap.Int("Nodetype", int(in.Nodetype)))
+		zap.Int("Nodetype", int(in.NodeType)))
 
 	bi := BaseInfo{
 		Name:     in.Name,
-		ServAddr: in.Servaddr,
+		ServAddr: in.ServAddr,
 		Token:    in.Token,
-		NodeType: in.Nodetype,
+		NodeType: in.NodeType,
 	}
 
 	s.node.onAddNode(&bi)
 
-	return &pb.ReplyJoin{Code: pb.CODE_OK}, nil
+	return &pb.ReplyJoin{
+		Code:     pb.CODE_OK,
+		Name:     s.node.myinfo.Name,
+		Token:    s.node.myinfo.Token,
+		NodeType: s.node.myinfo.NodeType,
+	}, nil
 }

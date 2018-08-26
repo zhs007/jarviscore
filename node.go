@@ -184,7 +184,7 @@ func (n *jarvisNode) Start() (err error) {
 		return err
 	}
 
-	n.client = newClient()
+	n.client = newClient(n)
 
 	go n.serv.Start()
 	go n.client.Start(n.mgrpeeraddr, &n.myinfo)
@@ -194,13 +194,36 @@ func (n *jarvisNode) Start() (err error) {
 	return nil
 }
 
+func (n *jarvisNode) hasNodeToken(token string) bool {
+	if token == n.myinfo.Token {
+		return true
+	}
+
+	for _, v := range n.lstother {
+		if v.baseinfo.Token == token {
+			return true
+		}
+	}
+
+	return false
+}
+
 // onAddNode
 func (n *jarvisNode) onAddNode(bi *BaseInfo) {
-	if bi.Token == n.myinfo.Token {
+	if n.hasNodeToken(bi.Token) {
 		return
 	}
 
 	if n.mgrpeeraddr.canConnect(bi.ServAddr) {
 		go n.client.connect(bi.ServAddr, &n.myinfo)
 	}
+}
+
+// addNode
+func (n *jarvisNode) addNode(bi *BaseInfo) {
+	if n.hasNodeToken(bi.Token) {
+		return
+	}
+
+	n.lstother = append(n.lstother, NewNodeInfo(bi))
 }

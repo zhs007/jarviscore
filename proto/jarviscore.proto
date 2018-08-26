@@ -20,30 +20,33 @@ enum CHANNELTYPE {
 }
 
 message Join {
-    string servaddr = 1;
+    string servAddr = 1;
     string token = 2;
     string name = 3;
-    NODETYPE nodetype = 4;
+    NODETYPE nodeType = 4;
 }
 
 message ReplyJoin {
     CODE code = 1;
+    string token = 2;
+    string name = 3;
+    NODETYPE nodeType = 4;
 }
 
 message Subscribe {
-    CHANNELTYPE channeltype = 1;
+    CHANNELTYPE channelType = 1;
 }
 
 message NodeInfo {
-    string servaddr = 1;
+    string servAddr = 1;
     string token = 2;
     string name = 3;
-    NODETYPE nodetype = 4;
+    NODETYPE nodeType = 4;
 }
 
 message ChannelInfo {
-    CHANNELTYPE channeltype = 1;
-    NodeInfo nodeinfo = 2;
+    CHANNELTYPE channelType = 1;
+    NodeInfo nodeInfo = 2;
 }
 
 service JarvisCoreServ {

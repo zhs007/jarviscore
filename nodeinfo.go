@@ -7,6 +7,6 @@ type NodeInfo struct {
 }
 
 // NewNodeInfo -
-func NewNodeInfo() *NodeInfo {
-	return &NodeInfo{mapclient: make(map[string]BaseInfo)}
+func NewNodeInfo(bi *BaseInfo) *NodeInfo {
+	return &NodeInfo{baseinfo: *bi, mapclient: make(map[string]BaseInfo)}
 }

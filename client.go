@@ -5,6 +5,9 @@ import (
 	"sync"
 	"time"
 
+	"go.uber.org/zap"
+
+	"github.com/zhs007/jarviscore/log"
 	pb "github.com/zhs007/jarviscore/proto"
 	"google.golang.org/grpc"
 )
@@ -16,14 +19,16 @@ type clientInfo struct {
 
 // jarvisClient -
 type jarvisClient struct {
+	node        *jarvisNode
 	mgrpeeraddr *peerAddrMgr
 	mapClient   map[string]*clientInfo
 	clientchan  chan int
 	wg          sync.WaitGroup
 }
 
-func newClient() *jarvisClient {
+func newClient(node *jarvisNode) *jarvisClient {
 	return &jarvisClient{
+		node:       node,
 		mapClient:  make(map[string]*clientInfo),
 		clientchan: make(chan int, 1)}
 }
@@ -65,7 +70,7 @@ func (c *jarvisClient) connect(servaddr string, myinfo *BaseInfo) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	r, err1 := ci.client.Join(ctx, &pb.Join{Servaddr: myinfo.ServAddr, Token: myinfo.Token, Name: myinfo.Name, Nodetype: myinfo.NodeType})
+	r, err1 := ci.client.Join(ctx, &pb.Join{ServAddr: myinfo.ServAddr, Token: myinfo.Token, Name: myinfo.Name, NodeType: myinfo.NodeType})
 	if err1 != nil {
 		warnLog("JarvisClient.connect:Join", err1)
 
@@ -74,11 +79,22 @@ func (c *jarvisClient) connect(servaddr string, myinfo *BaseInfo) error {
 		return err1
 	}
 
-	c.mgrpeeraddr.onConnected(servaddr)
-
 	if r.Code == pb.CODE_OK {
+		c.node.addNode(&BaseInfo{
+			Name:     r.Name,
+			Token:    r.Token,
+			NodeType: r.NodeType,
+			ServAddr: servaddr,
+		})
+
+		c.mgrpeeraddr.onConnected(servaddr)
+
 		return nil
 	}
+
+	log.Info("JarvisClient.Join", zap.Int("code", int(r.Code)))
+
+	mgrconn.delConn(servaddr)
 
 	return nil
 }
