@@ -17,6 +17,7 @@ enum NODETYPE {
 
 enum CHANNELTYPE {
     NODEINFO = 0;
+    CTRL = 1;
 }
 
 message Join {
@@ -33,6 +34,10 @@ message ReplyJoin {
     NODETYPE nodeType = 4;
 }
 
+message BaseReply {
+    CODE code = 1;
+}
+
 message Subscribe {
     CHANNELTYPE channelType = 1;
     string token = 2;
@@ -45,12 +50,31 @@ message NodeInfo {
     NODETYPE nodeType = 4;
 }
 
+message CtrlInfo {
+    int64 ctrlid = 1;
+    string destToken = 2;
+    string srcToken = 3;
+    string myToken = 4;
+    string ctrlString = 5;
+}
+
+message CtrlResult {
+    int64 ctrlid = 1;
+    string destToken = 2;
+    string srcToken = 3;
+    string myToken = 4;
+    string ctrlResult = 5;
+}
+
 message ChannelInfo {
     CHANNELTYPE channelType = 1;
     NodeInfo nodeInfo = 2;
+    CtrlInfo ctrlInfo = 3;
 }
 
 service JarvisCoreServ {
     rpc join (Join) returns (ReplyJoin) {}
+    rpc requestCtrl (CtrlInfo) returns (CtrlResult) {}
+    rpc replyCtrl (CtrlResult) returns (CtrlResult) {}
     rpc subscribe (Subscribe) returns (stream ChannelInfo) {}
 }
