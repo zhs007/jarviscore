@@ -29,24 +29,27 @@ const (
 	CODE_OK                 CODE = 0
 	CODE_INVALID_TOKEN_NAME CODE = 1
 	CODE_ALREADY_IN         CODE = 2
+	CODE_FORWARD_MSG        CODE = 3
 )
 
 var CODE_name = map[int32]string{
 	0: "OK",
 	1: "INVALID_TOKEN_NAME",
 	2: "ALREADY_IN",
+	3: "FORWARD_MSG",
 }
 var CODE_value = map[string]int32{
 	"OK":                 0,
 	"INVALID_TOKEN_NAME": 1,
 	"ALREADY_IN":         2,
+	"FORWARD_MSG":        3,
 }
 
 func (x CODE) String() string {
 	return proto.EnumName(CODE_name, int32(x))
 }
 func (CODE) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_7aed8c4a3b267aaa, []int{0}
+	return fileDescriptor_jarviscore_a0756e9fb96904cd, []int{0}
 }
 
 type NODETYPE int32
@@ -72,7 +75,7 @@ func (x NODETYPE) String() string {
 	return proto.EnumName(NODETYPE_name, int32(x))
 }
 func (NODETYPE) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_7aed8c4a3b267aaa, []int{1}
+	return fileDescriptor_jarviscore_a0756e9fb96904cd, []int{1}
 }
 
 type CHANNELTYPE int32
@@ -95,7 +98,7 @@ func (x CHANNELTYPE) String() string {
 	return proto.EnumName(CHANNELTYPE_name, int32(x))
 }
 func (CHANNELTYPE) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_7aed8c4a3b267aaa, []int{2}
+	return fileDescriptor_jarviscore_a0756e9fb96904cd, []int{2}
 }
 
 type Join struct {
@@ -112,7 +115,7 @@ func (m *Join) Reset()         { *m = Join{} }
 func (m *Join) String() string { return proto.CompactTextString(m) }
 func (*Join) ProtoMessage()    {}
 func (*Join) Descriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_7aed8c4a3b267aaa, []int{0}
+	return fileDescriptor_jarviscore_a0756e9fb96904cd, []int{0}
 }
 func (m *Join) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Join.Unmarshal(m, b)
@@ -174,7 +177,7 @@ func (m *ReplyJoin) Reset()         { *m = ReplyJoin{} }
 func (m *ReplyJoin) String() string { return proto.CompactTextString(m) }
 func (*ReplyJoin) ProtoMessage()    {}
 func (*ReplyJoin) Descriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_7aed8c4a3b267aaa, []int{1}
+	return fileDescriptor_jarviscore_a0756e9fb96904cd, []int{1}
 }
 func (m *ReplyJoin) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ReplyJoin.Unmarshal(m, b)
@@ -222,6 +225,44 @@ func (m *ReplyJoin) GetNodeType() NODETYPE {
 	return NODETYPE_NORMAL
 }
 
+type BaseReply struct {
+	Code                 CODE     `protobuf:"varint,1,opt,name=code,proto3,enum=jarviscorepb.CODE" json:"code,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *BaseReply) Reset()         { *m = BaseReply{} }
+func (m *BaseReply) String() string { return proto.CompactTextString(m) }
+func (*BaseReply) ProtoMessage()    {}
+func (*BaseReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_jarviscore_a0756e9fb96904cd, []int{2}
+}
+func (m *BaseReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_BaseReply.Unmarshal(m, b)
+}
+func (m *BaseReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_BaseReply.Marshal(b, m, deterministic)
+}
+func (dst *BaseReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_BaseReply.Merge(dst, src)
+}
+func (m *BaseReply) XXX_Size() int {
+	return xxx_messageInfo_BaseReply.Size(m)
+}
+func (m *BaseReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_BaseReply.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_BaseReply proto.InternalMessageInfo
+
+func (m *BaseReply) GetCode() CODE {
+	if m != nil {
+		return m.Code
+	}
+	return CODE_OK
+}
+
 type Subscribe struct {
 	ChannelType          CHANNELTYPE `protobuf:"varint,1,opt,name=channelType,proto3,enum=jarviscorepb.CHANNELTYPE" json:"channelType,omitempty"`
 	Token                string      `protobuf:"bytes,2,opt,name=token,proto3" json:"token,omitempty"`
@@ -234,7 +275,7 @@ func (m *Subscribe) Reset()         { *m = Subscribe{} }
 func (m *Subscribe) String() string { return proto.CompactTextString(m) }
 func (*Subscribe) ProtoMessage()    {}
 func (*Subscribe) Descriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_7aed8c4a3b267aaa, []int{2}
+	return fileDescriptor_jarviscore_a0756e9fb96904cd, []int{3}
 }
 func (m *Subscribe) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Subscribe.Unmarshal(m, b)
@@ -282,7 +323,7 @@ func (m *NodeInfo) Reset()         { *m = NodeInfo{} }
 func (m *NodeInfo) String() string { return proto.CompactTextString(m) }
 func (*NodeInfo) ProtoMessage()    {}
 func (*NodeInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_7aed8c4a3b267aaa, []int{3}
+	return fileDescriptor_jarviscore_a0756e9fb96904cd, []int{4}
 }
 func (m *NodeInfo) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_NodeInfo.Unmarshal(m, b)
@@ -334,7 +375,8 @@ type CtrlInfo struct {
 	Ctrlid               int64    `protobuf:"varint,1,opt,name=ctrlid,proto3" json:"ctrlid,omitempty"`
 	DestToken            string   `protobuf:"bytes,2,opt,name=destToken,proto3" json:"destToken,omitempty"`
 	SrcToken             string   `protobuf:"bytes,3,opt,name=srcToken,proto3" json:"srcToken,omitempty"`
-	CtrlString           string   `protobuf:"bytes,4,opt,name=ctrlString,proto3" json:"ctrlString,omitempty"`
+	MyToken              string   `protobuf:"bytes,4,opt,name=myToken,proto3" json:"myToken,omitempty"`
+	CtrlString           string   `protobuf:"bytes,5,opt,name=ctrlString,proto3" json:"ctrlString,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -344,7 +386,7 @@ func (m *CtrlInfo) Reset()         { *m = CtrlInfo{} }
 func (m *CtrlInfo) String() string { return proto.CompactTextString(m) }
 func (*CtrlInfo) ProtoMessage()    {}
 func (*CtrlInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_7aed8c4a3b267aaa, []int{4}
+	return fileDescriptor_jarviscore_a0756e9fb96904cd, []int{5}
 }
 func (m *CtrlInfo) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CtrlInfo.Unmarshal(m, b)
@@ -385,6 +427,13 @@ func (m *CtrlInfo) GetSrcToken() string {
 	return ""
 }
 
+func (m *CtrlInfo) GetMyToken() string {
+	if m != nil {
+		return m.MyToken
+	}
+	return ""
+}
+
 func (m *CtrlInfo) GetCtrlString() string {
 	if m != nil {
 		return m.CtrlString
@@ -392,20 +441,92 @@ func (m *CtrlInfo) GetCtrlString() string {
 	return ""
 }
 
+type CtrlResult struct {
+	Ctrlid               int64    `protobuf:"varint,1,opt,name=ctrlid,proto3" json:"ctrlid,omitempty"`
+	DestToken            string   `protobuf:"bytes,2,opt,name=destToken,proto3" json:"destToken,omitempty"`
+	SrcToken             string   `protobuf:"bytes,3,opt,name=srcToken,proto3" json:"srcToken,omitempty"`
+	MyToken              string   `protobuf:"bytes,4,opt,name=myToken,proto3" json:"myToken,omitempty"`
+	CtrlResult           string   `protobuf:"bytes,5,opt,name=ctrlResult,proto3" json:"ctrlResult,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *CtrlResult) Reset()         { *m = CtrlResult{} }
+func (m *CtrlResult) String() string { return proto.CompactTextString(m) }
+func (*CtrlResult) ProtoMessage()    {}
+func (*CtrlResult) Descriptor() ([]byte, []int) {
+	return fileDescriptor_jarviscore_a0756e9fb96904cd, []int{6}
+}
+func (m *CtrlResult) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CtrlResult.Unmarshal(m, b)
+}
+func (m *CtrlResult) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CtrlResult.Marshal(b, m, deterministic)
+}
+func (dst *CtrlResult) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CtrlResult.Merge(dst, src)
+}
+func (m *CtrlResult) XXX_Size() int {
+	return xxx_messageInfo_CtrlResult.Size(m)
+}
+func (m *CtrlResult) XXX_DiscardUnknown() {
+	xxx_messageInfo_CtrlResult.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CtrlResult proto.InternalMessageInfo
+
+func (m *CtrlResult) GetCtrlid() int64 {
+	if m != nil {
+		return m.Ctrlid
+	}
+	return 0
+}
+
+func (m *CtrlResult) GetDestToken() string {
+	if m != nil {
+		return m.DestToken
+	}
+	return ""
+}
+
+func (m *CtrlResult) GetSrcToken() string {
+	if m != nil {
+		return m.SrcToken
+	}
+	return ""
+}
+
+func (m *CtrlResult) GetMyToken() string {
+	if m != nil {
+		return m.MyToken
+	}
+	return ""
+}
+
+func (m *CtrlResult) GetCtrlResult() string {
+	if m != nil {
+		return m.CtrlResult
+	}
+	return ""
+}
+
 type ChannelInfo struct {
-	ChannelType          CHANNELTYPE `protobuf:"varint,1,opt,name=channelType,proto3,enum=jarviscorepb.CHANNELTYPE" json:"channelType,omitempty"`
-	NodeInfo             *NodeInfo   `protobuf:"bytes,2,opt,name=nodeInfo,proto3" json:"nodeInfo,omitempty"`
-	CtrlInfo             *CtrlInfo   `protobuf:"bytes,3,opt,name=ctrlInfo,proto3" json:"ctrlInfo,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
-	XXX_unrecognized     []byte      `json:"-"`
-	XXX_sizecache        int32       `json:"-"`
+	ChannelType CHANNELTYPE `protobuf:"varint,1,opt,name=channelType,proto3,enum=jarviscorepb.CHANNELTYPE" json:"channelType,omitempty"`
+	// Types that are valid to be assigned to Data:
+	//	*ChannelInfo_NodeInfo
+	//	*ChannelInfo_CtrlInfo
+	Data                 isChannelInfo_Data `protobuf_oneof:"data"`
+	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
+	XXX_unrecognized     []byte             `json:"-"`
+	XXX_sizecache        int32              `json:"-"`
 }
 
 func (m *ChannelInfo) Reset()         { *m = ChannelInfo{} }
 func (m *ChannelInfo) String() string { return proto.CompactTextString(m) }
 func (*ChannelInfo) ProtoMessage()    {}
 func (*ChannelInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_7aed8c4a3b267aaa, []int{5}
+	return fileDescriptor_jarviscore_a0756e9fb96904cd, []int{7}
 }
 func (m *ChannelInfo) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ChannelInfo.Unmarshal(m, b)
@@ -425,6 +546,27 @@ func (m *ChannelInfo) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ChannelInfo proto.InternalMessageInfo
 
+type isChannelInfo_Data interface {
+	isChannelInfo_Data()
+}
+
+type ChannelInfo_NodeInfo struct {
+	NodeInfo *NodeInfo `protobuf:"bytes,2,opt,name=nodeInfo,proto3,oneof"`
+}
+type ChannelInfo_CtrlInfo struct {
+	CtrlInfo *CtrlInfo `protobuf:"bytes,3,opt,name=ctrlInfo,proto3,oneof"`
+}
+
+func (*ChannelInfo_NodeInfo) isChannelInfo_Data() {}
+func (*ChannelInfo_CtrlInfo) isChannelInfo_Data() {}
+
+func (m *ChannelInfo) GetData() isChannelInfo_Data {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
 func (m *ChannelInfo) GetChannelType() CHANNELTYPE {
 	if m != nil {
 		return m.ChannelType
@@ -433,25 +575,101 @@ func (m *ChannelInfo) GetChannelType() CHANNELTYPE {
 }
 
 func (m *ChannelInfo) GetNodeInfo() *NodeInfo {
-	if m != nil {
-		return m.NodeInfo
+	if x, ok := m.GetData().(*ChannelInfo_NodeInfo); ok {
+		return x.NodeInfo
 	}
 	return nil
 }
 
 func (m *ChannelInfo) GetCtrlInfo() *CtrlInfo {
-	if m != nil {
-		return m.CtrlInfo
+	if x, ok := m.GetData().(*ChannelInfo_CtrlInfo); ok {
+		return x.CtrlInfo
 	}
 	return nil
+}
+
+// XXX_OneofFuncs is for the internal use of the proto package.
+func (*ChannelInfo) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
+	return _ChannelInfo_OneofMarshaler, _ChannelInfo_OneofUnmarshaler, _ChannelInfo_OneofSizer, []interface{}{
+		(*ChannelInfo_NodeInfo)(nil),
+		(*ChannelInfo_CtrlInfo)(nil),
+	}
+}
+
+func _ChannelInfo_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
+	m := msg.(*ChannelInfo)
+	// data
+	switch x := m.Data.(type) {
+	case *ChannelInfo_NodeInfo:
+		b.EncodeVarint(2<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.NodeInfo); err != nil {
+			return err
+		}
+	case *ChannelInfo_CtrlInfo:
+		b.EncodeVarint(3<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.CtrlInfo); err != nil {
+			return err
+		}
+	case nil:
+	default:
+		return fmt.Errorf("ChannelInfo.Data has unexpected type %T", x)
+	}
+	return nil
+}
+
+func _ChannelInfo_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
+	m := msg.(*ChannelInfo)
+	switch tag {
+	case 2: // data.nodeInfo
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(NodeInfo)
+		err := b.DecodeMessage(msg)
+		m.Data = &ChannelInfo_NodeInfo{msg}
+		return true, err
+	case 3: // data.ctrlInfo
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(CtrlInfo)
+		err := b.DecodeMessage(msg)
+		m.Data = &ChannelInfo_CtrlInfo{msg}
+		return true, err
+	default:
+		return false, nil
+	}
+}
+
+func _ChannelInfo_OneofSizer(msg proto.Message) (n int) {
+	m := msg.(*ChannelInfo)
+	// data
+	switch x := m.Data.(type) {
+	case *ChannelInfo_NodeInfo:
+		s := proto.Size(x.NodeInfo)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *ChannelInfo_CtrlInfo:
+		s := proto.Size(x.CtrlInfo)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case nil:
+	default:
+		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
+	}
+	return n
 }
 
 func init() {
 	proto.RegisterType((*Join)(nil), "jarviscorepb.Join")
 	proto.RegisterType((*ReplyJoin)(nil), "jarviscorepb.ReplyJoin")
+	proto.RegisterType((*BaseReply)(nil), "jarviscorepb.BaseReply")
 	proto.RegisterType((*Subscribe)(nil), "jarviscorepb.Subscribe")
 	proto.RegisterType((*NodeInfo)(nil), "jarviscorepb.NodeInfo")
 	proto.RegisterType((*CtrlInfo)(nil), "jarviscorepb.CtrlInfo")
+	proto.RegisterType((*CtrlResult)(nil), "jarviscorepb.CtrlResult")
 	proto.RegisterType((*ChannelInfo)(nil), "jarviscorepb.ChannelInfo")
 	proto.RegisterEnum("jarviscorepb.CODE", CODE_name, CODE_value)
 	proto.RegisterEnum("jarviscorepb.NODETYPE", NODETYPE_name, NODETYPE_value)
@@ -471,6 +689,8 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type JarvisCoreServClient interface {
 	Join(ctx context.Context, in *Join, opts ...grpc.CallOption) (*ReplyJoin, error)
+	// rpc requestCtrl (CtrlInfo) returns (CtrlResult) {}
+	// rpc replyCtrl (CtrlResult) returns (CtrlResult) {}
 	Subscribe(ctx context.Context, in *Subscribe, opts ...grpc.CallOption) (JarvisCoreServ_SubscribeClient, error)
 }
 
@@ -526,6 +746,8 @@ func (x *jarvisCoreServSubscribeClient) Recv() (*ChannelInfo, error) {
 // JarvisCoreServServer is the server API for JarvisCoreServ service.
 type JarvisCoreServServer interface {
 	Join(context.Context, *Join) (*ReplyJoin, error)
+	// rpc requestCtrl (CtrlInfo) returns (CtrlResult) {}
+	// rpc replyCtrl (CtrlResult) returns (CtrlResult) {}
 	Subscribe(*Subscribe, JarvisCoreServ_SubscribeServer) error
 }
 
@@ -591,40 +813,44 @@ var _JarvisCoreServ_serviceDesc = grpc.ServiceDesc{
 	Metadata: "jarviscore.proto",
 }
 
-func init() { proto.RegisterFile("jarviscore.proto", fileDescriptor_jarviscore_7aed8c4a3b267aaa) }
+func init() { proto.RegisterFile("jarviscore.proto", fileDescriptor_jarviscore_a0756e9fb96904cd) }
 
-var fileDescriptor_jarviscore_7aed8c4a3b267aaa = []byte{
-	// 498 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x94, 0xcf, 0x8b, 0xd3, 0x40,
-	0x14, 0xc7, 0x3b, 0x6d, 0xac, 0xc9, 0xeb, 0x52, 0xc2, 0x43, 0x6a, 0x2d, 0x22, 0x4b, 0x40, 0x59,
-	0x2a, 0x14, 0xa9, 0xe8, 0xc5, 0x53, 0x4c, 0x23, 0x9b, 0xdd, 0xec, 0x44, 0xa6, 0x41, 0xd8, 0x8b,
-	0xa5, 0x4d, 0x46, 0xcd, 0x5a, 0x33, 0x65, 0x12, 0x0b, 0x0b, 0x1e, 0x3c, 0x78, 0xf4, 0xe2, 0xbf,
-	0xe2, 0x5f, 0x28, 0x99, 0x64, 0xd3, 0x6c, 0xd7, 0x9b, 0xc8, 0xde, 0xfa, 0x7e, 0xf6, 0xf3, 0xde,
-	0x9b, 0x6f, 0xc0, 0xbc, 0x58, 0xca, 0x6d, 0x92, 0x45, 0x42, 0xf2, 0xc9, 0x46, 0x8a, 0x5c, 0xe0,
-	0xc1, 0xce, 0xb3, 0x59, 0x59, 0xdf, 0x09, 0x68, 0x27, 0x22, 0x49, 0x71, 0x04, 0x7a, 0xc6, 0xe5,
-	0xd6, 0x8e, 0x63, 0x39, 0x24, 0x87, 0xe4, 0xc8, 0x60, 0xb5, 0x8d, 0xf7, 0xe0, 0x4e, 0x2e, 0x3e,
-	0xf3, 0x74, 0xd8, 0x56, 0x81, 0xd2, 0x40, 0x04, 0x2d, 0x5d, 0x7e, 0xe1, 0xc3, 0x8e, 0x72, 0xaa,
-	0xdf, 0x38, 0x05, 0x3d, 0x15, 0x31, 0x0f, 0x2f, 0x37, 0x7c, 0xa8, 0x1d, 0x92, 0xa3, 0xfe, 0x74,
-	0x30, 0x69, 0xfe, 0xdf, 0x84, 0x06, 0x33, 0x37, 0x3c, 0x7f, 0xeb, 0xb2, 0x3a, 0xcf, 0xfa, 0x45,
-	0xc0, 0x60, 0x7c, 0xb3, 0xbe, 0x54, 0x1c, 0x4f, 0x40, 0x8b, 0x44, 0xcc, 0x15, 0x43, 0x7f, 0x8a,
-	0xd7, 0xab, 0x9d, 0x60, 0xe6, 0x32, 0x15, 0xff, 0xcf, 0x4c, 0xef, 0xc1, 0x98, 0x7f, 0x5d, 0x65,
-	0x91, 0x4c, 0x56, 0x1c, 0x5f, 0x41, 0x2f, 0xfa, 0xb4, 0x4c, 0x53, 0xbe, 0x56, 0x3d, 0x4a, 0xb2,
-	0x07, 0x7b, 0x64, 0xc7, 0x36, 0xa5, 0xae, 0xaf, 0xda, 0x34, 0xb3, 0xff, 0xce, 0x69, 0xfd, 0x20,
-	0xa0, 0x53, 0x11, 0x73, 0x2f, 0xfd, 0x20, 0x6e, 0x71, 0xf5, 0xdf, 0x40, 0x77, 0x72, 0xb9, 0x56,
-	0x14, 0x03, 0xe8, 0x46, 0xb9, 0x5c, 0x27, 0xb1, 0x62, 0xe8, 0xb0, 0xca, 0xc2, 0x87, 0x60, 0xc4,
-	0x3c, 0xcb, 0xc3, 0x06, 0xc5, 0xce, 0xa1, 0xd8, 0x65, 0x54, 0x06, 0x3b, 0x15, 0x7b, 0x65, 0xe3,
-	0x23, 0x80, 0xa2, 0xc7, 0x3c, 0x97, 0x49, 0xfa, 0x51, 0x31, 0x19, 0xac, 0xe1, 0xb1, 0x7e, 0x13,
-	0xe8, 0x39, 0xe5, 0xaa, 0x14, 0xc1, 0x3f, 0xed, 0xb9, 0x1a, 0xbf, 0x68, 0xa4, 0x28, 0x7b, 0x37,
-	0xc6, 0xaf, 0xa2, 0xac, 0xce, 0x2b, 0x6a, 0xa2, 0x6a, 0x7c, 0x05, 0x7f, 0xa3, 0xe6, 0x6a, 0x39,
-	0xac, 0xce, 0x1b, 0xbf, 0x04, 0xad, 0x78, 0x85, 0xd8, 0x85, 0x76, 0x70, 0x6a, 0xb6, 0x70, 0x00,
-	0xe8, 0xd1, 0x77, 0xb6, 0xef, 0xcd, 0x16, 0x61, 0x70, 0xea, 0xd2, 0x05, 0xb5, 0xcf, 0x5c, 0x93,
-	0x60, 0x1f, 0xc0, 0xf6, 0x99, 0x6b, 0xcf, 0xce, 0x17, 0x1e, 0x35, 0xdb, 0xe3, 0xa7, 0xa0, 0x5f,
-	0x1d, 0x00, 0x01, 0xba, 0x34, 0x60, 0x67, 0xb6, 0x6f, 0xb6, 0x8a, 0x3e, 0xf3, 0x63, 0x93, 0x60,
-	0x0f, 0xee, 0x86, 0xae, 0xef, 0xbe, 0x0e, 0x42, 0xb3, 0x3d, 0x7e, 0x0c, 0xbd, 0xc6, 0xa0, 0x78,
-	0x50, 0xd6, 0x7a, 0xf4, 0x4d, 0x60, 0xb6, 0x50, 0x07, 0xcd, 0x09, 0x99, 0x6f, 0x92, 0xe9, 0x4f,
-	0x02, 0xfd, 0x13, 0xc5, 0xeb, 0x08, 0xc9, 0xe7, 0x5c, 0x6e, 0xf1, 0x05, 0x68, 0x17, 0x85, 0x8c,
-	0xf6, 0x84, 0x53, 0x48, 0x6b, 0x74, 0xff, 0xba, 0xaf, 0xd6, 0x9c, 0xd5, 0x42, 0x07, 0x8c, 0xac,
-	0x7e, 0xef, 0x7b, 0x79, 0xb5, 0x10, 0x46, 0xfb, 0xb7, 0xd8, 0xdd, 0xce, 0x6a, 0x3d, 0x23, 0xab,
-	0xae, 0xfa, 0xc0, 0x3c, 0xff, 0x13, 0x00, 0x00, 0xff, 0xff, 0x62, 0x86, 0x42, 0x55, 0x74, 0x04,
-	0x00, 0x00,
+var fileDescriptor_jarviscore_a0756e9fb96904cd = []byte{
+	// 569 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x94, 0x4f, 0x8f, 0x93, 0x40,
+	0x18, 0xc6, 0x99, 0x96, 0xed, 0xc2, 0xcb, 0xa6, 0x92, 0x89, 0xa9, 0xd8, 0x18, 0xb3, 0x21, 0xd1,
+	0x6c, 0x6a, 0xd2, 0x98, 0xae, 0x9e, 0x3c, 0x51, 0xca, 0x6e, 0xbb, 0x4b, 0xc1, 0x4c, 0x89, 0x66,
+	0x2f, 0x36, 0x14, 0x46, 0xed, 0xda, 0x85, 0x66, 0x60, 0x9b, 0xf4, 0xe6, 0xc1, 0xa3, 0x17, 0x2f,
+	0xc6, 0x4f, 0xe3, 0x67, 0x33, 0x0c, 0x94, 0xb2, 0x5d, 0x0f, 0x26, 0x66, 0xb3, 0x37, 0xde, 0x3f,
+	0xcf, 0xcc, 0x6f, 0x78, 0x66, 0x5e, 0x50, 0x2f, 0x7d, 0xb6, 0x9a, 0x27, 0x41, 0xcc, 0x68, 0x77,
+	0xc9, 0xe2, 0x34, 0xc6, 0x07, 0xdb, 0xcc, 0x72, 0xa6, 0x7f, 0x45, 0x20, 0x9e, 0xc5, 0xf3, 0x08,
+	0xb7, 0x41, 0x4a, 0x28, 0x5b, 0x19, 0x61, 0xc8, 0x34, 0x74, 0x88, 0x8e, 0x64, 0x52, 0xc6, 0xf8,
+	0x21, 0xec, 0xa5, 0xf1, 0x17, 0x1a, 0x69, 0x35, 0x5e, 0xc8, 0x03, 0x8c, 0x41, 0x8c, 0xfc, 0x2b,
+	0xaa, 0xd5, 0x79, 0x92, 0x7f, 0xe3, 0x1e, 0x48, 0x51, 0x1c, 0x52, 0x6f, 0xbd, 0xa4, 0x9a, 0x78,
+	0x88, 0x8e, 0x9a, 0xbd, 0x56, 0xb7, 0xba, 0x5f, 0xd7, 0x71, 0x07, 0x96, 0x77, 0xf1, 0xd6, 0x22,
+	0x65, 0x9f, 0xfe, 0x03, 0x81, 0x4c, 0xe8, 0x72, 0xb1, 0xe6, 0x1c, 0xcf, 0x41, 0x0c, 0xe2, 0x90,
+	0x72, 0x86, 0x66, 0x0f, 0xdf, 0x54, 0x9b, 0xee, 0xc0, 0x22, 0xbc, 0x7e, 0xc7, 0x4c, 0xc7, 0x20,
+	0xf7, 0xfd, 0x84, 0x72, 0xac, 0x7f, 0x45, 0xd2, 0x3f, 0x80, 0x3c, 0xb9, 0x9e, 0x25, 0x01, 0x9b,
+	0xcf, 0x28, 0x7e, 0x03, 0x4a, 0xf0, 0xd9, 0x8f, 0x22, 0xba, 0xe0, 0x1b, 0xe7, 0xda, 0xc7, 0x3b,
+	0xda, 0xa1, 0xe1, 0x38, 0x96, 0xcd, 0xf7, 0xae, 0x76, 0xff, 0xfd, 0x70, 0xfa, 0x37, 0x04, 0x92,
+	0x13, 0x87, 0x74, 0x14, 0x7d, 0x8c, 0xef, 0xd1, 0xaf, 0x9f, 0x08, 0x24, 0x33, 0x65, 0x0b, 0x8e,
+	0xd1, 0x82, 0x46, 0x90, 0xb2, 0xc5, 0x3c, 0xe4, 0x10, 0x75, 0x52, 0x44, 0xf8, 0x09, 0xc8, 0x21,
+	0x4d, 0x52, 0xaf, 0x82, 0xb1, 0x4d, 0x70, 0x78, 0x16, 0xe4, 0xc5, 0x7a, 0x01, 0x5f, 0xc4, 0x58,
+	0x83, 0xfd, 0xab, 0x75, 0x5e, 0x12, 0x79, 0x69, 0x13, 0xe2, 0xa7, 0x00, 0xd9, 0xea, 0x93, 0x94,
+	0xcd, 0xa3, 0x4f, 0xda, 0x1e, 0x2f, 0x56, 0x32, 0xfa, 0x2f, 0x04, 0x90, 0x81, 0x11, 0x9a, 0x5c,
+	0x2f, 0xd2, 0xfb, 0x40, 0xcb, 0x77, 0xae, 0xa2, 0xe5, 0x19, 0xfd, 0x37, 0x02, 0xc5, 0xcc, 0x0d,
+	0xe6, 0xbf, 0xed, 0xbf, 0x6e, 0xc7, 0xab, 0xdc, 0xb4, 0x6c, 0x21, 0xce, 0xaf, 0xdc, 0x32, 0xad,
+	0xa8, 0x0e, 0x05, 0x52, 0x76, 0x66, 0xaa, 0xa0, 0x70, 0x8d, 0x1f, 0xec, 0x96, 0x6a, 0xe3, 0x69,
+	0xa6, 0xda, 0x74, 0xf6, 0x1b, 0x20, 0x86, 0x7e, 0xea, 0x77, 0x4e, 0x41, 0xcc, 0x6e, 0x3a, 0x6e,
+	0x40, 0xcd, 0x3d, 0x57, 0x05, 0xdc, 0x02, 0x3c, 0x72, 0xde, 0x19, 0xf6, 0x68, 0x30, 0xf5, 0xdc,
+	0x73, 0xcb, 0x99, 0x3a, 0xc6, 0xd8, 0x52, 0x11, 0x6e, 0x02, 0x18, 0x36, 0xb1, 0x8c, 0xc1, 0xc5,
+	0x74, 0xe4, 0xa8, 0x35, 0xfc, 0x00, 0x94, 0x13, 0x97, 0xbc, 0x37, 0xc8, 0x60, 0x3a, 0x9e, 0x9c,
+	0xaa, 0xf5, 0xce, 0x0b, 0x90, 0x36, 0x77, 0x0a, 0x03, 0x34, 0x1c, 0x97, 0x8c, 0x0d, 0x5b, 0x15,
+	0xb2, 0x85, 0x27, 0x43, 0x15, 0x61, 0x05, 0xf6, 0x3d, 0xcb, 0xb6, 0xfa, 0xae, 0xa7, 0xd6, 0x3a,
+	0xcf, 0x40, 0xa9, 0xfc, 0x05, 0x7c, 0x90, 0x6b, 0x47, 0xce, 0x89, 0xab, 0x0a, 0x58, 0x02, 0xd1,
+	0xf4, 0x88, 0xad, 0xa2, 0xde, 0x77, 0x04, 0xcd, 0x33, 0x7e, 0x14, 0x33, 0x66, 0x74, 0x42, 0xd9,
+	0x0a, 0xbf, 0x06, 0xf1, 0x32, 0x1b, 0x27, 0x3b, 0xaf, 0x35, 0x1b, 0x31, 0xed, 0x47, 0x37, 0x73,
+	0xe5, 0xec, 0xd1, 0x05, 0x6c, 0x82, 0x9c, 0x94, 0x4f, 0x78, 0xa7, 0xaf, 0x7c, 0xdb, 0xed, 0x5d,
+	0xa3, 0xb6, 0xc6, 0xea, 0xc2, 0x4b, 0x34, 0x6b, 0xf0, 0x41, 0x7b, 0xfc, 0x27, 0x00, 0x00, 0xff,
+	0xff, 0xbb, 0x3f, 0x5c, 0x32, 0x7c, 0x05, 0x00, 0x00,
 }

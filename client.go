@@ -132,21 +132,24 @@ func (c *jarvisClient) subscribe(ctx context.Context, ci *clientInfo, ct pb.CHAN
 			return err
 		}
 
-		if reply.ChannelType == ct && reply.NodeInfo != nil {
-			log.Info("JarvisClient.subscribe:NODEINFO",
-				zap.String("Servaddr", reply.NodeInfo.ServAddr),
-				zap.String("Token", reply.NodeInfo.Token),
-				zap.String("Name", reply.NodeInfo.Name),
-				zap.Int("Nodetype", int(reply.NodeInfo.NodeType)))
+		if reply.ChannelType == ct {
+			ni := reply.GetNodeInfo()
+			if ni != nil {
+				log.Info("JarvisClient.subscribe:NODEINFO",
+					zap.String("Servaddr", ni.ServAddr),
+					zap.String("Token", ni.Token),
+					zap.String("Name", ni.Name),
+					zap.Int("Nodetype", int(ni.NodeType)))
 
-			bi := BaseInfo{
-				Name:     reply.NodeInfo.Name,
-				ServAddr: reply.NodeInfo.ServAddr,
-				Token:    reply.NodeInfo.Token,
-				NodeType: reply.NodeInfo.NodeType,
+				bi := BaseInfo{
+					Name:     ni.Name,
+					ServAddr: ni.ServAddr,
+					Token:    ni.Token,
+					NodeType: ni.NodeType,
+				}
+
+				c.node.onAddNode(&bi)
 			}
-
-			c.node.onAddNode(&bi)
 		}
 		// log.Printf("Greeting: %s", reply.Message)
 	}

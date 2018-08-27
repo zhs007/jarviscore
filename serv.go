@@ -110,7 +110,7 @@ func (s *jarvisServer) Subscribe(in *pb.Subscribe, stream pb.JarvisCoreServ_Subs
 
 		stream.SendMsg(&pb.ChannelInfo{
 			ChannelType: in.ChannelType,
-			NodeInfo:    &ni,
+			Data:        &pb.ChannelInfo_NodeInfo{NodeInfo: &ni},
 		})
 	})
 
@@ -141,7 +141,7 @@ func (s *jarvisServer) Subscribe(in *pb.Subscribe, stream pb.JarvisCoreServ_Subs
 
 			stream.SendMsg(&pb.ChannelInfo{
 				ChannelType: in.ChannelType,
-				NodeInfo:    &ni,
+				Data:        &pb.ChannelInfo_NodeInfo{NodeInfo: &ni},
 			})
 		}
 
