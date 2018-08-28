@@ -8,6 +8,7 @@ enum CODE {
     INVALID_TOKEN_NAME = 1;    // token/name fail 
     ALREADY_IN = 2;    // already in
     FORWARD_MSG = 3;    // forward msg
+    BROADCAST_MSG = 4;    // broadcast msg
 }
 
 enum NODETYPE {
@@ -57,6 +58,7 @@ message CtrlInfo {
     string srcToken = 3;
     string myToken = 4;
     string ctrlString = 5;
+    int32 forwordNums = 6;
 }
 
 message CtrlResult {
@@ -65,6 +67,7 @@ message CtrlResult {
     string srcToken = 3;
     string myToken = 4;
     string ctrlResult = 5;
+    int32 forwordNums = 6;
 }
 
 message ChannelInfo {
@@ -77,7 +80,7 @@ message ChannelInfo {
 
 service JarvisCoreServ {
     rpc join (Join) returns (ReplyJoin) {}
-    // rpc requestCtrl (CtrlInfo) returns (CtrlResult) {}
-    // rpc replyCtrl (CtrlResult) returns (CtrlResult) {}
+    rpc requestCtrl (CtrlInfo) returns (BaseReply) {}
+    rpc replyCtrl (CtrlResult) returns (BaseReply) {}
     rpc subscribe (Subscribe) returns (stream ChannelInfo) {}
 }

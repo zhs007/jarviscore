@@ -22,7 +22,7 @@ type jarvisServer struct {
 	mapChanNodeInfo map[string]chan BaseInfo
 }
 
-// NewServer -
+// newServer -
 func newServer(node *jarvisNode) (*jarvisServer, error) {
 	lis, err := net.Listen("tcp", node.myinfo.BindAddr)
 	if err != nil {
@@ -46,6 +46,7 @@ func newServer(node *jarvisNode) (*jarvisServer, error) {
 	return s, nil
 }
 
+// Start -
 func (s *jarvisServer) Start() (err error) {
 	err = s.grpcServ.Serve(s.lis)
 
@@ -54,10 +55,29 @@ func (s *jarvisServer) Start() (err error) {
 	return
 }
 
+// Stop -
 func (s *jarvisServer) Stop() {
+	s.Lock()
+	for _, v := range s.mapChanNodeInfo {
+		close(v)
+	}
+	s.Unlock()
+
 	s.lis.Close()
 
 	return
+}
+
+// hasClient
+func (s *jarvisServer) hasClient(token string) bool {
+	s.RLock()
+	defer s.RUnlock()
+
+	if _, ok := s.mapChanNodeInfo[token]; ok {
+		return true
+	}
+
+	return false
 }
 
 // Join implements jarviscorepb.JarvisCoreServ
@@ -116,7 +136,7 @@ func (s *jarvisServer) Subscribe(in *pb.Subscribe, stream pb.JarvisCoreServ_Subs
 
 	s.Lock()
 	if _, ok := s.mapChanNodeInfo[in.Token]; ok {
-		s.mapChanNodeInfo[in.Token] <- BaseInfo{}
+		close(s.mapChanNodeInfo[in.Token])
 	}
 
 	chanNodeInfo := make(chan BaseInfo)
@@ -127,8 +147,8 @@ func (s *jarvisServer) Subscribe(in *pb.Subscribe, stream pb.JarvisCoreServ_Subs
 		select {
 		case <-stream.Context().Done():
 			return nil
-		case bi := <-chanNodeInfo:
-			if bi.Token == "" {
+		case bi, ok := <-chanNodeInfo:
+			if !ok {
 				return nil
 			}
 
@@ -148,4 +168,30 @@ func (s *jarvisServer) Subscribe(in *pb.Subscribe, stream pb.JarvisCoreServ_Subs
 		// gs.Send(&pb.HelloReply{Message: "Hello " + in.Name})
 	}
 	// return nil
+}
+
+// RequestCtrl implements jarviscorepb.JarvisCoreServ
+func (s *jarvisServer) RequestCtrl(ctx context.Context, in *pb.CtrlInfo) (*pb.BaseReply, error) {
+	if in.DestToken == s.node.myinfo.Token {
+		return &pb.BaseReply{
+			Code: pb.CODE_OK,
+		}, nil
+	}
+
+	if s.hasClient(in.DestToken) {
+		return &pb.BaseReply{
+			Code: pb.CODE_FORWARD_MSG,
+		}, nil
+	}
+
+	return &pb.BaseReply{
+		Code: pb.CODE_BROADCAST_MSG,
+	}, nil
+}
+
+// ReplyCtrl implements jarviscorepb.JarvisCoreServ
+func (s *jarvisServer) ReplyCtrl(ctx context.Context, in *pb.CtrlResult) (*pb.BaseReply, error) {
+	return &pb.BaseReply{
+		Code: pb.CODE_OK,
+	}, nil
 }
