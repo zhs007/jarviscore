@@ -173,6 +173,13 @@ func (s *jarvisServer) Subscribe(in *pb.Subscribe, stream pb.JarvisCoreServ_Subs
 // RequestCtrl implements jarviscorepb.JarvisCoreServ
 func (s *jarvisServer) RequestCtrl(ctx context.Context, in *pb.CtrlInfo) (*pb.BaseReply, error) {
 	if in.DestToken == s.node.myinfo.Token {
+		_, err := mgrCtrl.Run(in.CtrlType, in.Command)
+		if err != nil {
+			return &pb.BaseReply{
+				Code: pb.CODE_OK,
+			}, nil
+		}
+
 		return &pb.BaseReply{
 			Code: pb.CODE_OK,
 		}, nil

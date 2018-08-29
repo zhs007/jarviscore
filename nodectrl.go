@@ -12,33 +12,33 @@ type CtrlInfo struct {
 	Result  string `yaml:"result"`
 }
 
-// mapCtrlInfo -
-type mapCtrlInfo struct {
+// nodeCtrlInfo -
+type nodeCtrlInfo struct {
 	Mapctrl map[int32]*CtrlInfo `yaml:"mapctrl"`
 }
 
-func newMapCtrlInfo() *mapCtrlInfo {
-	return &mapCtrlInfo{
+func newNodeCtrlInfo() *nodeCtrlInfo {
+	return &nodeCtrlInfo{
 		Mapctrl: make(map[int32]*CtrlInfo),
 	}
 }
 
-func loadMapCtrlInfo(filename string) (*mapCtrlInfo, error) {
+func loadNodeCtrlInfo(filename string) (*nodeCtrlInfo, error) {
 	buf, err := loadFile(filename)
 	if err != nil {
 		return nil, err
 	}
 
-	mapctrlinfo := newMapCtrlInfo()
-	err1 := yaml.Unmarshal(buf, mapctrlinfo)
+	nodectrlinfo := newNodeCtrlInfo()
+	err1 := yaml.Unmarshal(buf, nodectrlinfo)
 	if err1 != nil {
 		return nil, err1
 	}
 
-	return mapctrlinfo, nil
+	return nodectrlinfo, nil
 }
 
-func (m *mapCtrlInfo) save(filename string) error {
+func (m *nodeCtrlInfo) save(filename string) error {
 	d, err := yaml.Marshal(m)
 	if err != nil {
 		return err
@@ -49,7 +49,7 @@ func (m *mapCtrlInfo) save(filename string) error {
 	return nil
 }
 
-func (m *mapCtrlInfo) clear() {
+func (m *nodeCtrlInfo) clear() {
 	if len(m.Mapctrl) == 0 {
 		return
 	}
@@ -62,7 +62,7 @@ func (m *mapCtrlInfo) clear() {
 	m.Mapctrl = make(map[int32]*CtrlInfo)
 }
 
-func (m *mapCtrlInfo) hasCtrl(ctrlid int32) bool {
+func (m *nodeCtrlInfo) hasCtrl(ctrlid int32) bool {
 	if _, ok := m.Mapctrl[ctrlid]; ok {
 		return true
 	}
@@ -70,10 +70,10 @@ func (m *mapCtrlInfo) hasCtrl(ctrlid int32) bool {
 	return false
 }
 
-func (m *mapCtrlInfo) addCtrl(ctrlid int32, command string) {
+func (m *nodeCtrlInfo) addCtrl(ctrlid int32, command string) {
 	m.Mapctrl[ctrlid] = &CtrlInfo{Command: command}
 }
 
-func (m *mapCtrlInfo) setCtrlResult(ctrlid int32, result string) {
+func (m *nodeCtrlInfo) setCtrlResult(ctrlid int32, result string) {
 	m.Mapctrl[ctrlid].Result = result
 }

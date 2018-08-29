@@ -24,7 +24,7 @@ type jarvisNode struct {
 	gen         *fortuna.Generator
 	mgrNodeInfo *nodeInfoMgr
 	mgrpeeraddr *peerAddrMgr
-	mgrCtrl     *CtrlMgr
+	mgrNodeCtrl *nodeCtrlMgr
 	signalchan  chan os.Signal
 	servstate   int
 	clientstate int
@@ -51,7 +51,7 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 	node := &jarvisNode{
 		mgrNodeInfo: newNodeInfoMgr(),
 		signalchan:  make(chan os.Signal, 1),
-		mgrCtrl:     newCtrlMgr(),
+		mgrNodeCtrl: newNodeCtrlMgr(),
 	}
 	signal.Notify(node.signalchan)
 	// signal.Notify(node.signalchan, os.Interrupt, os.Kill, syscall.SIGSTOP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGTSTP)
@@ -133,7 +133,7 @@ func (n *jarvisNode) Stop() error {
 	}
 
 	n.mgrpeeraddr.savePeerAddrFile()
-	n.mgrCtrl.save()
+	n.mgrNodeCtrl.save()
 
 	return nil
 }

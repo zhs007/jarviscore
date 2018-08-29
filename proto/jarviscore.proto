@@ -5,10 +5,11 @@ package jarviscorepb;
 enum CODE {
     OK = 0;
 
-    INVALID_TOKEN_NAME = 1;    // token/name fail 
-    ALREADY_IN = 2;    // already in
-    FORWARD_MSG = 3;    // forward msg
-    BROADCAST_MSG = 4;    // broadcast msg
+    INVALID_TOKEN_NAME = 1;     // token/name fail 
+    ALREADY_IN = 2;             // already in
+    FORWARD_MSG = 3;            // forward msg
+    BROADCAST_MSG = 4;          // broadcast msg
+    NOCTRLMOD = 5;              // no ctrl module
 }
 
 enum NODETYPE {
@@ -20,6 +21,10 @@ enum NODETYPE {
 enum CHANNELTYPE {
     NODEINFO = 0;
     CTRL = 1;
+}
+
+enum CTRLTYPE {
+    SHELL = 0;
 }
 
 message Join {
@@ -57,8 +62,9 @@ message CtrlInfo {
     string destToken = 2;
     string srcToken = 3;
     string myToken = 4;
-    string ctrlString = 5;
-    int32 forwordNums = 6;
+    CTRLTYPE ctrlType = 5;
+    string command = 6;
+    int32 forwordNums = 7;
 }
 
 message CtrlResult {
