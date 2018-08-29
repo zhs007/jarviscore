@@ -1,0 +1,35 @@
+@startuml jarviscore
+class JarvisNode
+class jarvisNode
+class jarvisClient
+class jarvisServer
+class peerAddrMgr
+class peerInfo
+class BaseInfo
+class nodeInfoMgr
+class NodeInfo
+class clientInfo
+class CtrlMgr
+class ShellCtrlMgr
+class connMgr
+
+jarvisClient : mapClientInfo
+jarvisServer : mapChanNodeInfo 
+
+CtrlMgr <|-- ShellCtrlMgr
+
+JarvisNode <|.. jarvisNode
+jarvisNode *-- BaseInfo
+jarvisNode *-- nodeInfoMgr
+jarvisNode *-- jarvisClient
+jarvisNode *-- jarvisServer
+jarvisNode *-- peerAddrMgr
+peerAddrMgr o-- peerInfo
+nodeInfoMgr o-- NodeInfo
+jarvisClient o-- clientInfo
+
+jarvisClient ..> CtrlMgr
+jarvisServer ..> CtrlMgr
+
+clientInfo --> connMgr
+@enduml

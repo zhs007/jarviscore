@@ -8,7 +8,7 @@ import (
 
 // privatekey - privatekey
 type privatekey struct {
-	Token string
+	Token string `yaml:"token"`
 }
 
 const privateKeyFilename = "prikey.yaml"
