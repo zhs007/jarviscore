@@ -13,6 +13,20 @@ import (
 	"google.golang.org/grpc"
 )
 
+// clientState -
+type clientState int
+
+const (
+	// clientStateNormal - normal
+	clientStateNormal clientState = iota
+	// clientStateRunning - running
+	clientStateRunning
+	// clientStateStop - stop
+	clientStateStop
+	// clientStateStopped - stopped
+	clientStateStopped
+)
+
 type clientInfo struct {
 	// ctx    *context.Context
 	conn   *grpc.ClientConn
@@ -21,24 +35,42 @@ type clientInfo struct {
 
 // jarvisClient -
 type jarvisClient struct {
-	node        *jarvisNode
-	mgrpeeraddr *peerAddrMgr
-	mapClient   map[string]*clientInfo
-	clientchan  chan int
-	wg          sync.WaitGroup
+	sync.RWMutex
+
+	node         *jarvisNode
+	mgrpeeraddr  *peerAddrMgr
+	mapClient    map[string]*clientInfo
+	clientchan   chan int
+	activitychan chan int
+	activitynums int
+	state        clientState
+	// wg          sync.WaitGroup
 }
 
 func newClient(node *jarvisNode) *jarvisClient {
 	return &jarvisClient{
-		node:       node,
-		mapClient:  make(map[string]*clientInfo),
-		clientchan: make(chan int, 1)}
+		node:         node,
+		mapClient:    make(map[string]*clientInfo),
+		clientchan:   make(chan int, 1),
+		activitychan: make(chan int, 16),
+		activitynums: 0,
+		state:        clientStateNormal,
+	}
 }
 
 func (c *jarvisClient) onConnectFail(addr string) {
 }
 
 func (c *jarvisClient) Start(mgrpeeraddr *peerAddrMgr) error {
+	c.Lock()
+	if c.state != clientStateNormal {
+		c.Unlock()
+		return newError(int(pb.CODE_CLIENT_ALREADY_START))
+	}
+
+	c.state = clientStateRunning
+	c.Unlock()
+
 	c.mgrpeeraddr = mgrpeeraddr
 
 	for _, v := range mgrpeeraddr.arr.PeerAddr {
@@ -46,17 +78,62 @@ func (c *jarvisClient) Start(mgrpeeraddr *peerAddrMgr) error {
 		time.Sleep(time.Second)
 	}
 
-	c.wg.Wait()
+	c.waitEnd()
+
+	c.Lock()
+	c.state = clientStateStopped
+	c.Unlock()
 
 	c.clientchan <- 0
 
 	return nil
 }
 
+func (c *jarvisClient) Stop() {
+	c.RLock()
+	defer c.RUnlock()
+
+	if c.state == clientStateRunning {
+		return
+	}
+
+	if c.activitynums == 0 {
+		close(c.activitychan)
+	}
+
+	c.Lock()
+	c.state = clientStateStop
+	c.Unlock()
+}
+
+func (c *jarvisClient) onConnectEnd() {
+	c.activitychan <- -1
+}
+
+func (c *jarvisClient) waitEnd() {
+	for {
+		select {
+		case v, ok := <-c.activitychan:
+			c.activitynums += v
+
+			c.RLock()
+			if c.state == clientStateStop && c.activitynums == 0 {
+				c.RUnlock()
+				break
+			}
+			c.RUnlock()
+
+			if !ok {
+				break
+			}
+		}
+	}
+}
+
 //
 func (c *jarvisClient) connect(servaddr string) error {
-	c.wg.Add(1)
-	defer c.wg.Done()
+	c.activitychan <- 1
+	defer c.onConnectEnd()
 
 	c.mgrpeeraddr.onStartConnect(servaddr)
 

@@ -15,6 +15,7 @@ import (
 // jarvisServer
 type jarvisServer struct {
 	sync.RWMutex
+
 	node            *jarvisNode
 	lis             net.Listener
 	grpcServ        *grpc.Server

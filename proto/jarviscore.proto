@@ -10,6 +10,7 @@ enum CODE {
     FORWARD_MSG = 3;            // forward msg
     BROADCAST_MSG = 4;          // broadcast msg
     NOCTRLMOD = 5;              // no ctrl module
+    CLIENT_ALREADY_START = 6;   // client already start
 }
 
 enum NODETYPE {
