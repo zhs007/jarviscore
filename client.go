@@ -3,7 +3,6 @@ package jarviscore
 import (
 	"context"
 	"io"
-	"sync"
 	"time"
 
 	"go.uber.org/zap"
@@ -13,19 +12,19 @@ import (
 	"google.golang.org/grpc"
 )
 
-// clientState -
-type clientState int
+// // clientState -
+// type clientState int
 
-const (
-	// clientStateNormal - normal
-	clientStateNormal clientState = iota
-	// clientStateRunning - running
-	clientStateRunning
-	// clientStateStop - stop
-	clientStateStop
-	// clientStateStopped - stopped
-	clientStateStopped
-)
+// const (
+// 	// clientStateNormal - normal
+// 	clientStateNormal clientState = iota
+// 	// clientStateRunning - running
+// 	clientStateRunning
+// 	// clientStateStop - stop
+// 	clientStateStop
+// 	// clientStateStopped - stopped
+// 	clientStateStopped
+// )
 
 type clientInfo struct {
 	// ctx    *context.Context
@@ -35,7 +34,7 @@ type clientInfo struct {
 
 // jarvisClient -
 type jarvisClient struct {
-	sync.RWMutex
+	// sync.RWMutex
 
 	node         *jarvisNode
 	mgrpeeraddr  *peerAddrMgr
@@ -43,7 +42,9 @@ type jarvisClient struct {
 	clientchan   chan int
 	activitychan chan int
 	activitynums int
-	state        clientState
+	// state        clientState
+	waitchan    chan int
+	connectchan chan string
 	// wg          sync.WaitGroup
 }
 
@@ -54,84 +55,140 @@ func newClient(node *jarvisNode) *jarvisClient {
 		clientchan:   make(chan int, 1),
 		activitychan: make(chan int, 16),
 		activitynums: 0,
-		state:        clientStateNormal,
+		waitchan:     make(chan int, 1),
+		connectchan:  make(chan string, 16),
 	}
+}
+
+func (c *jarvisClient) pushNewConnect(servaddr string) {
+	// c.RLock()
+	// defer c.RUnlock()
+
+	// if c.state == clientStateRunning {
+	c.connectchan <- servaddr
+	// }
 }
 
 func (c *jarvisClient) onConnectFail(addr string) {
 }
 
-func (c *jarvisClient) Start(mgrpeeraddr *peerAddrMgr) error {
-	c.Lock()
-	if c.state != clientStateNormal {
-		c.Unlock()
-		return newError(int(pb.CODE_CLIENT_ALREADY_START))
-	}
+func (c *jarvisClient) onStop() {
+	c.clientchan <- 0
+}
 
-	c.state = clientStateRunning
-	c.Unlock()
+func (c *jarvisClient) Start(mgrpeeraddr *peerAddrMgr) {
+	// c.Lock()
+	// if c.state != clientStateNormal {
+	// c.Unlock()
+	// return newError(int(pb.CODE_CLIENT_ALREADY_START))
+	// }
+
+	ctx, cancel := context.WithCancel(context.Background())
+	// defer cancel()
+
+	// c.state = clientStateRunning
+	// c.Unlock()
 
 	c.mgrpeeraddr = mgrpeeraddr
 
 	for _, v := range mgrpeeraddr.arr.PeerAddr {
-		go c.connect(v)
+		go c.connect(ctx, v)
 		time.Sleep(time.Second)
 	}
 
-	c.waitEnd()
+	stopping := false
 
-	c.Lock()
-	c.state = clientStateStopped
-	c.Unlock()
+	for {
+		select {
+		case <-c.waitchan:
+			cancel()
 
-	c.clientchan <- 0
+			if c.activitynums == 0 {
+				// c.RUnlock()
+				c.onStop()
+				break
+				// return
+			}
 
-	return nil
+			stopping = true
+			// break
+		case v := <-c.connectchan:
+			go c.connect(ctx, v)
+			time.Sleep(time.Second)
+		case v, ok := <-c.activitychan:
+			if !ok {
+				c.onStop()
+				break
+			}
+
+			c.activitynums += v
+
+			// c.RLock()
+			if stopping && c.activitynums == 0 {
+				// c.RUnlock()
+				c.onStop()
+				break
+				// return
+			}
+			// c.RUnlock()
+		}
+	}
+
+	// c.waitEnd()
+
+	// c.Lock()
+	// c.state = clientStateStopped
+	// c.Unlock()
+
+	// c.clientchan <- 0
+
+	// return nil
 }
 
 func (c *jarvisClient) Stop() {
-	c.RLock()
-	defer c.RUnlock()
+	c.waitchan <- 0
+	// c.RLock()
+	// defer c.RUnlock()
 
-	if c.state == clientStateRunning {
-		return
-	}
+	// if c.state == clientStateRunning {
+	// return
+	// }
 
-	if c.activitynums == 0 {
-		close(c.activitychan)
-	}
+	// if c.activitynums == 0 {
+	// 	close(c.activitychan)
+	// }
 
-	c.Lock()
-	c.state = clientStateStop
-	c.Unlock()
+	// c.Lock()
+	// c.state = clientStateStop
+	// c.Unlock()
 }
 
 func (c *jarvisClient) onConnectEnd() {
 	c.activitychan <- -1
 }
 
-func (c *jarvisClient) waitEnd() {
-	for {
-		select {
-		case v, ok := <-c.activitychan:
-			c.activitynums += v
+// func (c *jarvisClient) waitEnd() {
+// 	for {
+// 		select {
+// 		case v, ok := <-c.activitychan:
+// 			c.activitynums += v
 
-			c.RLock()
-			if c.state == clientStateStop && c.activitynums == 0 {
-				c.RUnlock()
-				break
-			}
-			c.RUnlock()
+// 			c.RLock()
+// 			if c.state == clientStateStop && c.activitynums == 0 {
+// 				c.RUnlock()
+// 				break
+// 			}
+// 			c.RUnlock()
 
-			if !ok {
-				break
-			}
-		}
-	}
-}
+// 			if !ok {
+// 				break
+// 			}
+// 		}
+// 	}
+// }
 
 //
-func (c *jarvisClient) connect(servaddr string) error {
+func (c *jarvisClient) connect(ctx context.Context, servaddr string) error {
 	c.activitychan <- 1
 	defer c.onConnectEnd()
 
@@ -144,7 +201,7 @@ func (c *jarvisClient) connect(servaddr string) error {
 		return err
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	curctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
 	ci := clientInfo{
@@ -153,7 +210,7 @@ func (c *jarvisClient) connect(servaddr string) error {
 		client: pb.NewJarvisCoreServClient(conn),
 	}
 
-	r, err1 := ci.client.Join(ctx, &pb.Join{
+	r, err1 := ci.client.Join(curctx, &pb.Join{
 		ServAddr: c.node.myinfo.ServAddr,
 		Token:    c.node.myinfo.Token,
 		Name:     c.node.myinfo.Name,
@@ -167,12 +224,19 @@ func (c *jarvisClient) connect(servaddr string) error {
 	}
 
 	if r.Code == pb.CODE_OK {
-		c.node.addNode(&BaseInfo{
+		c.node.onIConnectNode(&BaseInfo{
 			Name:     r.Name,
 			Token:    r.Token,
 			NodeType: r.NodeType,
 			ServAddr: servaddr,
 		})
+
+		// c.node.addNode(&BaseInfo{
+		// 	Name:     r.Name,
+		// 	Token:    r.Token,
+		// 	NodeType: r.NodeType,
+		// 	ServAddr: servaddr,
+		// })
 
 		c.mgrpeeraddr.onConnected(servaddr)
 
@@ -218,18 +282,24 @@ func (c *jarvisClient) subscribe(ctx context.Context, ci *clientInfo, ct pb.CHAN
 					zap.String("Name", ni.Name),
 					zap.Int("Nodetype", int(ni.NodeType)))
 
-				bi := BaseInfo{
+				c.node.onGetNewNode(&BaseInfo{
 					Name:     ni.Name,
 					ServAddr: ni.ServAddr,
 					Token:    ni.Token,
 					NodeType: ni.NodeType,
-				}
-
-				c.node.onAddNode(&bi)
+				})
 			}
 		}
 		// log.Printf("Greeting: %s", reply.Message)
 	}
 
+	return nil
+}
+
+func (c *jarvisClient) sendCtrl(token string) error {
+	return nil
+}
+
+func (c *jarvisClient) sendCtrlResult(token string) error {
 	return nil
 }

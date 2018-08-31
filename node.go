@@ -38,12 +38,9 @@ const (
 	randomMax         int64 = 0x7fffffffffffffff
 	letterBytes             = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	letterBytesLen          = int64(len(letterBytes))
-	servStateNormal         = 0
-	servStateStart          = 1
-	servStateEnd            = 2
-	clientStateNormal       = 0
-	clientStateStart        = 1
-	clientStateEnd          = 2
+	stateNormal             = 0
+	stateStart              = 1
+	stateEnd                = 2
 )
 
 // NewNode -
@@ -147,7 +144,7 @@ func (n *jarvisNode) Stop() error {
 // }
 
 func (n *jarvisNode) onStateChg() bool {
-	if n.servstate == servStateEnd && n.clientstate == clientStateEnd {
+	if n.servstate == stateEnd && n.clientstate == stateEnd {
 		return true
 	}
 
@@ -161,13 +158,13 @@ func (n *jarvisNode) waitEnd() {
 			n.StopWithSignal(signal.String())
 		case <-n.serv.servchan:
 			log.Info("ServEnd")
-			n.servstate = servStateEnd
+			n.servstate = stateEnd
 			if n.onStateChg() {
 				return
 			}
 		case <-n.client.clientchan:
 			log.Info("ClientEnd")
-			n.clientstate = clientStateEnd
+			n.clientstate = stateEnd
 			if n.onStateChg() {
 				return
 			}
@@ -208,22 +205,62 @@ func (n *jarvisNode) hasNodeToken(token string) bool {
 	return n.mgrNodeInfo.hasNodeInfo(token)
 }
 
-// onAddNode
-func (n *jarvisNode) onAddNode(bi *BaseInfo) {
-	if n.hasNodeToken(bi.Token) {
-		return
-	}
+// // onAddNode
+// func (n *jarvisNode) onAddNode(bi *BaseInfo) {
+// 	if n.hasNodeToken(bi.Token) {
+// 		return
+// 	}
 
-	if n.mgrpeeraddr.canConnect(bi.ServAddr) {
-		go n.client.connect(bi.ServAddr)
-	}
-}
+// 	if n.mgrpeeraddr.canConnect(bi.ServAddr) {
+// 		go n.client.connect(bi.ServAddr)
+// 	}
+// }
 
-// addNode
-func (n *jarvisNode) addNode(bi *BaseInfo) {
-	if n.hasNodeToken(bi.Token) {
+// // addNode
+// func (n *jarvisNode) addNode(bi *BaseInfo) {
+// 	if n.hasNodeToken(bi.Token) {
+// 		return
+// 	}
+
+// 	n.mgrNodeInfo.addNodeInfo(bi)
+// }
+
+// onNodeConnectMe
+func (n *jarvisNode) onNodeConnectMe(bi *BaseInfo) {
+	if bi.Token == n.myinfo.Token {
 		return
 	}
 
 	n.mgrNodeInfo.addNodeInfo(bi)
+	n.mgrNodeInfo.chg2ConnectMe(bi.Token)
+
+	_, connNode := n.mgrNodeInfo.getNodeConnectState(bi.Token)
+	if !connNode {
+		n.client.pushNewConnect(bi.ServAddr)
+	}
+}
+
+// onIConnectNode
+func (n *jarvisNode) onIConnectNode(bi *BaseInfo) {
+	if bi.Token == n.myinfo.Token {
+		return
+	}
+
+	n.mgrNodeInfo.addNodeInfo(bi)
+	n.mgrNodeInfo.chg2ConnectNode(bi.Token)
+
+	n.serv.broadcastNode(bi)
+}
+
+// onGetNewNode
+func (n *jarvisNode) onGetNewNode(bi *BaseInfo) {
+	if bi.Token == n.myinfo.Token {
+		return
+	}
+
+	n.mgrNodeInfo.addNodeInfo(bi)
+	_, connNode := n.mgrNodeInfo.getNodeConnectState(bi.Token)
+	if !connNode {
+		n.client.pushNewConnect(bi.ServAddr)
+	}
 }

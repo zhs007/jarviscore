@@ -12,6 +12,8 @@ import (
 	"google.golang.org/grpc"
 )
 
+type serverClientChan (chan BaseInfo)
+
 // jarvisServer
 type jarvisServer struct {
 	sync.RWMutex
@@ -20,7 +22,7 @@ type jarvisServer struct {
 	lis             net.Listener
 	grpcServ        *grpc.Server
 	servchan        chan int
-	mapChanNodeInfo map[string]chan BaseInfo
+	mapChanNodeInfo map[string]serverClientChan
 }
 
 // newServer -
@@ -40,7 +42,7 @@ func newServer(node *jarvisNode) (*jarvisServer, error) {
 		lis:             lis,
 		grpcServ:        grpcServ,
 		servchan:        make(chan int, 1),
-		mapChanNodeInfo: make(map[string]chan BaseInfo),
+		mapChanNodeInfo: make(map[string]serverClientChan),
 	}
 	pb.RegisterJarvisCoreServServer(grpcServ, s)
 
@@ -89,14 +91,19 @@ func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, er
 		zap.String("Name", in.Name),
 		zap.Int("Nodetype", int(in.NodeType)))
 
-	bi := BaseInfo{
+	// bi := BaseInfo{
+	// 	Name:     in.Name,
+	// 	ServAddr: in.ServAddr,
+	// 	Token:    in.Token,
+	// 	NodeType: in.NodeType,
+	// }
+
+	s.node.onNodeConnectMe(&BaseInfo{
 		Name:     in.Name,
 		ServAddr: in.ServAddr,
 		Token:    in.Token,
 		NodeType: in.NodeType,
-	}
-
-	s.node.onAddNode(&bi)
+	})
 
 	return &pb.ReplyJoin{
 		Code:     pb.CODE_OK,
@@ -106,7 +113,7 @@ func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, er
 	}, nil
 }
 
-func (s *jarvisServer) onAddNode(bi *BaseInfo) {
+func (s *jarvisServer) broadcastNode(bi *BaseInfo) {
 	s.RLock()
 	defer s.RUnlock()
 
