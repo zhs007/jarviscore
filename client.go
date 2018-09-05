@@ -12,22 +12,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// // clientState -
-// type clientState int
-
-// const (
-// 	// clientStateNormal - normal
-// 	clientStateNormal clientState = iota
-// 	// clientStateRunning - running
-// 	clientStateRunning
-// 	// clientStateStop - stop
-// 	clientStateStop
-// 	// clientStateStopped - stopped
-// 	clientStateStopped
-// )
-
 type clientInfo struct {
-	// ctx    *context.Context
 	conn   *grpc.ClientConn
 	client pb.JarvisCoreServClient
 }
@@ -42,10 +27,8 @@ type jarvisClient struct {
 	clientchan   chan int
 	activitychan chan int
 	activitynums int
-	// state        clientState
-	waitchan    chan int
-	connectchan chan string
-	// wg          sync.WaitGroup
+	waitchan     chan int
+	connectchan  chan string
 }
 
 func newClient(node *jarvisNode) *jarvisClient {
@@ -61,12 +44,7 @@ func newClient(node *jarvisNode) *jarvisClient {
 }
 
 func (c *jarvisClient) pushNewConnect(servaddr string) {
-	// c.RLock()
-	// defer c.RUnlock()
-
-	// if c.state == clientStateRunning {
 	c.connectchan <- servaddr
-	// }
 }
 
 func (c *jarvisClient) onConnectFail(addr string) {
@@ -77,17 +55,7 @@ func (c *jarvisClient) onStop() {
 }
 
 func (c *jarvisClient) Start(mgrpeeraddr *peerAddrMgr) {
-	// c.Lock()
-	// if c.state != clientStateNormal {
-	// c.Unlock()
-	// return newError(int(pb.CODE_CLIENT_ALREADY_START))
-	// }
-
 	ctx, cancel := context.WithCancel(context.Background())
-	// defer cancel()
-
-	// c.state = clientStateRunning
-	// c.Unlock()
 
 	c.mgrpeeraddr = mgrpeeraddr
 
@@ -104,14 +72,11 @@ func (c *jarvisClient) Start(mgrpeeraddr *peerAddrMgr) {
 			cancel()
 
 			if c.activitynums == 0 {
-				// c.RUnlock()
 				c.onStop()
 				break
-				// return
 			}
 
 			stopping = true
-			// break
 		case v := <-c.connectchan:
 			go c.connect(ctx, v)
 			time.Sleep(time.Second)
@@ -123,72 +88,26 @@ func (c *jarvisClient) Start(mgrpeeraddr *peerAddrMgr) {
 
 			c.activitynums += v
 
-			// c.RLock()
 			if stopping && c.activitynums == 0 {
-				// c.RUnlock()
 				c.onStop()
 				break
-				// return
 			}
-			// c.RUnlock()
 		}
 	}
-
-	// c.waitEnd()
-
-	// c.Lock()
-	// c.state = clientStateStopped
-	// c.Unlock()
-
-	// c.clientchan <- 0
-
-	// return nil
 }
 
 func (c *jarvisClient) Stop() {
 	c.waitchan <- 0
-	// c.RLock()
-	// defer c.RUnlock()
-
-	// if c.state == clientStateRunning {
-	// return
-	// }
-
-	// if c.activitynums == 0 {
-	// 	close(c.activitychan)
-	// }
-
-	// c.Lock()
-	// c.state = clientStateStop
-	// c.Unlock()
 }
 
 func (c *jarvisClient) onConnectEnd() {
 	c.activitychan <- -1
 }
 
-// func (c *jarvisClient) waitEnd() {
-// 	for {
-// 		select {
-// 		case v, ok := <-c.activitychan:
-// 			c.activitynums += v
-
-// 			c.RLock()
-// 			if c.state == clientStateStop && c.activitynums == 0 {
-// 				c.RUnlock()
-// 				break
-// 			}
-// 			c.RUnlock()
-
-// 			if !ok {
-// 				break
-// 			}
-// 		}
-// 	}
-// }
-
 //
 func (c *jarvisClient) connect(ctx context.Context, servaddr string) error {
+	log.Info("jarvisClient.connect")
+
 	c.activitychan <- 1
 	defer c.onConnectEnd()
 
@@ -205,7 +124,6 @@ func (c *jarvisClient) connect(ctx context.Context, servaddr string) error {
 	defer cancel()
 
 	ci := clientInfo{
-		// ctx: &ctx,
 		conn:   conn,
 		client: pb.NewJarvisCoreServClient(conn),
 	}
@@ -224,19 +142,14 @@ func (c *jarvisClient) connect(ctx context.Context, servaddr string) error {
 	}
 
 	if r.Code == pb.CODE_OK {
+		log.Info("jarvisClient.connect:OK")
+
 		c.node.onIConnectNode(&BaseInfo{
 			Name:     r.Name,
 			Token:    r.Token,
 			NodeType: r.NodeType,
 			ServAddr: servaddr,
 		})
-
-		// c.node.addNode(&BaseInfo{
-		// 	Name:     r.Name,
-		// 	Token:    r.Token,
-		// 	NodeType: r.NodeType,
-		// 	ServAddr: servaddr,
-		// })
 
 		c.mgrpeeraddr.onConnected(servaddr)
 
@@ -253,6 +166,8 @@ func (c *jarvisClient) connect(ctx context.Context, servaddr string) error {
 }
 
 func (c *jarvisClient) subscribe(ctx context.Context, ci *clientInfo, ct pb.CHANNELTYPE) error {
+	log.Info("jarvisClient.subscribe")
+
 	curctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -261,19 +176,25 @@ func (c *jarvisClient) subscribe(ctx context.Context, ci *clientInfo, ct pb.CHAN
 		Token:       c.node.myinfo.Token,
 	})
 	if err != nil {
+		warnLog("JarvisClient.subscribe:Subscribe", err)
 		return err
 	}
 
 	for {
 		reply, err := stream.Recv()
 		if err == io.EOF {
+			log.Info("jarvisClient.subscribe:stream.EOF")
 			break
 		}
 		if err != nil {
+			warnLog("JarvisClient.subscribe:stream.Recv", err)
+
 			return err
 		}
 
 		if reply.ChannelType == ct {
+			log.Info("jarvisClient.subscribe:NodeInfo")
+
 			ni := reply.GetNodeInfo()
 			if ni != nil {
 				log.Info("JarvisClient.subscribe:NODEINFO",

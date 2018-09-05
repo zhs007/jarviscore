@@ -22,7 +22,7 @@ func main() {
 	defer jarviscore.ReleaseJarvisCore()
 
 	node := jarviscore.NewNode(myinfo)
-	defer node.Stop()
+	// defer node.Stop()
 
 	node.Start()
 }

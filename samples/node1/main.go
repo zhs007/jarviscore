@@ -30,7 +30,7 @@ func main() {
 	// log.Debug(ip1.String())
 
 	node := jarviscore.NewNode(myinfo)
-	defer node.Stop()
+	// defer node.Stop()
 
 	node.Start()
 }

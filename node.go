@@ -4,6 +4,7 @@ import (
 	"crypto/aes"
 	"os"
 	"os/signal"
+	"syscall"
 
 	"github.com/seehuhn/fortuna"
 	"github.com/zhs007/jarviscore/log"
@@ -50,8 +51,8 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 		signalchan:  make(chan os.Signal, 1),
 		mgrNodeCtrl: newNodeCtrlMgr(),
 	}
-	signal.Notify(node.signalchan)
-	// signal.Notify(node.signalchan, os.Interrupt, os.Kill, syscall.SIGSTOP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGTSTP)
+	// signal.Notify(node.signalchan)
+	signal.Notify(node.signalchan, os.Interrupt, os.Kill, syscall.SIGSTOP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGTSTP)
 
 	var token string
 	var prikey *privatekey
@@ -110,6 +111,7 @@ func (n *jarvisNode) setMyInfo(servaddr string, bindaddr string, name string, to
 	n.myinfo.ServAddr = servaddr
 	n.myinfo.BindAddr = bindaddr
 	n.myinfo.Name = name
+	n.myinfo.Token = token
 
 	return nil
 }
@@ -127,6 +129,10 @@ func (n *jarvisNode) StopWithSignal(signal string) error {
 func (n *jarvisNode) Stop() error {
 	if n.serv != nil {
 		n.serv.Stop()
+	}
+
+	if n.client != nil {
+		n.client.Stop()
 	}
 
 	n.mgrpeeraddr.savePeerAddrFile()
