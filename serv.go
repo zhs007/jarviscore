@@ -103,6 +103,8 @@ func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, er
 		}
 	}
 
+	isvalidnode := (in.Token != s.node.myinfo.Token)
+
 	// bi := BaseInfo{
 	// 	Name:     in.Name,
 	// 	ServAddr: in.ServAddr,
@@ -110,14 +112,14 @@ func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, er
 	// 	NodeType: in.NodeType,
 	// }
 
-	isnewnode := s.node.onNodeConnectMe(&BaseInfo{
+	s.node.onNodeConnectMe(&BaseInfo{
 		Name:     in.Name,
 		ServAddr: peeripaddr,
 		Token:    in.Token,
 		NodeType: in.NodeType,
 	})
 
-	if isnewnode {
+	if isvalidnode {
 		return &pb.ReplyJoin{
 			Code:     pb.CODE_OK,
 			Name:     s.node.myinfo.Name,
