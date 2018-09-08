@@ -30,7 +30,7 @@ func newPeerAddrMgr(defpeeraddr string) (*peerAddrMgr, error) {
 			mgr.arr = &peerAddrArr{}
 			// log.Debug("arrlen", zap.Int("len", len(mgr.arr.PeerAddr)))
 		} else {
-			errorLog("loadPeerAddrFile", err)
+			ErrorLog("loadPeerAddrFile", err)
 
 			return nil, err
 		}

@@ -30,7 +30,7 @@ type jarvisServer struct {
 func newServer(node *jarvisNode) (*jarvisServer, error) {
 	lis, err := net.Listen("tcp", node.myinfo.BindAddr)
 	if err != nil {
-		errorLog("newServer", err)
+		ErrorLog("newServer", err)
 
 		return nil, err
 	}
