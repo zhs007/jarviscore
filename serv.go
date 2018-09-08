@@ -3,6 +3,7 @@ package jarviscore
 import (
 	"context"
 	"net"
+	"strings"
 	"sync"
 
 	"go.uber.org/zap"
@@ -91,6 +92,17 @@ func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, er
 		zap.String("Name", in.Name),
 		zap.Int("Nodetype", int(in.NodeType)))
 
+	peeripaddr := in.ServAddr
+	addrSlice := strings.Split(in.ServAddr, ":")
+	if len(addrSlice) == 2 {
+		if (addrSlice[0] == "" || addrSlice[0] == "0.0.0.0") && addrSlice[1] != "" {
+			clientip := getGRPCClientIP(ctx)
+			if clientip != "" {
+				peeripaddr = clientip + ":" + addrSlice[1]
+			}
+		}
+	}
+
 	// bi := BaseInfo{
 	// 	Name:     in.Name,
 	// 	ServAddr: in.ServAddr,
@@ -100,7 +112,7 @@ func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, er
 
 	isnewnode := s.node.onNodeConnectMe(&BaseInfo{
 		Name:     in.Name,
-		ServAddr: in.ServAddr,
+		ServAddr: peeripaddr,
 		Token:    in.Token,
 		NodeType: in.NodeType,
 	})

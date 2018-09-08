@@ -1,9 +1,13 @@
 package jarviscore
 
 import (
+	"context"
+	"net"
 	"os"
+	"strings"
 
 	"github.com/zhs007/jarviscore/errcode"
+	"google.golang.org/grpc/peer"
 )
 
 func loadFile(filename string) ([]byte, error) {
@@ -31,6 +35,18 @@ func loadFile(filename string) ([]byte, error) {
 	}
 
 	return buffer, nil
+}
+
+func getGRPCClientIP(ctx context.Context) string {
+	pr, ok := peer.FromContext(ctx)
+	if !ok {
+		return ""
+	}
+	if pr.Addr == net.Addr(nil) {
+		return ""
+	}
+	addSlice := strings.Split(pr.Addr.String(), ":")
+	return addSlice[0]
 }
 
 // // GetDNSPulicIP -
