@@ -10,7 +10,6 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/syndtr/goleveldb/leveldb/util"
 
-	"github.com/zhs007/jarviscore"
 	"github.com/zhs007/jarviscore/log"
 )
 
@@ -112,9 +111,9 @@ func (db *jarvisLDB) Close() {
 	// }
 	err := db.db.Close()
 	if err == nil {
-		log.Info("jarvisDB:Close")
+		log.Info("jarvisLDB:Close")
 	} else {
-		jarviscore.ErrorLog("Failed to close database", err)
+		log.Error("jarvisLDB:Close", zap.String("err", err.Error()))
 	}
 }
 

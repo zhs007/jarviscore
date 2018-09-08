@@ -7,6 +7,7 @@ import (
 	"syscall"
 
 	"github.com/seehuhn/fortuna"
+	"github.com/zhs007/jarviscore/db"
 	"github.com/zhs007/jarviscore/log"
 	"go.uber.org/zap"
 )
@@ -30,6 +31,7 @@ type jarvisNode struct {
 	servstate   int
 	clientstate int
 	nodechan    chan int
+	coredb      jarvisdb.Database
 	// wg          sync.WaitGroup
 }
 
@@ -46,10 +48,17 @@ const (
 
 // NewNode -
 func NewNode(baseinfo BaseInfo) JarvisNode {
+	db, err1 := jarvisdb.NewJarvisLDB(getRealPath("coredb"), 16, 16)
+	if err1 != nil {
+		errorLog("NewNode:NewJarvisLDB", err1)
+		return nil
+	}
+
 	node := &jarvisNode{
 		mgrNodeInfo: newNodeInfoMgr(),
 		signalchan:  make(chan os.Signal, 1),
 		mgrNodeCtrl: newNodeCtrlMgr(),
+		coredb:      db,
 	}
 	// signal.Notify(node.signalchan)
 	signal.Notify(node.signalchan, os.Interrupt, os.Kill, syscall.SIGSTOP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGTSTP)

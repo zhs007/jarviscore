@@ -42,8 +42,8 @@ func IsJarvisError(err interface{}) bool {
 	return false
 }
 
-// ErrorLog -
-func ErrorLog(msg string, err error) {
+// errorLog -
+func errorLog(msg string, err error) {
 	if jerr, ok := err.(JarvisError); ok {
 		log.Error(msg, zap.String("err", jerr.Error()), zap.Int("errcode", jerr.ErrCode()))
 	} else {
