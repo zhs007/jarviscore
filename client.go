@@ -106,7 +106,7 @@ func (c *jarvisClient) onConnectEnd() {
 
 //
 func (c *jarvisClient) connect(ctx context.Context, servaddr string) error {
-	log.Info("jarvisClient.connect")
+	log.Info("jarvisClient.connect", zap.String("servaddr", servaddr))
 
 	c.activitychan <- 1
 	defer c.onConnectEnd()
