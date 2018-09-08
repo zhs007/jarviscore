@@ -232,9 +232,9 @@ func (n *jarvisNode) hasNodeToken(token string) bool {
 // }
 
 // onNodeConnectMe
-func (n *jarvisNode) onNodeConnectMe(bi *BaseInfo) {
+func (n *jarvisNode) onNodeConnectMe(bi *BaseInfo) bool {
 	if bi.Token == n.myinfo.Token {
-		return
+		return false
 	}
 
 	n.mgrNodeInfo.addNodeInfo(bi)
@@ -243,7 +243,10 @@ func (n *jarvisNode) onNodeConnectMe(bi *BaseInfo) {
 	_, connNode := n.mgrNodeInfo.getNodeConnectState(bi.Token)
 	if !connNode {
 		n.client.pushNewConnect(bi.ServAddr)
+		return true
 	}
+
+	return false
 }
 
 // onIConnectNode

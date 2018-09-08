@@ -98,15 +98,24 @@ func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, er
 	// 	NodeType: in.NodeType,
 	// }
 
-	s.node.onNodeConnectMe(&BaseInfo{
+	isnewnode := s.node.onNodeConnectMe(&BaseInfo{
 		Name:     in.Name,
 		ServAddr: in.ServAddr,
 		Token:    in.Token,
 		NodeType: in.NodeType,
 	})
 
+	if isnewnode {
+		return &pb.ReplyJoin{
+			Code:     pb.CODE_OK,
+			Name:     s.node.myinfo.Name,
+			Token:    s.node.myinfo.Token,
+			NodeType: s.node.myinfo.NodeType,
+		}, nil
+	}
+
 	return &pb.ReplyJoin{
-		Code:     pb.CODE_OK,
+		Code:     pb.CODE_ALREADY_IN,
 		Name:     s.node.myinfo.Name,
 		Token:    s.node.myinfo.Token,
 		NodeType: s.node.myinfo.NodeType,
