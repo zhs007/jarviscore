@@ -1,10 +1,30 @@
 package jarviscrypto
 
+import (
+	"crypto/ecdsa"
+	"crypto/rand"
+	"log"
+)
+
 // var secp256k1N, _ = new(big.Int).SetString("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141", 16)
 
 const privKeyBytesLen = 32
 const version = byte(0x00)
 const addressChecksumLen = 4
+
+func newKeyPair() ([]byte, []byte) {
+	// curve := elliptic.P256()
+	private, err := ecdsa.GenerateKey(secp256k1, rand.Reader)
+	if err != nil {
+		log.Panic(err)
+	}
+	d := private.D.Bytes()
+	// b := make([]byte, 0, privKeyBytesLen)
+	// priKet := paddedAppend(privKeyBytesLen, b, d)
+	pubKey := append(private.PublicKey.X.Bytes(), private.PublicKey.Y.Bytes()...)
+
+	return d, pubKey
+}
 
 // func newKeyPair() ([]byte, []byte) {
 // 	curve := elliptic.P256()

@@ -28,6 +28,12 @@ enum CTRLTYPE {
     SHELL = 0;
 }
 
+message Wallet {
+    bytes priKey = 1;
+    bytes pubKey = 2;
+    string addr = 3;
+}
+
 message Join {
     string servAddr = 1;
     string token = 2;
