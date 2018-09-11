@@ -27,6 +27,22 @@ type PublicKey struct {
 	pubKey *ecdsa.PublicKey
 }
 
+// NewPrivateKey -
+func NewPrivateKey() PrivateKey {
+	key := PrivateKey{}
+	key.priKey = new(ecdsa.PrivateKey)
+	key.priKey.PublicKey.Curve = secp256k1.SECP256K1()
+	return key
+}
+
+// NewPublicKey -
+func NewPublicKey() PublicKey {
+	key := PublicKey{}
+	key.pubKey = new(ecdsa.PublicKey)
+	key.pubKey.Curve = secp256k1.SECP256K1()
+	return key
+}
+
 // GenerateKey -
 func GenerateKey() PrivateKey {
 	privkey, err := ecdsa.GenerateKey(secp256k1.SECP256K1(), rand.Reader)

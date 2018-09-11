@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
+	"fmt"
 	"log"
 	"math/big"
 )
@@ -44,4 +45,32 @@ func paddedAppend(size uint, dst, src []byte) []byte {
 		dst = append(dst, 0)
 	}
 	return append(dst, src...)
+}
+
+// CheckWIF checks that string wif is a valid Wallet Import Format or Wallet Import Format Compressed string. If it is not, err is populated with the reason.
+func CheckWIF(wif string) (valid bool, err error) {
+	/* See https://en.bitcoin.it/wiki/Wallet_import_format */
+
+	/* Base58 Check Decode the WIF string */
+	ver, privbytes, err := Base58CheckDecode(wif)
+	if err != nil {
+		return false, err
+	}
+
+	/* Check that the version byte is 0x80 */
+	if ver != 0x80 {
+		return false, fmt.Errorf("Invalid WIF version 0x%02x, expected 0x80", ver)
+	}
+
+	/* Check that private key bytes length is 32 or 33 */
+	if len(privbytes) != 32 && len(privbytes) != 33 {
+		return false, fmt.Errorf("Invalid private key bytes length %d, expected 32 or 33", len(privbytes))
+	}
+
+	/* If the private key bytes length is 33, check that suffix byte is 0x01 (for compression) */
+	if len(privbytes) == 33 && privbytes[len(privbytes)-1] != 0x01 {
+		return false, fmt.Errorf("Invalid private key bytes, unknown suffix byte 0x%02x", privbytes[len(privbytes)-1])
+	}
+
+	return true, nil
 }

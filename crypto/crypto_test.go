@@ -1,6 +1,7 @@
 package jarviscrypto
 
 import (
+	"bytes"
 	"crypto/ecdsa"
 	"math/big"
 	"testing"
@@ -25,11 +26,11 @@ import (
 
 var keyPairVectors = []struct {
 	// wif                    string
-	wifc               string
-	priv_bytes         []byte
-	address_compressed string
+	wifc              string
+	privbytes         []byte
+	addresscompressed string
 	// address_uncompressed   string
-	pub_bytes_compressed []byte
+	pubbytescompressed []byte
 	// pub_bytes_uncompressed []byte
 	D *big.Int
 	X *big.Int
@@ -128,4 +129,219 @@ func TestPrivateKeyDerive(t *testing.T) {
 		}
 	}
 	t.Log("success PrivateKey derive()")
+}
+
+func TestCheckWIF(t *testing.T) {
+	/* Check valid vectors */
+	for i := 0; i < len(keyPairVectors); i++ {
+		// got, err := CheckWIF(keyPairVectors[i].wif)
+		// if got == false {
+		// 	t.Fatalf("CheckWIF(%s): got false, error %v, expected true", keyPairVectors[i].wif, err)
+		// }
+		got, err := CheckWIF(keyPairVectors[i].wifc)
+		if got == false {
+			t.Fatalf("CheckWIF(%s): got false, error %v, expected true", keyPairVectors[i].wifc, err)
+		}
+	}
+	t.Log("success CheckWIF() on valid vectors")
+
+	/* Check invalid vectors */
+	for i := 0; i < len(wifInvalidVectors); i++ {
+		got, err := CheckWIF(wifInvalidVectors[i])
+		if got == true {
+			t.Fatalf("CheckWIF(%s): got true, expected false", wifInvalidVectors[i])
+		}
+		t.Logf("CheckWIF(%s): got false, err %v", wifInvalidVectors[i], err)
+	}
+	t.Log("success CheckWIF() on invalid vectors")
+}
+
+func TestPrivateKeyFromBytes(t *testing.T) {
+	var priv PrivateKey
+
+	/* Check valid vectors */
+	for i := 0; i < len(keyPairVectors); i++ {
+		err := priv.FromBytes(keyPairVectors[i].privbytes)
+		if err != nil {
+			t.Fatalf("priv.FromBytes(D): got error %v, expected success on index %d", err, i)
+		}
+		if priv.priKey.D.Cmp(keyPairVectors[i].D) != 0 {
+			t.Fatalf("private key does not match test vector on index %d", i)
+		}
+		if priv.priKey.X.Cmp(keyPairVectors[i].X) != 0 || priv.priKey.Y.Cmp(keyPairVectors[i].Y) != 0 {
+			t.Fatalf("public key does not match test vector on index %d", i)
+		}
+	}
+	t.Log("success PrivateKey FromBytes() on valid vectors")
+
+	/* Invalid short private key */
+	err := priv.FromBytes(keyPairVectors[0].privbytes[0:31])
+	if err == nil {
+		t.Fatalf("priv.FromBytes(D): got success, expected error")
+	}
+	/* Invalid long private key */
+	err = priv.FromBytes(append(keyPairVectors[0].privbytes, []byte{0x00}...))
+	if err == nil {
+		t.Fatalf("priv.FromBytes(D): got success, expected error")
+	}
+
+	t.Log("success PrivateKey FromBytes() on invaild vectors")
+}
+
+func TestPrivateKeyToBytes(t *testing.T) {
+	priv := NewPrivateKey()
+
+	/* Check valid vectors */
+	for i := 0; i < len(keyPairVectors); i++ {
+		priv.priKey.D = keyPairVectors[i].D
+		b := priv.ToPrivateBytes()
+		if bytes.Compare(keyPairVectors[i].privbytes, b) != 0 {
+			t.Fatalf("private key bytes do not match test vector in index %d", i)
+		}
+	}
+	t.Log("success PrivateKey ToBytes()")
+}
+
+func TestPrivateKeyFromWIF(t *testing.T) {
+	priv := NewPrivateKey()
+
+	/* Check valid vectors */
+	for i := 0; i < len(keyPairVectors); i++ {
+		// /* Import WIF */
+		// err := priv.FromWIF(keyPairVectors[i].wif)
+		// if err != nil {
+		// 	t.Fatalf("priv.FromWIF(%s): got error %v, expected success", keyPairVectors[i].wif, err)
+		// }
+		// if priv.D.Cmp(keyPairVectors[i].D) != 0 {
+		// 	t.Fatalf("private key does not match test vector on index %d", i)
+		// }
+		// if priv.X.Cmp(keyPairVectors[i].X) != 0 || priv.Y.Cmp(keyPairVectors[i].Y) != 0 {
+		// 	t.Fatalf("public key does not match test vector on index %d", i)
+		// }
+
+		/* Import WIFC */
+		err := priv.FromWIFC(keyPairVectors[i].wifc)
+		if err != nil {
+			t.Fatalf("priv.FromWIF(%s): got error %v, expected success", keyPairVectors[i].wifc, err)
+		}
+		if priv.priKey.D.Cmp(keyPairVectors[i].D) != 0 {
+			t.Fatalf("private key does not match test vector on index %d", i)
+		}
+		if priv.priKey.X.Cmp(keyPairVectors[i].X) != 0 || priv.priKey.Y.Cmp(keyPairVectors[i].Y) != 0 {
+			t.Fatalf("public key does not match test vector on index %d", i)
+		}
+	}
+	t.Log("success PrivateKey FromWIF() on valid vectors")
+
+	/* Check invalid vectors */
+	for i := 0; i < len(wifInvalidVectors); i++ {
+		err := priv.FromWIFC(wifInvalidVectors[i])
+		if err == nil {
+			t.Fatalf("priv.FromWIF(%s): got success, expected error", wifInvalidVectors[i])
+		}
+		t.Logf("priv.FromWIF(%s): got err %v", wifInvalidVectors[i], err)
+	}
+	t.Log("success PrivateKey FromWIF() on invalid vectors")
+}
+
+func TestPrivateKeyToWIF(t *testing.T) {
+	priv := NewPrivateKey()
+
+	// /* Check valid vectors */
+	// for i := 0; i < len(keyPairVectors); i++ {
+	// 	/* Export WIF */
+	// 	priv.D = keyPairVectors[i].D
+	// 	wif := priv.ToWIF()
+	// 	if wif != keyPairVectors[i].wif {
+	// 		t.Fatalf("priv.ToWIF() %s != expected %s", wif, keyPairVectors[i].wif)
+	// 	}
+	// }
+	// t.Log("success PrivateKey ToWIF()")
+
+	/* Check valid vectors */
+	for i := 0; i < len(keyPairVectors); i++ {
+		/* Export WIFC */
+		priv.priKey.D = keyPairVectors[i].D
+		wifc := priv.ToWIFC()
+		if wifc != keyPairVectors[i].wifc {
+			t.Fatalf("priv.ToWIFC() %s != expected %s", wifc, keyPairVectors[i].wifc)
+		}
+	}
+	t.Log("success PrivateKey ToWIFC()")
+}
+
+func TestPublicKeyToBytes(t *testing.T) {
+	pub := NewPublicKey()
+
+	/* Check valid vectors */
+	for i := 0; i < len(keyPairVectors); i++ {
+		pub.pubKey.X = keyPairVectors[i].X
+		pub.pubKey.Y = keyPairVectors[i].Y
+
+		bytescompressed := pub.ToBytes()
+		if bytes.Compare(keyPairVectors[i].pubbytescompressed, bytescompressed) != 0 {
+			t.Fatalf("public key compressed bytes do not match test vectors on index %d", i)
+		}
+
+		// bytesuncompressed := pub.ToBytesUncompressed()
+		// if bytes.Compare(keyPairVectors[i].pub_bytes_uncompressed, bytes_uncompressed) != 0 {
+		// 	t.Fatalf("public key uncompressed bytes do not match test vectors on index %d", i)
+		// }
+	}
+	t.Log("success PublicKey ToBytes() and ToBytesUncompressed()")
+}
+
+func TestPublicKeyFromBytes(t *testing.T) {
+	pub := NewPublicKey()
+
+	/* Check valid vectors */
+	for i := 0; i < len(keyPairVectors); i++ {
+		err := pub.FromBytes(keyPairVectors[i].pubbytescompressed)
+		if err != nil {
+			t.Fatalf("pub.FromBytes(): got error %v, expected success on index %d", err, i)
+		}
+		if pub.pubKey.X.Cmp(keyPairVectors[i].X) != 0 || pub.pubKey.Y.Cmp(keyPairVectors[i].Y) != 0 {
+			t.Fatalf("public key does not match test vectors on index %d", i)
+		}
+
+		// err = pub.FromBytes(keyPairVectors[i].pub_bytes_uncompressed)
+		// if err != nil {
+		// 	t.Fatalf("pub.FromBytes(): got error %v, expected success on index %d", err, i)
+		// }
+		// if pub.X.Cmp(keyPairVectors[i].X) != 0 || pub.Y.Cmp(keyPairVectors[i].Y) != 0 {
+		// 	t.Fatalf("public key does not match test vectors on index %d", i)
+		// }
+	}
+	t.Log("success PublicKey FromBytes() on valid vectors")
+
+	/* Check invalid vectors */
+	for i := 0; i < len(invalidPublicKeyBytesVectors); i++ {
+		err := pub.FromBytes(invalidPublicKeyBytesVectors[i])
+		if err == nil {
+			t.Fatal("pub.FromBytes(): got success, expected error")
+		}
+		t.Logf("pub.FromBytes(): got error %v", err)
+	}
+	t.Log("success PublicKey FromBytes() on invalid vectors")
+}
+
+func TestToAddress(t *testing.T) {
+	pub := NewPublicKey()
+
+	/* Check valid vectors */
+	for i := 0; i < len(keyPairVectors); i++ {
+		pub.pubKey.X = keyPairVectors[i].X
+		pub.pubKey.Y = keyPairVectors[i].Y
+
+		addresscompressed := pub.ToAddress()
+		if addresscompressed != keyPairVectors[i].addresscompressed {
+			t.Fatalf("public key compressed address does not match test vectors on index %d", i)
+		}
+
+		// address_uncompressed := pub.ToAddressUncompressed()
+		// if address_uncompressed != keyPairVectors[i].address_uncompressed {
+		// 	t.Fatalf("public key uncompressed address does not match test vectors on index %d", i)
+		// }
+	}
+	t.Log("success PublicKey ToAddress() and ToAddressUncompressed()")
 }
