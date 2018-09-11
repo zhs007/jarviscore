@@ -30,14 +30,10 @@ enum CTRLTYPE {
 
 message PrivateKey {
     bytes priKey = 1;
-    bytes pubKey = 2;
-    string wifc = 3;
-    string addr = 4;
 }
 
 message PublicKey {
     bytes pubKey = 1;
-    string addr = 2;
 }
 
 message Join {

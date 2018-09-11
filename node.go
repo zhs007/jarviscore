@@ -6,10 +6,13 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/golang/protobuf/proto"
+
 	"github.com/seehuhn/fortuna"
 	"github.com/zhs007/jarviscore/crypto"
 	"github.com/zhs007/jarviscore/db"
 	"github.com/zhs007/jarviscore/log"
+	pb "github.com/zhs007/jarviscore/proto"
 	"go.uber.org/zap"
 )
 
@@ -46,45 +49,104 @@ const (
 	stateNormal             = 0
 	stateStart              = 1
 	stateEnd                = 2
+	coredbMyPrivKey         = "myprivkey"
 )
 
 // NewNode -
 func NewNode(baseinfo BaseInfo) JarvisNode {
-	db, err1 := jarvisdb.NewJarvisLDB(getRealPath("coredb"), 16, 16)
-	if err1 != nil {
-		errorLog("NewNode:NewJarvisLDB", err1)
+	db, err := jarvisdb.NewJarvisLDB(getRealPath("coredb"), 16, 16)
+	if err != nil {
+		errorLog("NewNode:NewJarvisLDB", err)
 		return nil
 	}
 
+	// db.Get([]byte(coredbMyPrivKey))
+
 	node := &jarvisNode{
+		myinfo:      baseinfo,
 		mgrNodeInfo: newNodeInfoMgr(),
 		signalchan:  make(chan os.Signal, 1),
 		mgrNodeCtrl: newNodeCtrlMgr(),
 		coredb:      db,
 	}
+
+	err = node.loadPrivateKey()
+	if err != nil {
+		errorLog("NewNode:loadPrivateKey", err)
+
+		return nil
+	}
+
+	// node.myinfo = baseinfo
+	node.myinfo.Addr = node.privKey.ToAddress()
+
 	// signal.Notify(node.signalchan)
 	signal.Notify(node.signalchan, os.Interrupt, os.Kill, syscall.SIGSTOP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGTSTP)
 
-	var token string
-	var prikey *privatekey
-	var err error
+	// var token string
+	// var prikey *privatekey
 
-	prikey, err = loadPrivateKeyFile()
-	if err != nil {
-		token = node.generatorToken()
+	// prikey, err = loadPrivateKeyFile()
+	// if err != nil {
+	// 	token = node.generatorToken()
 
-		log.Info("generatorToken", zap.String("Token", token))
+	// 	log.Info("generatorToken", zap.String("Token", token))
 
-		prikey = &privatekey{Token: token}
-		savePrivateKeyFile(prikey)
-	}
+	// 	prikey = &privatekey{Token: token}
+	// 	savePrivateKeyFile(prikey)
+	// }
 
-	token = prikey.Token
-
-	node.myinfo = baseinfo
+	// token = prikey.Token
 	// node.setMyInfo(baseinfo.ServAddr, baseinfo.BindAddr, baseinfo.Name, token)
 
 	return node
+}
+
+func (n *jarvisNode) savePrivateKey() error {
+	privkey := &pb.PrivateKey{
+		PriKey: n.privKey.ToPrivateBytes(),
+	}
+
+	data, err := proto.Marshal(privkey)
+	if err != nil {
+		return err
+	}
+
+	err = n.coredb.Put([]byte(coredbMyPrivKey), data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (n *jarvisNode) loadPrivateKey() error {
+	dat, err := n.coredb.Get([]byte(coredbMyPrivKey))
+	if err != nil {
+		n.privKey = jarviscrypto.GenerateKey()
+
+		return n.savePrivateKey()
+	}
+
+	pbprivkey := &pb.PrivateKey{}
+	err = proto.Unmarshal(dat, pbprivkey)
+	if err != nil {
+		n.privKey = jarviscrypto.GenerateKey()
+
+		return n.savePrivateKey()
+	}
+
+	privkey := jarviscrypto.NewPrivateKey()
+	err = privkey.FromBytes(pbprivkey.PriKey)
+	if err != nil {
+		n.privKey = jarviscrypto.GenerateKey()
+
+		return n.savePrivateKey()
+	}
+
+	n.privKey = privkey
+
+	return nil
 }
 
 // RandomInt64 -
