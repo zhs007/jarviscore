@@ -5,7 +5,7 @@ package jarviscorepb;
 enum CODE {
     OK = 0;
 
-    INVALID_TOKEN_NAME = 1;     // token/name fail 
+    INVALID_ADDR = 1;           // addr fail 
     ALREADY_IN = 2;             // already in
     FORWARD_MSG = 3;            // forward msg
     BROADCAST_MSG = 4;          // broadcast msg
@@ -28,22 +28,28 @@ enum CTRLTYPE {
     SHELL = 0;
 }
 
-message Wallet {
+message PrivateKey {
     bytes priKey = 1;
     bytes pubKey = 2;
-    string addr = 3;
+    string wifc = 3;
+    string addr = 4;
+}
+
+message PublicKey {
+    bytes pubKey = 1;
+    string addr = 2;
 }
 
 message Join {
     string servAddr = 1;
-    string token = 2;
+    string addr = 2;
     string name = 3;
     NODETYPE nodeType = 4;
 }
 
 message ReplyJoin {
     CODE code = 1;
-    string token = 2;
+    string addr = 2;
     string name = 3;
     NODETYPE nodeType = 4;
 }
@@ -54,21 +60,21 @@ message BaseReply {
 
 message Subscribe {
     CHANNELTYPE channelType = 1;
-    string token = 2;
+    string addr = 2;
 }
 
 message NodeInfo {
     string servAddr = 1;
-    string token = 2;
+    string addr = 2;
     string name = 3;
     NODETYPE nodeType = 4;
 }
 
 message CtrlInfo {
     int64 ctrlid = 1;
-    string destToken = 2;
-    string srcToken = 3;
-    string myToken = 4;
+    string destAddr = 2;
+    string srcAddr = 3;
+    string myAddr = 4;
     CTRLTYPE ctrlType = 5;
     string command = 6;
     int32 forwordNums = 7;
@@ -76,9 +82,9 @@ message CtrlInfo {
 
 message CtrlResult {
     int64 ctrlid = 1;
-    string destToken = 2;
-    string srcToken = 3;
-    string myToken = 4;
+    string destAddr = 2;
+    string srcAddr = 3;
+    string myAddr = 4;
     string ctrlResult = 5;
     int32 forwordNums = 6;
 }

@@ -28,29 +28,29 @@ type PublicKey struct {
 }
 
 // NewPrivateKey -
-func NewPrivateKey() PrivateKey {
+func NewPrivateKey() *PrivateKey {
 	key := PrivateKey{}
 	key.priKey = new(ecdsa.PrivateKey)
 	key.priKey.PublicKey.Curve = secp256k1.SECP256K1()
-	return key
+	return &key
 }
 
 // NewPublicKey -
-func NewPublicKey() PublicKey {
+func NewPublicKey() *PublicKey {
 	key := PublicKey{}
 	key.pubKey = new(ecdsa.PublicKey)
 	key.pubKey.Curve = secp256k1.SECP256K1()
-	return key
+	return &key
 }
 
 // GenerateKey -
-func GenerateKey() PrivateKey {
+func GenerateKey() *PrivateKey {
 	privkey, err := ecdsa.GenerateKey(secp256k1.SECP256K1(), rand.Reader)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	return PrivateKey{priKey: privkey}
+	return &PrivateKey{priKey: privkey}
 }
 
 // derive derives a Bitcoin public key from a Bitcoin private key.

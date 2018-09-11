@@ -7,6 +7,7 @@ import (
 	"syscall"
 
 	"github.com/seehuhn/fortuna"
+	"github.com/zhs007/jarviscore/crypto"
 	"github.com/zhs007/jarviscore/db"
 	"github.com/zhs007/jarviscore/log"
 	"go.uber.org/zap"
@@ -32,6 +33,7 @@ type jarvisNode struct {
 	clientstate int
 	nodechan    chan int
 	coredb      jarvisdb.Database
+	privKey     *jarviscrypto.PrivateKey
 	// wg          sync.WaitGroup
 }
 
@@ -79,7 +81,8 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 
 	token = prikey.Token
 
-	node.setMyInfo(baseinfo.ServAddr, baseinfo.BindAddr, baseinfo.Name, token)
+	node.myinfo = baseinfo
+	// node.setMyInfo(baseinfo.ServAddr, baseinfo.BindAddr, baseinfo.Name, token)
 
 	return node
 }
@@ -109,21 +112,21 @@ func (n *jarvisNode) generatorToken() string {
 	return string(b)
 }
 
-// setMyInfo -
-func (n *jarvisNode) setMyInfo(servaddr string, bindaddr string, name string, token string) error {
-	// if token == "" {
-	// 	n.myinfo.Token = n.generatorToken()
+// // setMyInfo -
+// func (n *jarvisNode) setMyInfo(servaddr string, bindaddr string, name string, token string) error {
+// 	// if token == "" {
+// 	// 	n.myinfo.Token = n.generatorToken()
 
-	// 	log.Info("generatorToken", zap.String("Token", n.myinfo.Token))
-	// }
+// 	// 	log.Info("generatorToken", zap.String("Token", n.myinfo.Token))
+// 	// }
 
-	n.myinfo.ServAddr = servaddr
-	n.myinfo.BindAddr = bindaddr
-	n.myinfo.Name = name
-	n.myinfo.Token = token
+// 	n.myinfo.ServAddr = servaddr
+// 	n.myinfo.BindAddr = bindaddr
+// 	n.myinfo.Name = name
+// 	n.myinfo.Token = token
 
-	return nil
-}
+// 	return nil
+// }
 
 // StopWithSignal -
 func (n *jarvisNode) StopWithSignal(signal string) error {
@@ -212,12 +215,12 @@ func (n *jarvisNode) Start() (err error) {
 	return nil
 }
 
-func (n *jarvisNode) hasNodeToken(token string) bool {
-	if token == n.myinfo.Token {
+func (n *jarvisNode) hasNodeWithAddr(addr string) bool {
+	if addr == n.myinfo.Addr {
 		return true
 	}
 
-	return n.mgrNodeInfo.hasNodeInfo(token)
+	return n.mgrNodeInfo.hasNodeInfo(addr)
 }
 
 // // onAddNode
@@ -242,14 +245,14 @@ func (n *jarvisNode) hasNodeToken(token string) bool {
 
 // onNodeConnectMe
 func (n *jarvisNode) onNodeConnectMe(bi *BaseInfo) {
-	if bi.Token == n.myinfo.Token {
+	if bi.Addr == n.myinfo.Addr {
 		return
 	}
 
 	n.mgrNodeInfo.addNodeInfo(bi)
-	n.mgrNodeInfo.chg2ConnectMe(bi.Token)
+	n.mgrNodeInfo.chg2ConnectMe(bi.Addr)
 
-	_, connNode := n.mgrNodeInfo.getNodeConnectState(bi.Token)
+	_, connNode := n.mgrNodeInfo.getNodeConnectState(bi.Addr)
 	if !connNode {
 		n.client.pushNewConnect(bi.ServAddr)
 	}
@@ -257,24 +260,24 @@ func (n *jarvisNode) onNodeConnectMe(bi *BaseInfo) {
 
 // onIConnectNode
 func (n *jarvisNode) onIConnectNode(bi *BaseInfo) {
-	if bi.Token == n.myinfo.Token {
+	if bi.Addr == n.myinfo.Addr {
 		return
 	}
 
 	n.mgrNodeInfo.addNodeInfo(bi)
-	n.mgrNodeInfo.chg2ConnectNode(bi.Token)
+	n.mgrNodeInfo.chg2ConnectNode(bi.Addr)
 
 	n.serv.broadcastNode(bi)
 }
 
 // onGetNewNode
 func (n *jarvisNode) onGetNewNode(bi *BaseInfo) {
-	if bi.Token == n.myinfo.Token {
+	if bi.Addr == n.myinfo.Addr {
 		return
 	}
 
 	n.mgrNodeInfo.addNodeInfo(bi)
-	_, connNode := n.mgrNodeInfo.getNodeConnectState(bi.Token)
+	_, connNode := n.mgrNodeInfo.getNodeConnectState(bi.Addr)
 	if !connNode {
 		n.client.pushNewConnect(bi.ServAddr)
 	}

@@ -130,7 +130,7 @@ func (c *jarvisClient) connect(ctx context.Context, servaddr string) error {
 
 	r, err1 := ci.client.Join(curctx, &pb.Join{
 		ServAddr: c.node.myinfo.ServAddr,
-		Token:    c.node.myinfo.Token,
+		Addr:     c.node.myinfo.Addr,
 		Name:     c.node.myinfo.Name,
 		NodeType: c.node.myinfo.NodeType})
 	if err1 != nil {
@@ -146,7 +146,7 @@ func (c *jarvisClient) connect(ctx context.Context, servaddr string) error {
 
 		c.node.onIConnectNode(&BaseInfo{
 			Name:     r.Name,
-			Token:    r.Token,
+			Addr:     r.Addr,
 			NodeType: r.NodeType,
 			ServAddr: servaddr,
 		})
@@ -173,7 +173,7 @@ func (c *jarvisClient) subscribe(ctx context.Context, ci *clientInfo, ct pb.CHAN
 
 	stream, err := ci.client.Subscribe(curctx, &pb.Subscribe{
 		ChannelType: ct,
-		Token:       c.node.myinfo.Token,
+		Addr:        c.node.myinfo.Addr,
 	})
 	if err != nil {
 		warnLog("JarvisClient.subscribe:Subscribe", err)
@@ -199,14 +199,14 @@ func (c *jarvisClient) subscribe(ctx context.Context, ci *clientInfo, ct pb.CHAN
 			if ni != nil {
 				log.Info("JarvisClient.subscribe:NODEINFO",
 					zap.String("Servaddr", ni.ServAddr),
-					zap.String("Token", ni.Token),
+					zap.String("Addr", ni.Addr),
 					zap.String("Name", ni.Name),
 					zap.Int("Nodetype", int(ni.NodeType)))
 
 				c.node.onGetNewNode(&BaseInfo{
 					Name:     ni.Name,
 					ServAddr: ni.ServAddr,
-					Token:    ni.Token,
+					Addr:     ni.Addr,
 					NodeType: ni.NodeType,
 				})
 			}

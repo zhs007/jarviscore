@@ -19,11 +19,11 @@ func (mgr *nodeInfoMgr) addNodeInfo(bi *BaseInfo) {
 	mgr.Lock()
 	defer mgr.Unlock()
 
-	if _, ok := mgr.mapNodeInfo[bi.Token]; ok {
+	if _, ok := mgr.mapNodeInfo[bi.Addr]; ok {
 		return
 	}
 
-	mgr.mapNodeInfo[bi.Token] = NewNodeInfo(bi)
+	mgr.mapNodeInfo[bi.Addr] = NewNodeInfo(bi)
 }
 
 func (mgr *nodeInfoMgr) chg2ConnectMe(token string) {

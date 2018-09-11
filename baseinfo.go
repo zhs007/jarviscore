@@ -9,6 +9,6 @@ type BaseInfo struct {
 	Name     string
 	BindAddr string
 	ServAddr string
-	Token    string
+	Addr     string
 	NodeType pb.NODETYPE
 }

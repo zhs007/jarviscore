@@ -88,7 +88,7 @@ func (s *jarvisServer) hasClient(token string) bool {
 func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, error) {
 	log.Info("JarvisServ.Join",
 		zap.String("Servaddr", in.ServAddr),
-		zap.String("Token", in.Token),
+		zap.String("Addr", in.Addr),
 		zap.String("Name", in.Name),
 		zap.Int("Nodetype", int(in.NodeType)))
 
@@ -103,7 +103,7 @@ func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, er
 		}
 	}
 
-	isvalidnode := (in.Token != s.node.myinfo.Token)
+	isvalidnode := (in.Addr != s.node.myinfo.Addr)
 
 	// bi := BaseInfo{
 	// 	Name:     in.Name,
@@ -115,7 +115,7 @@ func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, er
 	s.node.onNodeConnectMe(&BaseInfo{
 		Name:     in.Name,
 		ServAddr: peeripaddr,
-		Token:    in.Token,
+		Addr:     in.Addr,
 		NodeType: in.NodeType,
 	})
 
@@ -123,7 +123,7 @@ func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, er
 		return &pb.ReplyJoin{
 			Code:     pb.CODE_OK,
 			Name:     s.node.myinfo.Name,
-			Token:    s.node.myinfo.Token,
+			Addr:     s.node.myinfo.Addr,
 			NodeType: s.node.myinfo.NodeType,
 		}, nil
 	}
@@ -131,7 +131,7 @@ func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, er
 	return &pb.ReplyJoin{
 		Code:     pb.CODE_ALREADY_IN,
 		Name:     s.node.myinfo.Name,
-		Token:    s.node.myinfo.Token,
+		Addr:     s.node.myinfo.Addr,
 		NodeType: s.node.myinfo.NodeType,
 	}, nil
 }
@@ -147,14 +147,14 @@ func (s *jarvisServer) broadcastNode(bi *BaseInfo) {
 
 // Subscribe implements jarviscorepb.JarvisCoreServ
 func (s *jarvisServer) Subscribe(in *pb.Subscribe, stream pb.JarvisCoreServ_SubscribeServer) error {
-	if !s.node.hasNodeToken(in.Token) {
+	if !s.node.hasNodeWithAddr(in.Addr) {
 		return nil
 	}
 
 	s.node.mgrNodeInfo.foreach(func(cn *NodeInfo) {
 		ni := pb.NodeInfo{
 			ServAddr: cn.baseinfo.ServAddr,
-			Token:    cn.baseinfo.Token,
+			Addr:     cn.baseinfo.Addr,
 			Name:     cn.baseinfo.Name,
 			NodeType: cn.baseinfo.NodeType,
 		}
@@ -166,12 +166,12 @@ func (s *jarvisServer) Subscribe(in *pb.Subscribe, stream pb.JarvisCoreServ_Subs
 	})
 
 	s.Lock()
-	if _, ok := s.mapChanNodeInfo[in.Token]; ok {
-		close(s.mapChanNodeInfo[in.Token])
+	if _, ok := s.mapChanNodeInfo[in.Addr]; ok {
+		close(s.mapChanNodeInfo[in.Addr])
 	}
 
 	chanNodeInfo := make(chan BaseInfo)
-	s.mapChanNodeInfo[in.Token] = chanNodeInfo
+	s.mapChanNodeInfo[in.Addr] = chanNodeInfo
 	s.Unlock()
 
 	for {
@@ -185,7 +185,7 @@ func (s *jarvisServer) Subscribe(in *pb.Subscribe, stream pb.JarvisCoreServ_Subs
 
 			ni := pb.NodeInfo{
 				ServAddr: bi.ServAddr,
-				Token:    bi.Token,
+				Addr:     bi.Addr,
 				Name:     bi.Name,
 				NodeType: bi.NodeType,
 			}
@@ -203,7 +203,7 @@ func (s *jarvisServer) Subscribe(in *pb.Subscribe, stream pb.JarvisCoreServ_Subs
 
 // RequestCtrl implements jarviscorepb.JarvisCoreServ
 func (s *jarvisServer) RequestCtrl(ctx context.Context, in *pb.CtrlInfo) (*pb.BaseReply, error) {
-	if in.DestToken == s.node.myinfo.Token {
+	if in.DestAddr == s.node.myinfo.Addr {
 		_, err := mgrCtrl.Run(in.CtrlType, in.Command)
 		if err != nil {
 			return &pb.BaseReply{
@@ -216,7 +216,7 @@ func (s *jarvisServer) RequestCtrl(ctx context.Context, in *pb.CtrlInfo) (*pb.Ba
 		}, nil
 	}
 
-	if s.hasClient(in.DestToken) {
+	if s.hasClient(in.DestAddr) {
 		return &pb.BaseReply{
 			Code: pb.CODE_FORWARD_MSG,
 		}, nil
