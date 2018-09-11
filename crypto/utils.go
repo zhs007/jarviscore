@@ -3,8 +3,20 @@ package jarviscrypto
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
 	"log"
+	"math/big"
 )
+
+func hex2bytes(hexstring string) (b []byte) {
+	b, _ = hex.DecodeString(hexstring)
+	return b
+}
+
+func hex2int(hexstring string) (v *big.Int) {
+	v, _ = new(big.Int).SetString(hexstring, 16)
+	return v
+}
 
 // IntToHex - converts an int64 to a byte array
 func IntToHex(num int64) []byte {
