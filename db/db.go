@@ -1,5 +1,7 @@
 package jarvisdb
 
+import "github.com/syndtr/goleveldb/leveldb/iterator"
+
 // Database -
 type Database interface {
 	// Path returns the path to the database directory.
@@ -16,7 +18,9 @@ type Database interface {
 	// Delete deletes the key from the queue and database
 	Delete(key []byte) error
 
-	// NewIterator() iterator.Iterator
+	NewIterator() iterator.Iterator
+
+	NewIteratorWithPrefix(prefix []byte) iterator.Iterator
 
 	// // NewIteratorWithPrefix returns a iterator to iterate over subset of database content with a particular prefix.
 	// NewIteratorWithPrefix(prefix []byte) iterator.Iterator

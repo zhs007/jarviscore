@@ -190,6 +190,15 @@ func (dt *table) Delete(key []byte) error {
 	return dt.db.Delete(append([]byte(dt.prefix), key...))
 }
 
+func (dt *table) NewIterator() iterator.Iterator {
+	return dt.db.NewIteratorWithPrefix([]byte(dt.prefix))
+}
+
+// NewIteratorWithPrefix returns a iterator to iterate over subset of database content with a particular prefix.
+func (dt *table) NewIteratorWithPrefix(prefix []byte) iterator.Iterator {
+	return dt.db.NewIteratorWithPrefix(append([]byte(dt.prefix), prefix...))
+}
+
 func (dt *table) Close() {
 	// Do nothing; don't close the underlying DB.
 }

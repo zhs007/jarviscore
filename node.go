@@ -29,7 +29,7 @@ type jarvisNode struct {
 	serv        *jarvisServer
 	gen         *fortuna.Generator
 	mgrNodeInfo *nodeInfoMgr
-	mgrpeeraddr *peerAddrMgr
+	// mgrpeeraddr *peerAddrMgr
 	mgrNodeCtrl *nodeCtrlMgr
 	signalchan  chan os.Signal
 	servstate   int
@@ -64,7 +64,6 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 
 	node := &jarvisNode{
 		myinfo:      baseinfo,
-		mgrNodeInfo: newNodeInfoMgr(),
 		signalchan:  make(chan os.Signal, 1),
 		mgrNodeCtrl: newNodeCtrlMgr(),
 		coredb:      db,
@@ -76,6 +75,9 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 
 		return nil
 	}
+
+	node.mgrNodeInfo = newNodeInfoMgr(node)
+	node.mgrNodeInfo.loadFromDB()
 
 	// node.myinfo = baseinfo
 	node.myinfo.Addr = node.privKey.ToAddress()
@@ -209,7 +211,7 @@ func (n *jarvisNode) Stop() error {
 		n.client.Stop()
 	}
 
-	n.mgrpeeraddr.savePeerAddrFile()
+	// n.mgrpeeraddr.savePeerAddrFile()
 	n.mgrNodeCtrl.save()
 
 	return nil
@@ -256,10 +258,10 @@ func (n *jarvisNode) waitEnd() {
 
 // Start -
 func (n *jarvisNode) Start() (err error) {
-	n.mgrpeeraddr, err = newPeerAddrMgr(config.DefPeerAddr)
-	if err != nil {
-		return err
-	}
+	// n.mgrpeeraddr, err = newPeerAddrMgr(config.DefPeerAddr)
+	// if err != nil {
+	// 	return err
+	// }
 
 	log.Info("StartServer", zap.String("ServAddr", n.myinfo.ServAddr))
 	n.serv, err = newServer(n)
@@ -270,7 +272,7 @@ func (n *jarvisNode) Start() (err error) {
 	n.client = newClient(n)
 
 	go n.serv.Start()
-	go n.client.Start(n.mgrpeeraddr)
+	go n.client.Start()
 
 	n.waitEnd()
 
@@ -311,12 +313,12 @@ func (n *jarvisNode) onNodeConnectMe(bi *BaseInfo) {
 		return
 	}
 
-	n.mgrNodeInfo.addNodeInfo(bi)
+	n.mgrNodeInfo.addNodeInfo(bi, false)
 	n.mgrNodeInfo.chg2ConnectMe(bi.Addr)
 
 	_, connNode := n.mgrNodeInfo.getNodeConnectState(bi.Addr)
 	if !connNode {
-		n.client.pushNewConnect(bi.ServAddr)
+		n.client.pushNewConnect(bi)
 	}
 }
 
@@ -326,7 +328,7 @@ func (n *jarvisNode) onIConnectNode(bi *BaseInfo) {
 		return
 	}
 
-	n.mgrNodeInfo.addNodeInfo(bi)
+	n.mgrNodeInfo.addNodeInfo(bi, false)
 	n.mgrNodeInfo.chg2ConnectNode(bi.Addr)
 
 	n.serv.broadcastNode(bi)
@@ -338,9 +340,9 @@ func (n *jarvisNode) onGetNewNode(bi *BaseInfo) {
 		return
 	}
 
-	n.mgrNodeInfo.addNodeInfo(bi)
+	n.mgrNodeInfo.addNodeInfo(bi, false)
 	_, connNode := n.mgrNodeInfo.getNodeConnectState(bi.Addr)
 	if !connNode {
-		n.client.pushNewConnect(bi.ServAddr)
+		n.client.pushNewConnect(bi)
 	}
 }

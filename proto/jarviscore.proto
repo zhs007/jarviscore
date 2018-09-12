@@ -36,6 +36,19 @@ message PublicKey {
     bytes pubKey = 1;
 }
 
+message NodeInfo {
+    string servAddr = 1;
+    string addr = 2;
+    string name = 3;
+    NODETYPE nodeType = 4;
+}
+
+message NodeInfoInDB {
+    NodeInfo nodeInfo = 1;
+    int32 connectNums = 2;
+    int32 connectedNums = 3;
+}
+
 message Join {
     string servAddr = 1;
     string addr = 2;
@@ -57,13 +70,6 @@ message BaseReply {
 message Subscribe {
     CHANNELTYPE channelType = 1;
     string addr = 2;
-}
-
-message NodeInfo {
-    string servAddr = 1;
-    string addr = 2;
-    string name = 3;
-    NODETYPE nodeType = 4;
 }
 
 message CtrlInfo {

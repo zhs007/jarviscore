@@ -1,110 +1,101 @@
 package jarviscore
 
-import (
-	"io/ioutil"
-	"sort"
+// // peerAddrMgr
+// type peerAddrMgr struct {
+// 	// load & save
+// 	arr *peerAddrArr
+// 	lst peerInfoSlice
+// }
 
-	"github.com/zhs007/jarviscore/errcode"
+// const peeraddrFilename = "peeraddr.yaml"
 
-	"gopkg.in/yaml.v2"
-)
+// func newPeerAddrMgr(defpeeraddr string) (*peerAddrMgr, error) {
+// 	mgr := &peerAddrMgr{}
 
-// peerAddrMgr
-type peerAddrMgr struct {
-	// load & save
-	arr *peerAddrArr
-	lst peerInfoSlice
-}
+// 	var err error
+// 	mgr.arr, err = loadPeerAddrFile(getRealPath(peeraddrFilename))
+// 	if err != nil {
+// 		if len(defpeeraddr) > 0 {
+// 			warnLog("loadPeerAddrFile", err)
 
-const peeraddrFilename = "peeraddr.yaml"
+// 			mgr.arr = &peerAddrArr{}
+// 			// log.Debug("arrlen", zap.Int("len", len(mgr.arr.PeerAddr)))
+// 		} else {
+// 			errorLog("loadPeerAddrFile", err)
 
-func newPeerAddrMgr(defpeeraddr string) (*peerAddrMgr, error) {
-	mgr := &peerAddrMgr{}
+// 			return nil, err
+// 		}
+// 	}
 
-	var err error
-	mgr.arr, err = loadPeerAddrFile(getRealPath(peeraddrFilename))
-	if err != nil {
-		if len(defpeeraddr) > 0 {
-			warnLog("loadPeerAddrFile", err)
+// 	mgr.arr.insPeerAddr(defpeeraddr)
 
-			mgr.arr = &peerAddrArr{}
-			// log.Debug("arrlen", zap.Int("len", len(mgr.arr.PeerAddr)))
-		} else {
-			errorLog("loadPeerAddrFile", err)
+// 	arrlen := len(mgr.arr.PeerAddr)
+// 	if arrlen == 0 {
+// 		return nil, newError(jarviserrcode.PEERADDREMPTY)
+// 	}
 
-			return nil, err
-		}
-	}
+// 	mgr.lst = make([]peerInfo, 0, arrlen)
 
-	mgr.arr.insPeerAddr(defpeeraddr)
+// 	// log.Debug("arrlen", zap.Int("len", len(mgr.lst)))
 
-	arrlen := len(mgr.arr.PeerAddr)
-	if arrlen == 0 {
-		return nil, newError(jarviserrcode.PEERADDREMPTY)
-	}
+// 	return mgr, nil
+// }
 
-	mgr.lst = make([]peerInfo, 0, arrlen)
+// func (mgr *peerAddrMgr) canConnect(peeraddr string) bool {
+// 	for i := 0; i < len(mgr.lst); i++ {
+// 		if peeraddr == mgr.lst[i].peeraddr {
+// 			return false
+// 		}
+// 	}
 
-	// log.Debug("arrlen", zap.Int("len", len(mgr.lst)))
+// 	return true
+// }
 
-	return mgr, nil
-}
+// func (mgr *peerAddrMgr) savePeerAddrFile() error {
+// 	arr := &peerAddrArr{}
 
-func (mgr *peerAddrMgr) canConnect(peeraddr string) bool {
-	for i := 0; i < len(mgr.lst); i++ {
-		if peeraddr == mgr.lst[i].peeraddr {
-			return false
-		}
-	}
+// 	sort.Sort(peerInfoSlice(mgr.lst))
 
-	return true
-}
+// 	for _, v := range mgr.lst {
+// 		arr.insPeerAddr(v.peeraddr)
+// 	}
 
-func (mgr *peerAddrMgr) savePeerAddrFile() error {
-	arr := &peerAddrArr{}
+// 	for _, v := range mgr.arr.PeerAddr {
+// 		arr.insPeerAddr(v)
+// 	}
 
-	sort.Sort(peerInfoSlice(mgr.lst))
+// 	d, err := yaml.Marshal(arr)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	for _, v := range mgr.lst {
-		arr.insPeerAddr(v.peeraddr)
-	}
+// 	ioutil.WriteFile(getRealPath(peeraddrFilename), d, 0755)
 
-	for _, v := range mgr.arr.PeerAddr {
-		arr.insPeerAddr(v)
-	}
+// 	return nil
+// }
 
-	d, err := yaml.Marshal(arr)
-	if err != nil {
-		return err
-	}
+// // onStartConnect
+// func (mgr *peerAddrMgr) onStartConnect(peeraddr string) {
+// 	for i := 0; i < len(mgr.lst); i++ {
+// 		if peeraddr == mgr.lst[i].peeraddr {
+// 			mgr.lst[i].connectnums++
 
-	ioutil.WriteFile(getRealPath(peeraddrFilename), d, 0755)
+// 			return
+// 		}
+// 	}
 
-	return nil
-}
+// 	mgr.lst = append(mgr.lst, peerInfo{peeraddr: peeraddr, connectnums: 1})
 
-// onStartConnect
-func (mgr *peerAddrMgr) onStartConnect(peeraddr string) {
-	for i := 0; i < len(mgr.lst); i++ {
-		if peeraddr == mgr.lst[i].peeraddr {
-			mgr.lst[i].connectnums++
+// 	return
+// }
 
-			return
-		}
-	}
+// // onConnected
+// func (mgr *peerAddrMgr) onConnected(peeraddr string) {
+// 	for i := 0; i < len(mgr.lst); i++ {
+// 		if peeraddr == mgr.lst[i].peeraddr {
+// 			mgr.lst[i].connectednums++
 
-	mgr.lst = append(mgr.lst, peerInfo{peeraddr: peeraddr, connectnums: 1})
-
-	return
-}
-
-// onConnected
-func (mgr *peerAddrMgr) onConnected(peeraddr string) {
-	for i := 0; i < len(mgr.lst); i++ {
-		if peeraddr == mgr.lst[i].peeraddr {
-			mgr.lst[i].connectednums++
-
-			return
-		}
-	}
-}
+// 			return
+// 		}
+// 	}
+// }

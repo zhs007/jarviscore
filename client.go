@@ -21,14 +21,14 @@ type clientInfo struct {
 type jarvisClient struct {
 	// sync.RWMutex
 
-	node         *jarvisNode
-	mgrpeeraddr  *peerAddrMgr
+	node *jarvisNode
+	// mgrpeeraddr  *peerAddrMgr
 	mapClient    map[string]*clientInfo
 	clientchan   chan int
 	activitychan chan int
 	activitynums int
 	waitchan     chan int
-	connectchan  chan string
+	connectchan  chan *BaseInfo
 }
 
 func newClient(node *jarvisNode) *jarvisClient {
@@ -39,12 +39,12 @@ func newClient(node *jarvisNode) *jarvisClient {
 		activitychan: make(chan int, 16),
 		activitynums: 0,
 		waitchan:     make(chan int, 1),
-		connectchan:  make(chan string, 16),
+		connectchan:  make(chan *BaseInfo, 16),
 	}
 }
 
-func (c *jarvisClient) pushNewConnect(servaddr string) {
-	c.connectchan <- servaddr
+func (c *jarvisClient) pushNewConnect(bi *BaseInfo) {
+	c.connectchan <- bi
 }
 
 func (c *jarvisClient) onConnectFail(addr string) {
@@ -54,15 +54,23 @@ func (c *jarvisClient) onStop() {
 	c.clientchan <- 0
 }
 
-func (c *jarvisClient) Start(mgrpeeraddr *peerAddrMgr) {
+func (c *jarvisClient) startConnectAllNode() {
+	c.node.mgrNodeInfo.foreach(func(cn *NodeInfo) {
+		c.pushNewConnect(&cn.baseinfo)
+	})
+}
+
+func (c *jarvisClient) Start() {
 	ctx, cancel := context.WithCancel(context.Background())
 
-	c.mgrpeeraddr = mgrpeeraddr
+	go c.connectRoot(ctx, config.DefPeerAddr)
+	go c.startConnectAllNode()
+	// c.mgrpeeraddr = mgrpeeraddr
 
-	for _, v := range mgrpeeraddr.arr.PeerAddr {
-		go c.connect(ctx, v)
-		time.Sleep(time.Second)
-	}
+	// for _, v := range mgrpeeraddr.arr.PeerAddr {
+	// 	go c.connect(ctx, v)
+	// 	time.Sleep(time.Second)
+	// }
 
 	stopping := false
 
@@ -105,15 +113,79 @@ func (c *jarvisClient) onConnectEnd() {
 }
 
 //
-func (c *jarvisClient) connect(ctx context.Context, servaddr string) error {
-	log.Info("jarvisClient.connect", zap.String("servaddr", servaddr))
+func (c *jarvisClient) connectRoot(ctx context.Context, servaddr string) error {
+	log.Info("jarvisClient.connectRoot", zap.String("servaddr", servaddr))
 
 	c.activitychan <- 1
 	defer c.onConnectEnd()
 
-	c.mgrpeeraddr.onStartConnect(servaddr)
+	// c.node.mgrNodeInfo.onStartConnect(bi.Addr)
+	// c.mgrpeeraddr.onStartConnect(servaddr)
 
 	conn, err := mgrconn.getConn(servaddr)
+	if err != nil {
+		warnLog("JarvisClient.connectRoot:getConn", err)
+
+		return err
+	}
+
+	curctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	ci := clientInfo{
+		conn:   conn,
+		client: pb.NewJarvisCoreServClient(conn),
+	}
+
+	r, err1 := ci.client.Join(curctx, &pb.Join{
+		ServAddr: c.node.myinfo.ServAddr,
+		Addr:     c.node.myinfo.Addr,
+		Name:     c.node.myinfo.Name,
+		NodeType: c.node.myinfo.NodeType})
+	if err1 != nil {
+		warnLog("JarvisClient.connectRoot:Join", err1)
+
+		mgrconn.delConn(servaddr)
+
+		return err1
+	}
+
+	if r.Code == pb.CODE_OK {
+		log.Info("jarvisClient.connectRoot:OK")
+
+		c.node.onIConnectNode(&BaseInfo{
+			Name:     r.Name,
+			Addr:     r.Addr,
+			NodeType: r.NodeType,
+			ServAddr: servaddr,
+		})
+
+		// c.node.mgrNodeInfo.onConnected(bi.Addr)
+		// c.mgrpeeraddr.onConnected(servaddr)
+
+		c.subscribe(ctx, &ci, pb.CHANNELTYPE_NODEINFO)
+
+		return nil
+	}
+
+	log.Info("JarvisClient.connectRoot:Join", zap.Int("code", int(r.Code)))
+
+	mgrconn.delConn(servaddr)
+
+	return nil
+}
+
+//
+func (c *jarvisClient) connect(ctx context.Context, bi *BaseInfo) error {
+	log.Info("jarvisClient.connect", zap.String("servaddr", bi.ServAddr))
+
+	c.activitychan <- 1
+	defer c.onConnectEnd()
+
+	c.node.mgrNodeInfo.onStartConnect(bi.Addr)
+	// c.mgrpeeraddr.onStartConnect(servaddr)
+
+	conn, err := mgrconn.getConn(bi.ServAddr)
 	if err != nil {
 		warnLog("JarvisClient.connect:getConn", err)
 
@@ -136,7 +208,7 @@ func (c *jarvisClient) connect(ctx context.Context, servaddr string) error {
 	if err1 != nil {
 		warnLog("JarvisClient.connect:Join", err1)
 
-		mgrconn.delConn(servaddr)
+		mgrconn.delConn(bi.ServAddr)
 
 		return err1
 	}
@@ -148,10 +220,11 @@ func (c *jarvisClient) connect(ctx context.Context, servaddr string) error {
 			Name:     r.Name,
 			Addr:     r.Addr,
 			NodeType: r.NodeType,
-			ServAddr: servaddr,
+			ServAddr: bi.ServAddr,
 		})
 
-		c.mgrpeeraddr.onConnected(servaddr)
+		c.node.mgrNodeInfo.onConnected(bi.Addr)
+		// c.mgrpeeraddr.onConnected(servaddr)
 
 		c.subscribe(ctx, &ci, pb.CHANNELTYPE_NODEINFO)
 
@@ -160,7 +233,7 @@ func (c *jarvisClient) connect(ctx context.Context, servaddr string) error {
 
 	log.Info("JarvisClient.Join", zap.Int("code", int(r.Code)))
 
-	mgrconn.delConn(servaddr)
+	mgrconn.delConn(bi.ServAddr)
 
 	return nil
 }

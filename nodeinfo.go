@@ -2,10 +2,12 @@ package jarviscore
 
 // NodeInfo -
 type NodeInfo struct {
-	baseinfo    BaseInfo
-	mapclient   map[string]BaseInfo
-	connectMe   bool
-	connectNode bool
+	baseinfo      BaseInfo
+	mapclient     map[string]BaseInfo
+	connectMe     bool
+	connectNode   bool
+	connectNums   int
+	connectedNums int
 }
 
 // NewNodeInfo -
