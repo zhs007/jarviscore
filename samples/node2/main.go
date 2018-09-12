@@ -8,7 +8,8 @@ import (
 func main() {
 	cfg := jarviscore.Config{
 		RunPath:     "./",
-		DefPeerAddr: "jarvis.heyalgo.io:7788",
+		DefPeerAddr: "127.0.0.1:7788",
+		// DefPeerAddr: "jarvis.heyalgo.io:7788",
 	}
 
 	myinfo := jarviscore.BaseInfo{
