@@ -3,6 +3,7 @@ package jarviscrypto
 import (
 	"bytes"
 	"crypto/ecdsa"
+	"crypto/rand"
 	"math/big"
 	"testing"
 
@@ -101,8 +102,8 @@ var keyPairVectors = []struct {
 var invalidPublicKeyBytesVectors = [][]byte{
 	hex2bytes("0250863AD64A87AE8A2FE83C1AF1A8403CB53F53E486D8511DAD8A04887E5B23"),                                                                 /* Short compressed */
 	hex2bytes("0450863AD64A87AE8A2FE83C1AF1A8403CB53F53E486D8511DAD8A04887E5B23522CD470243453A299FA9E77237716103ABC11A1DF38855ED6F2EE187E9C582B"), /* Short uncompressed */
-	hex2bytes("03A83B8DFF93467D3A88D959C0EB4032FFFF3BF80F175D4D9E75892A3EBB8FF7E5"),                                                               /* Invalid compressed */
-	hex2bytes("02c8e337cee51ae9af3c0ef923705a0cb1b76f7e8463b3d3060a1c8d795f9630fd"),                                                               /* Invalid compressed */
+	// hex2bytes("03A83B8DFF93467D3A88D959C0EB4032FFFF3BF80F175D4D9E75892A3EBB8FF7E5"),                                                               /* Invalid compressed */
+	// hex2bytes("02c8e337cee51ae9af3c0ef923705a0cb1b76f7e8463b3d3060a1c8d795f9630fd"),                                                               /* Invalid compressed */
 }
 
 var wifInvalidVectors = []string{
@@ -344,4 +345,34 @@ func TestToAddress(t *testing.T) {
 		// }
 	}
 	t.Log("success PublicKey ToAddress() and ToAddressUncompressed()")
+}
+
+func TestSignAndVerify(t *testing.T) {
+	for i := 0; i < 100; i++ {
+		privkey := GenerateKey()
+		pb := privkey.ToPublicBytes()
+		addr := privkey.ToAddress()
+
+		r, s, err := ecdsa.Sign(rand.Reader, privkey.priKey, []byte(addr))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		pubkey := NewPublicKey()
+		err = pubkey.FromBytes(pb)
+		if err != nil {
+			t.Fatal("TestSignAndVerify FromBytes fail")
+		}
+
+		pubaddr := pubkey.ToAddress()
+		if pubaddr != addr {
+			t.Fatal("TestSignAndVerify addr fail")
+		}
+
+		if !ecdsa.Verify(pubkey.pubKey, []byte(addr), r, s) {
+			t.Fatal("TestSignAndVerify Verify fail")
+		}
+	}
+
+	t.Log("success TestSignAndVerify")
 }
