@@ -348,8 +348,9 @@ func TestToAddress(t *testing.T) {
 }
 
 func TestSignAndVerify(t *testing.T) {
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 1000; i++ {
 		privkey := GenerateKey()
+		prb := privkey.ToPrivateBytes()
 		pb := privkey.ToPublicBytes()
 		addr := privkey.ToAddress()
 
@@ -357,6 +358,10 @@ func TestSignAndVerify(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+
+		privkey1 := NewPrivateKey()
+		privkey1.FromBytes(prb)
+		pb1 := privkey1.ToPublicBytes()
 
 		pubkey := NewPublicKey()
 		err = pubkey.FromBytes(pb)
@@ -371,6 +376,20 @@ func TestSignAndVerify(t *testing.T) {
 
 		if !ecdsa.Verify(pubkey.pubKey, []byte(addr), r, s) {
 			t.Fatal("TestSignAndVerify Verify fail")
+		}
+
+		pubkey1 := NewPublicKey()
+		err = pubkey1.FromBytes(pb1)
+		if err != nil {
+			t.Fatal("TestSignAndVerify FromBytes1 fail")
+		}
+
+		if pubaddr != pubkey1.ToAddress() {
+			t.Fatal("TestSignAndVerify addr1 fail")
+		}
+
+		if !ecdsa.Verify(pubkey1.pubKey, []byte(addr), r, s) {
+			t.Fatal("TestSignAndVerify Verify1 fail")
 		}
 	}
 
