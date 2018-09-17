@@ -1,14 +1,12 @@
 package jarviscore
 
 import (
-	"crypto/aes"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/golang/protobuf/proto"
 
-	"github.com/seehuhn/fortuna"
 	"github.com/zhs007/jarviscore/crypto"
 	"github.com/zhs007/jarviscore/db"
 	"github.com/zhs007/jarviscore/err"
@@ -28,9 +26,7 @@ type jarvisNode struct {
 	myinfo      BaseInfo
 	client      *jarvisClient
 	serv        *jarvisServer
-	gen         *fortuna.Generator
 	mgrNodeInfo *nodeInfoMgr
-	// mgrpeeraddr *peerAddrMgr
 	mgrNodeCtrl *nodeCtrlMgr
 	signalchan  chan os.Signal
 	servstate   int
@@ -38,19 +34,21 @@ type jarvisNode struct {
 	nodechan    chan int
 	coredb      jarvisdb.Database
 	privKey     *jarviscrypto.PrivateKey
+	// gen         *fortuna.Generator
+	// mgrpeeraddr *peerAddrMgr
 	// wg          sync.WaitGroup
 }
 
 const (
-	nodeinfoCacheSize       = 32
-	tokenLen                = 32
-	randomMax         int64 = 0x7fffffffffffffff
-	letterBytes             = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	letterBytesLen          = int64(len(letterBytes))
-	stateNormal             = 0
-	stateStart              = 1
-	stateEnd                = 2
-	coredbMyPrivKey         = "myprivkey"
+	nodeinfoCacheSize = 32
+	// tokenLen                = 32
+	randomMax int64 = 0x7fffffffffffffff
+	// letterBytes             = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	// letterBytesLen  = int64(len(letterBytes))
+	stateNormal     = 0
+	stateStart      = 1
+	stateEnd        = 2
+	coredbMyPrivKey = "myprivkey"
 )
 
 // NewNode -
@@ -152,30 +150,30 @@ func (n *jarvisNode) loadPrivateKey() error {
 	return nil
 }
 
-// RandomInt64 -
-func (n *jarvisNode) RandomInt64(maxval int64) int64 {
-	if n.gen == nil {
-		n.gen = fortuna.NewGenerator(aes.NewCipher)
-	}
+// // RandomInt64 -
+// func (n *jarvisNode) RandomInt64(maxval int64) int64 {
+// 	if n.gen == nil {
+// 		n.gen = fortuna.NewGenerator(aes.NewCipher)
+// 	}
 
-	var rt = int64((randomMax / maxval) * maxval)
-	var cr = n.gen.Int63()
-	for cr >= rt {
-		cr = n.gen.Int63()
-	}
+// 	var rt = int64((randomMax / maxval) * maxval)
+// 	var cr = n.gen.Int63()
+// 	for cr >= rt {
+// 		cr = n.gen.Int63()
+// 	}
 
-	return cr % maxval
-}
+// 	return cr % maxval
+// }
 
-// generatorToken -
-func (n *jarvisNode) generatorToken() string {
-	b := make([]byte, tokenLen)
-	for i := range b {
-		b[i] = letterBytes[n.RandomInt64(letterBytesLen)]
-	}
+// // generatorToken -
+// func (n *jarvisNode) generatorToken() string {
+// 	b := make([]byte, tokenLen)
+// 	for i := range b {
+// 		b[i] = letterBytes[n.RandomInt64(letterBytesLen)]
+// 	}
 
-	return string(b)
-}
+// 	return string(b)
+// }
 
 // // setMyInfo -
 // func (n *jarvisNode) setMyInfo(servaddr string, bindaddr string, name string, token string) error {
