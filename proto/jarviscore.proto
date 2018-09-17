@@ -25,11 +25,16 @@ enum CODE {
     INVALID_FILEREADSIZE = 9;   
 
     // sign fail
-    SIGN_FAIL = 14;
+    SIGN_FAIL = 10;
     // invalid code
-    INVALID_CODE = 16;
+    INVALID_CODE = 11;
     // leveldb iter error
-    LEVELDB_ITER_ERROR = 18;
+    LEVELDB_ITER_ERROR = 12;
+
+    // node not connect me
+    NODE_NOT_CONNECTME = 20;
+    // not connect node
+    NOT_CONNECTNODE = 21;
 
     // NodeInfoInDB decode fail
     NODEINFOINDB_DECODE_FAIL = 110;

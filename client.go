@@ -291,7 +291,24 @@ func (c *jarvisClient) subscribe(ctx context.Context, ci *clientInfo, ct pb.CHAN
 	return nil
 }
 
-func (c *jarvisClient) sendCtrl(ci *pb.CtrlInfo) error {
+func (c *jarvisClient) sendCtrl(ctx context.Context, ci *pb.CtrlInfo) error {
+	curclient, ok := c.mapClient[ci.DestAddr]
+	if !ok {
+		return jarviserr.NewError(pb.CODE_NOT_CONNECTNODE)
+	}
+
+	curctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	r, err1 := curclient.client.RequestCtrl(curctx, ci)
+	if err1 != nil {
+		return err1
+	}
+
+	if r.Code == pb.CODE_OK {
+		return nil
+	}
+
 	return nil
 }
 

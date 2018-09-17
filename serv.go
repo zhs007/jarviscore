@@ -14,17 +14,17 @@ import (
 	"google.golang.org/grpc"
 )
 
-type serverClientChan (chan BaseInfo)
+type serverClientChan (chan pb.ChannelInfo)
 
 // jarvisServer
 type jarvisServer struct {
 	sync.RWMutex
 
-	node            *jarvisNode
-	lis             net.Listener
-	grpcServ        *grpc.Server
-	servchan        chan int
-	mapChanNodeInfo map[string]serverClientChan
+	node        *jarvisNode
+	lis         net.Listener
+	grpcServ    *grpc.Server
+	servchan    chan int
+	mapChanInfo map[string]serverClientChan
 }
 
 // newServer -
@@ -40,11 +40,11 @@ func newServer(node *jarvisNode) (*jarvisServer, error) {
 
 	grpcServ := grpc.NewServer()
 	s := &jarvisServer{
-		node:            node,
-		lis:             lis,
-		grpcServ:        grpcServ,
-		servchan:        make(chan int, 1),
-		mapChanNodeInfo: make(map[string]serverClientChan),
+		node:        node,
+		lis:         lis,
+		grpcServ:    grpcServ,
+		servchan:    make(chan int, 1),
+		mapChanInfo: make(map[string]serverClientChan),
 	}
 	pb.RegisterJarvisCoreServServer(grpcServ, s)
 
@@ -63,7 +63,7 @@ func (s *jarvisServer) Start() (err error) {
 // Stop -
 func (s *jarvisServer) Stop() {
 	s.Lock()
-	for _, v := range s.mapChanNodeInfo {
+	for _, v := range s.mapChanInfo {
 		close(v)
 	}
 	s.Unlock()
@@ -78,7 +78,7 @@ func (s *jarvisServer) hasClient(token string) bool {
 	s.RLock()
 	defer s.RUnlock()
 
-	if _, ok := s.mapChanNodeInfo[token]; ok {
+	if _, ok := s.mapChanInfo[token]; ok {
 		return true
 	}
 
@@ -141,9 +141,44 @@ func (s *jarvisServer) broadcastNode(bi *BaseInfo) {
 	s.RLock()
 	defer s.RUnlock()
 
-	for _, v := range s.mapChanNodeInfo {
-		v <- *bi
+	ni := pb.NodeInfo{
+		ServAddr: bi.ServAddr,
+		Addr:     bi.Addr,
+		Name:     bi.Name,
+		NodeType: bi.NodeType,
 	}
+
+	ci := pb.ChannelInfo{
+		ChannelType: pb.CHANNELTYPE_NODEINFO,
+		Data: &pb.ChannelInfo_NodeInfo{
+			NodeInfo: &ni,
+		},
+	}
+
+	for _, v := range s.mapChanInfo {
+		v <- ci
+	}
+}
+
+func (s *jarvisServer) sendCtrl(ctrlinfo *pb.CtrlInfo) error {
+	s.RLock()
+	defer s.RUnlock()
+
+	curChan, ok := s.mapChanInfo[ctrlinfo.DestAddr]
+	if !ok {
+		return jarviserr.NewError(pb.CODE_NODE_NOT_CONNECTME)
+	}
+
+	ci := pb.ChannelInfo{
+		ChannelType: pb.CHANNELTYPE_CTRL,
+		Data: &pb.ChannelInfo_CtrlInfo{
+			CtrlInfo: ctrlinfo,
+		},
+	}
+
+	curChan <- ci
+
+	return nil
 }
 
 // Subscribe implements jarviscorepb.JarvisCoreServ
@@ -167,34 +202,40 @@ func (s *jarvisServer) Subscribe(in *pb.Subscribe, stream pb.JarvisCoreServ_Subs
 	})
 
 	s.Lock()
-	if _, ok := s.mapChanNodeInfo[in.Addr]; ok {
-		close(s.mapChanNodeInfo[in.Addr])
+	if _, ok := s.mapChanInfo[in.Addr]; ok {
+		close(s.mapChanInfo[in.Addr])
 	}
 
-	chanNodeInfo := make(chan BaseInfo)
-	s.mapChanNodeInfo[in.Addr] = chanNodeInfo
+	chanInfo := make(chan pb.ChannelInfo, 16)
+	s.mapChanInfo[in.Addr] = chanInfo
 	s.Unlock()
 
 	for {
 		select {
 		case <-stream.Context().Done():
 			return nil
-		case bi, ok := <-chanNodeInfo:
+		case ci, ok := <-chanInfo:
 			if !ok {
 				return nil
 			}
 
-			ni := pb.NodeInfo{
-				ServAddr: bi.ServAddr,
-				Addr:     bi.Addr,
-				Name:     bi.Name,
-				NodeType: bi.NodeType,
-			}
+			stream.SendMsg(&ci)
 
-			stream.SendMsg(&pb.ChannelInfo{
-				ChannelType: in.ChannelType,
-				Data:        &pb.ChannelInfo_NodeInfo{NodeInfo: &ni},
-			})
+			// if ci.ChannelType == pb.CHANNELTYPE_NODEINFO {
+
+			// }
+
+			// ni := pb.NodeInfo{
+			// 	ServAddr: bi.ServAddr,
+			// 	Addr:     bi.Addr,
+			// 	Name:     bi.Name,
+			// 	NodeType: bi.NodeType,
+			// }
+
+			// stream.SendMsg(&pb.ChannelInfo{
+			// 	ChannelType: in.ChannelType,
+			// 	Data:        &pb.ChannelInfo_NodeInfo{NodeInfo: &ni},
+			// })
 		}
 
 		// gs.Send(&pb.HelloReply{Message: "Hello " + in.Name})

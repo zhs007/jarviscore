@@ -1,6 +1,7 @@
 package jarviscore
 
 import (
+	"context"
 	"os"
 	"os/signal"
 	"syscall"
@@ -345,7 +346,7 @@ func (n *jarvisNode) onGetNewNode(bi *BaseInfo) {
 }
 
 // requestCtrl
-func (n *jarvisNode) requestCtrl(addr string, ctrltype pb.CTRLTYPE, command []byte) error {
+func (n *jarvisNode) requestCtrl(ctx context.Context, addr string, ctrltype pb.CTRLTYPE, command []byte) error {
 	ctrlid := n.mgrNodeInfo.getCtrlID(addr)
 	if ctrlid < 0 {
 		return jarviserr.NewError(pb.CODE_COREDB_NO_ADDR)
@@ -370,7 +371,18 @@ func (n *jarvisNode) requestCtrl(addr string, ctrltype pb.CTRLTYPE, command []by
 		PubKey:      n.coredb.privKey.ToPublicBytes(),
 	}
 
-	n.client.sendCtrl(ci)
+	connMe, connNode := n.mgrNodeInfo.getNodeConnectState(addr)
+	if connMe {
+		if n.serv.sendCtrl(ci) == nil {
+			return nil
+		}
+	}
+
+	if connNode {
+		if n.client.sendCtrl(ctx, ci) == nil {
+			return nil
+		}
+	}
 
 	return nil
 }
