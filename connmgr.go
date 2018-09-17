@@ -1,6 +1,9 @@
 package jarviscore
 
-import "google.golang.org/grpc"
+import (
+	"github.com/zhs007/jarviscore/err"
+	"google.golang.org/grpc"
+)
 
 // connMgr -
 type connMgr struct {
@@ -14,7 +17,7 @@ func (mgr connMgr) getConn(servaddr string) (*grpc.ClientConn, error) {
 
 	conn, err := grpc.Dial(servaddr, grpc.WithInsecure())
 	if err != nil {
-		warnLog("connMgr.getConn", err)
+		jarviserr.WarnLog("connMgr.getConn", err)
 
 		return nil, err
 	}

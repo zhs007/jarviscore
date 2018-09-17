@@ -2,5 +2,5 @@ package jarviscore
 
 // Ctrl -
 type Ctrl interface {
-	Run(command string) (result string, err error)
+	Run(command []byte) (result []byte, err error)
 }

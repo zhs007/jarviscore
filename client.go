@@ -7,6 +7,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/zhs007/jarviscore/err"
 	"github.com/zhs007/jarviscore/log"
 	pb "github.com/zhs007/jarviscore/proto"
 	"google.golang.org/grpc"
@@ -124,7 +125,7 @@ func (c *jarvisClient) connectRoot(ctx context.Context, servaddr string) error {
 
 	conn, err := mgrconn.getConn(servaddr)
 	if err != nil {
-		warnLog("JarvisClient.connectRoot:getConn", err)
+		jarviserr.WarnLog("JarvisClient.connectRoot:getConn", err)
 
 		return err
 	}
@@ -143,7 +144,7 @@ func (c *jarvisClient) connectRoot(ctx context.Context, servaddr string) error {
 		Name:     c.node.myinfo.Name,
 		NodeType: c.node.myinfo.NodeType})
 	if err1 != nil {
-		warnLog("JarvisClient.connectRoot:Join", err1)
+		jarviserr.WarnLog("JarvisClient.connectRoot:Join", err1)
 
 		mgrconn.delConn(servaddr)
 
@@ -187,7 +188,7 @@ func (c *jarvisClient) connect(ctx context.Context, bi *BaseInfo) error {
 
 	conn, err := mgrconn.getConn(bi.ServAddr)
 	if err != nil {
-		warnLog("JarvisClient.connect:getConn", err)
+		jarviserr.WarnLog("JarvisClient.connect:getConn", err)
 
 		return err
 	}
@@ -206,7 +207,7 @@ func (c *jarvisClient) connect(ctx context.Context, bi *BaseInfo) error {
 		Name:     c.node.myinfo.Name,
 		NodeType: c.node.myinfo.NodeType})
 	if err1 != nil {
-		warnLog("JarvisClient.connect:Join", err1)
+		jarviserr.WarnLog("JarvisClient.connect:Join", err1)
 
 		mgrconn.delConn(bi.ServAddr)
 
@@ -249,7 +250,7 @@ func (c *jarvisClient) subscribe(ctx context.Context, ci *clientInfo, ct pb.CHAN
 		Addr:        c.node.myinfo.Addr,
 	})
 	if err != nil {
-		warnLog("JarvisClient.subscribe:Subscribe", err)
+		jarviserr.WarnLog("JarvisClient.subscribe:Subscribe", err)
 		return err
 	}
 
@@ -260,7 +261,7 @@ func (c *jarvisClient) subscribe(ctx context.Context, ci *clientInfo, ct pb.CHAN
 			break
 		}
 		if err != nil {
-			warnLog("JarvisClient.subscribe:stream.Recv", err)
+			jarviserr.WarnLog("JarvisClient.subscribe:stream.Recv", err)
 
 			return err
 		}

@@ -1,6 +1,10 @@
 package jarviscore
 
-import "sync"
+import (
+	"sync"
+
+	pb "github.com/zhs007/jarviscore/proto"
+)
 
 // nodeCtrlMgr -
 type nodeCtrlMgr struct {
@@ -14,24 +18,24 @@ func newNodeCtrlMgr() *nodeCtrlMgr {
 	}
 }
 
-func (mgr *nodeCtrlMgr) clear() {
-	if len(mgr.mapNodeCtrl) == 0 {
-		return
-	}
+// func (mgr *nodeCtrlMgr) clear() {
+// 	if len(mgr.mapNodeCtrl) == 0 {
+// 		return
+// 	}
 
-	for k := range mgr.mapNodeCtrl {
-		delete(mgr.mapNodeCtrl, k)
-	}
+// 	for k := range mgr.mapNodeCtrl {
+// 		delete(mgr.mapNodeCtrl, k)
+// 	}
 
-	mgr.mapNodeCtrl = nil
-	mgr.mapNodeCtrl = make(map[string](*nodeCtrlInfo))
-}
+// 	mgr.mapNodeCtrl = nil
+// 	mgr.mapNodeCtrl = make(map[string](*nodeCtrlInfo))
+// }
 
-func (mgr *nodeCtrlMgr) isNeedRun(token string, ctrlid int32) bool {
+func (mgr *nodeCtrlMgr) isNeedRun(addr string, ctrlid int64) bool {
 	mgr.RLock()
 	defer mgr.RUnlock()
 
-	if v, ok := mgr.mapNodeCtrl[token]; ok {
+	if v, ok := mgr.mapNodeCtrl[addr]; ok {
 		if v.hasCtrl(ctrlid) {
 			return false
 		}
@@ -42,45 +46,45 @@ func (mgr *nodeCtrlMgr) isNeedRun(token string, ctrlid int32) bool {
 	mgr.Lock()
 	defer mgr.Unlock()
 
-	mapci, err := loadNodeCtrlInfo(getRealPath(token + ".yaml"))
-	if err != nil {
-		mgr.mapNodeCtrl[token] = newNodeCtrlInfo()
+	nci := newNodeCtrlInfo(addr) //loadNodeCtrlInfo(getRealPath(token + ".yaml"))
+	if nci == nil {
+		// mgr.mapNodeCtrl[addr] = nci //newNodeCtrlInfo()
 
 		return true
 	}
 
-	mgr.mapNodeCtrl[token] = mapci
+	mgr.mapNodeCtrl[addr] = nci
 
-	if mapci.hasCtrl(ctrlid) {
+	if nci.hasCtrl(ctrlid) {
 		return false
 	}
 
 	return true
 }
 
-func (mgr *nodeCtrlMgr) addCtrl(token string, ctrlid int32, command string) {
+func (mgr *nodeCtrlMgr) addCtrl(addr string, ctrlid int64, ctrltype pb.CTRLTYPE, command []byte, forwordAddr string, forwordNums int32) {
 	mgr.Lock()
 	defer mgr.Unlock()
 
-	if v, ok := mgr.mapNodeCtrl[token]; ok {
-		v.addCtrl(ctrlid, command)
+	if v, ok := mgr.mapNodeCtrl[addr]; ok {
+		v.addCtrl(ctrlid, ctrltype, command, forwordAddr, forwordNums)
 	}
 }
 
-func (mgr *nodeCtrlMgr) setCtrlResult(token string, ctrlid int32, result string) {
+func (mgr *nodeCtrlMgr) setCtrlResult(addr string, ctrlid int64, result []byte) {
 	mgr.Lock()
 	defer mgr.Unlock()
 
-	if v, ok := mgr.mapNodeCtrl[token]; ok {
+	if v, ok := mgr.mapNodeCtrl[addr]; ok {
 		v.setCtrlResult(ctrlid, result)
 	}
 }
 
-func (mgr *nodeCtrlMgr) save() {
-	mgr.Lock()
-	defer mgr.Unlock()
+// func (mgr *nodeCtrlMgr) save() {
+// 	mgr.Lock()
+// 	defer mgr.Unlock()
 
-	for k, v := range mgr.mapNodeCtrl {
-		v.save(getRealPath(k + ".yaml"))
-	}
-}
+// 	for k, v := range mgr.mapNodeCtrl {
+// 		v.save(getRealPath(k + ".yaml"))
+// 	}
+// }

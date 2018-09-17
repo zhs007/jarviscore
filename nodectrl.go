@@ -1,79 +1,189 @@
 package jarviscore
 
 import (
-	"io/ioutil"
+	"bytes"
 
-	yaml "gopkg.in/yaml.v2"
+	"github.com/golang/protobuf/proto"
+	"github.com/zhs007/jarviscore/db"
+	"github.com/zhs007/jarviscore/err"
+	pb "github.com/zhs007/jarviscore/proto"
 )
 
-// CtrlInfo -
-type CtrlInfo struct {
-	Command string `yaml:"command"`
-	Result  string `yaml:"result"`
-}
+const (
+	ctrldbAddr      = "addr"
+	ctrldbPublicKey = "pubkey"
+	ctrldbCtrl      = "ctrl:"
+)
 
 // nodeCtrlInfo -
 type nodeCtrlInfo struct {
-	Mapctrl map[int32]*CtrlInfo `yaml:"mapctrl"`
+	srcAddr string
+	pubKey  []byte
+	ctrldb  jarvisdb.Database
+	mapCtrl map[int64]*pb.CtrlDataInDB
 }
 
-func newNodeCtrlInfo() *nodeCtrlInfo {
-	return &nodeCtrlInfo{
-		Mapctrl: make(map[int32]*CtrlInfo),
-	}
-}
-
-func loadNodeCtrlInfo(filename string) (*nodeCtrlInfo, error) {
-	buf, err := loadFile(filename)
+func newNodeCtrlInfo(addr string) *nodeCtrlInfo {
+	db, err := jarvisdb.NewJarvisLDB(getRealPath("ctrl"+addr), 16, 16)
 	if err != nil {
-		return nil, err
+		jarviserr.ErrorLog("newNodeCtrlInfo:NewJarvisLDB", err)
+		return nil
 	}
 
-	nodectrlinfo := newNodeCtrlInfo()
-	err1 := yaml.Unmarshal(buf, nodectrlinfo)
-	if err1 != nil {
-		return nil, err1
+	err = db.Put([]byte("addr"), []byte(addr))
+	if err != nil {
+		jarviserr.ErrorLog("newNodeCtrlInfo:saveAddr", err)
+		return nil
 	}
 
-	return nodectrlinfo, nil
+	nci := &nodeCtrlInfo{
+		srcAddr: addr,
+		ctrldb:  db,
+		mapCtrl: make(map[int64]*pb.CtrlDataInDB),
+	}
+
+	err = nci.onInit()
+	if err != nil {
+		jarviserr.ErrorLog("newNodeCtrlInfo:saveAddr", err)
+		return nil
+	}
+
+	return nci
 }
 
-func (m *nodeCtrlInfo) save(filename string) error {
-	d, err := yaml.Marshal(m)
+// func loadNodeCtrlInfo(filename string) (*nodeCtrlInfo, error) {
+// 	buf, err := loadFile(filename)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	nodectrlinfo := newNodeCtrlInfo()
+// 	err1 := yaml.Unmarshal(buf, nodectrlinfo)
+// 	if err1 != nil {
+// 		return nil, err1
+// 	}
+
+// 	return nodectrlinfo, nil
+// }
+
+// func (m *nodeCtrlInfo) save(filename string) error {
+// 	d, err := yaml.Marshal(m)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	ioutil.WriteFile(filename, d, 0755)
+
+// 	return nil
+// }
+
+// func (m *nodeCtrlInfo) clear() {
+// 	if len(m.Mapctrl) == 0 {
+// 		return
+// 	}
+
+// 	for k := range m.Mapctrl {
+// 		delete(m.Mapctrl, k)
+// 	}
+
+// 	m.Mapctrl = nil
+// 	m.Mapctrl = make(map[int32]*CtrlInfo)
+// }
+
+func (nci *nodeCtrlInfo) onInit() error {
+	addr, err := nci.ctrldb.Get([]byte(ctrldbAddr))
 	if err != nil {
-		return err
+		err = nci.ctrldb.Put([]byte(ctrldbAddr), []byte(nci.srcAddr))
+	} else if bytes.Compare(addr, []byte(nci.srcAddr)) != 1 {
+		return jarviserr.NewError(pb.CODE_INVALID_ADDR)
 	}
 
-	ioutil.WriteFile(filename, d, 0755)
+	pubkey, err := nci.ctrldb.Get([]byte(ctrldbPublicKey))
+	if err != nil {
+		return nil
+	}
+
+	nci.pubKey = pubkey
 
 	return nil
 }
 
-func (m *nodeCtrlInfo) clear() {
-	if len(m.Mapctrl) == 0 {
-		return
+func (nci *nodeCtrlInfo) setPublicKey(pubKey []byte) error {
+	if len(nci.pubKey) != 0 {
+		if bytes.Compare(nci.pubKey, pubKey) != 1 {
+			return jarviserr.NewError(pb.CODE_INVALID_PUBLICKEY)
+		}
+
+		return nil
 	}
 
-	for k := range m.Mapctrl {
-		delete(m.Mapctrl, k)
+	err := nci.ctrldb.Put([]byte(ctrldbPublicKey), pubKey)
+	if err != nil {
+		jarviserr.ErrorLog("newNodeCtrlInfo:saveAddr", err)
+		return err
 	}
 
-	m.Mapctrl = nil
-	m.Mapctrl = make(map[int32]*CtrlInfo)
+	return nil
 }
 
-func (m *nodeCtrlInfo) hasCtrl(ctrlid int32) bool {
-	if _, ok := m.Mapctrl[ctrlid]; ok {
+func (nci *nodeCtrlInfo) hasCtrl(ctrlid int64) bool {
+	if _, ok := nci.mapCtrl[ctrlid]; ok {
 		return true
 	}
 
-	return false
+	ok, err := nci.ctrldb.Has([]byte("ctrl:" + string(ctrlid)))
+	if err != nil {
+		return false
+	}
+
+	return ok
 }
 
-func (m *nodeCtrlInfo) addCtrl(ctrlid int32, command string) {
-	m.Mapctrl[ctrlid] = &CtrlInfo{Command: command}
+func (nci *nodeCtrlInfo) addCtrl(ctrlid int64, ctrltype pb.CTRLTYPE, command []byte, forwordAddr string, forwordNums int32) error {
+	if _, ok := nci.mapCtrl[ctrlid]; ok {
+		return jarviserr.NewError(pb.CODE_CTRLDB_EXIST_CTRLID)
+	}
+
+	ctrlindb := &pb.CtrlDataInDB{
+		Ctrlid:      ctrlid,
+		CtrlType:    ctrltype,
+		ForwordAddr: forwordAddr,
+		Command:     command,
+		ForwordNums: forwordNums,
+	}
+
+	data, err := proto.Marshal(ctrlindb)
+	if err != nil {
+		return jarviserr.NewError(pb.CODE_CTRLDATAINDB_ENCODE_FAIL)
+	}
+
+	err = nci.ctrldb.Put([]byte(ctrldbCtrl+string(ctrlid)), data)
+	if err != nil {
+		return jarviserr.NewError(pb.CODE_CTRLDB_SAVE_CTRLDATA_FAIL)
+	}
+
+	nci.mapCtrl[ctrlid] = ctrlindb
+
+	return nil
 }
 
-func (m *nodeCtrlInfo) setCtrlResult(ctrlid int32, result string) {
-	m.Mapctrl[ctrlid].Result = result
+func (nci *nodeCtrlInfo) setCtrlResult(ctrlid int64, result []byte) error {
+	val, ok := nci.mapCtrl[ctrlid]
+	if !ok {
+		return jarviserr.NewError(pb.CODE_CTRLDB_NOT_EXIST_CTRLID)
+	}
+
+	val.Result = result
+
+	data, err := proto.Marshal(val)
+	if err != nil {
+		return jarviserr.NewError(pb.CODE_CTRLDATAINDB_ENCODE_FAIL)
+	}
+
+	err = nci.ctrldb.Put([]byte(ctrldbCtrl+string(ctrlid)), data)
+	if err != nil {
+		return jarviserr.NewError(pb.CODE_CTRLDB_SAVE_CTRLDATA_FAIL)
+	}
+
+	return nil
 }

@@ -5,12 +5,32 @@ package jarviscorepb;
 enum CODE {
     OK = 0;
 
-    INVALID_ADDR = 1;           // addr fail 
-    ALREADY_IN = 2;             // already in
-    FORWARD_MSG = 3;            // forward msg
-    BROADCAST_MSG = 4;          // broadcast msg
-    NOCTRLMOD = 5;              // no ctrl module
-    CLIENT_ALREADY_START = 6;   // client already start
+    // addr fail 
+    INVALID_ADDR = 1;
+    // already in
+    ALREADY_IN = 2;           
+    // forward msg
+    FORWARD_MSG = 3;            
+    // broadcast msg
+    BROADCAST_MSG = 4;          
+    // no ctrl module
+    NOCTRLMOD = 5;              
+    // client already start
+    CLIENT_ALREADY_START = 6;   
+    // verify fail
+    VERIFY_FAIL = 7;            
+    // invalid public key
+    INVALID_PUBLICKEY = 8;      
+    // invalid file read size
+    INVALID_FILEREADSIZE = 9;   
+    // encode CtrlDataInDB fail
+    CTRLDATAINDB_ENCODE_FAIL = 10;
+    // save CtrlDataInDB fail
+    CTRLDB_SAVE_CTRLDATA_FAIL = 11;
+    // ctrldb exist strlid
+    CTRLDB_EXIST_CTRLID = 12;
+    // ctrldb not exist strlid
+    CTRLDB_NOT_EXIST_CTRLID = 13;
 }
 
 enum NODETYPE {
@@ -26,6 +46,7 @@ enum CHANNELTYPE {
 
 enum CTRLTYPE {
     SHELL = 0;
+    FILE = 2;
 }
 
 message PrivateKey {
@@ -47,6 +68,15 @@ message NodeInfoInDB {
     NodeInfo nodeInfo = 1;
     int32 connectNums = 2;
     int32 connectedNums = 3;
+}
+
+message CtrlDataInDB {
+    int64 ctrlid = 1;
+    CTRLTYPE ctrlType = 2;
+    string forwordAddr = 3;
+    bytes command = 4;
+    bytes result = 5;
+    int32 forwordNums = 6;
 }
 
 message Join {
@@ -78,8 +108,11 @@ message CtrlInfo {
     string srcAddr = 3;
     string myAddr = 4;
     CTRLTYPE ctrlType = 5;
-    string command = 6;
+    bytes command = 6;
     int32 forwordNums = 7;
+    bytes signR = 8;
+    bytes signS = 9;
+    bytes pubKey = 10;
 }
 
 message CtrlResult {
@@ -87,7 +120,7 @@ message CtrlResult {
     string destAddr = 2;
     string srcAddr = 3;
     string myAddr = 4;
-    string ctrlResult = 5;
+    bytes ctrlResult = 5;
     int32 forwordNums = 6;
 }
 

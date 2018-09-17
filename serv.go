@@ -8,6 +8,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/zhs007/jarviscore/err"
 	"github.com/zhs007/jarviscore/log"
 	pb "github.com/zhs007/jarviscore/proto"
 	"google.golang.org/grpc"
@@ -30,7 +31,7 @@ type jarvisServer struct {
 func newServer(node *jarvisNode) (*jarvisServer, error) {
 	lis, err := net.Listen("tcp", node.myinfo.BindAddr)
 	if err != nil {
-		errorLog("newServer", err)
+		jarviserr.ErrorLog("newServer", err)
 
 		return nil, err
 	}

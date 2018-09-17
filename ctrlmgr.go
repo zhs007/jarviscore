@@ -3,6 +3,7 @@ package jarviscore
 import (
 	"sync"
 
+	"github.com/zhs007/jarviscore/err"
 	pb "github.com/zhs007/jarviscore/proto"
 )
 
@@ -19,7 +20,7 @@ func (mgr *ctrlMgr) Reg(ctrltype pb.CTRLTYPE, ctrl *Ctrl) {
 	mgrCtrl.mapCtrl[ctrltype] = ctrl
 }
 
-func (mgr *ctrlMgr) Run(ctrltype pb.CTRLTYPE, command string) (string, error) {
+func (mgr *ctrlMgr) Run(ctrltype pb.CTRLTYPE, command []byte) ([]byte, error) {
 	mgr.RLock()
 	defer mgr.RUnlock()
 
@@ -27,5 +28,5 @@ func (mgr *ctrlMgr) Run(ctrltype pb.CTRLTYPE, command string) (string, error) {
 		return (*c).Run(command)
 	}
 
-	return "", newError(int(pb.CODE_NOCTRLMOD))
+	return nil, jarviserr.NewError(pb.CODE_NOCTRLMOD)
 }

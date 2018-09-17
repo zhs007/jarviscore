@@ -11,6 +11,7 @@ import (
 	"github.com/seehuhn/fortuna"
 	"github.com/zhs007/jarviscore/crypto"
 	"github.com/zhs007/jarviscore/db"
+	"github.com/zhs007/jarviscore/err"
 	"github.com/zhs007/jarviscore/log"
 	pb "github.com/zhs007/jarviscore/proto"
 	"go.uber.org/zap"
@@ -56,7 +57,7 @@ const (
 func NewNode(baseinfo BaseInfo) JarvisNode {
 	db, err := jarvisdb.NewJarvisLDB(getRealPath("coredb"), 16, 16)
 	if err != nil {
-		errorLog("NewNode:NewJarvisLDB", err)
+		jarviserr.ErrorLog("NewNode:NewJarvisLDB", err)
 		return nil
 	}
 
@@ -71,7 +72,7 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 
 	err = node.loadPrivateKey()
 	if err != nil {
-		errorLog("NewNode:loadPrivateKey", err)
+		jarviserr.ErrorLog("NewNode:loadPrivateKey", err)
 
 		return nil
 	}
@@ -212,7 +213,7 @@ func (n *jarvisNode) Stop() error {
 	}
 
 	// n.mgrpeeraddr.savePeerAddrFile()
-	n.mgrNodeCtrl.save()
+	// n.mgrNodeCtrl.save()
 
 	return nil
 }
