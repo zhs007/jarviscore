@@ -291,7 +291,7 @@ func (c *jarvisClient) subscribe(ctx context.Context, ci *clientInfo, ct pb.CHAN
 	return nil
 }
 
-func (c *jarvisClient) sendCtrl(token string) error {
+func (c *jarvisClient) sendCtrl(ci *pb.CtrlInfo) error {
 	return nil
 }
 

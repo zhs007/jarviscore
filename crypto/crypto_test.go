@@ -3,7 +3,6 @@ package jarviscrypto
 import (
 	"bytes"
 	"crypto/ecdsa"
-	"crypto/rand"
 	"math/big"
 	"testing"
 
@@ -354,7 +353,7 @@ func TestSignAndVerify(t *testing.T) {
 		pb := privkey.ToPublicBytes()
 		addr := privkey.ToAddress()
 
-		r, s, err := ecdsa.Sign(rand.Reader, privkey.priKey, []byte(addr))
+		r, s, err := privkey.Sign([]byte(addr))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -374,7 +373,7 @@ func TestSignAndVerify(t *testing.T) {
 			t.Fatal("TestSignAndVerify addr fail")
 		}
 
-		if !ecdsa.Verify(pubkey.pubKey, []byte(addr), r, s) {
+		if !pubkey.Verify([]byte(addr), r, s) {
 			t.Fatal("TestSignAndVerify Verify fail")
 		}
 
@@ -388,7 +387,7 @@ func TestSignAndVerify(t *testing.T) {
 			t.Fatal("TestSignAndVerify addr1 fail")
 		}
 
-		if !ecdsa.Verify(pubkey1.pubKey, []byte(addr), r, s) {
+		if !pubkey1.Verify([]byte(addr), r, s) {
 			t.Fatal("TestSignAndVerify Verify1 fail")
 		}
 	}

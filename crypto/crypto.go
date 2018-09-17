@@ -185,6 +185,11 @@ func (key *PrivateKey) ToAddress() (address string) {
 	return address
 }
 
+// Sign -
+func (key *PrivateKey) Sign(data []byte) (r, s *big.Int, err error) {
+	return ecdsa.Sign(rand.Reader, key.priKey, data)
+}
+
 // FromBytes - converts a byte slice (either with or without point compression) to a Bitcoin public key.
 func (key *PublicKey) FromBytes(b []byte) (err error) {
 	key.pubKey = new(ecdsa.PublicKey)
@@ -258,4 +263,10 @@ func (key *PublicKey) ToAddress() (address string) {
 	address = Base58CheckEncode(0x00, pubhash2)
 
 	return address
+}
+
+// Verify verifies the signature in r, s of hash using the public key, pub. Its
+// return value records whether the signature is valid.
+func (key *PublicKey) Verify(data []byte, r, s *big.Int) bool {
+	return ecdsa.Verify(key.pubKey, data, r, s)
 }

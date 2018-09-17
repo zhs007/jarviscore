@@ -8,6 +8,7 @@ type NodeInfo struct {
 	connectNode   bool
 	connectNums   int
 	connectedNums int
+	ctrlid        int64
 }
 
 // NewNodeInfo -

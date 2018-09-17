@@ -17,8 +17,17 @@ type jarvisError struct {
 	errcode pb.CODE
 }
 
+// FormatCode -
+func FormatCode(code pb.CODE) pb.CODE {
+	if _, ok := pb.CODE_name[int32(code)]; !ok {
+		return pb.CODE_INVALID_CODE
+	}
+
+	return code
+}
+
 func (err *jarvisError) Error() string {
-	return "JarvisError - [" + string(err.errcode) + "]"
+	return "JarvisError - [" + pb.CODE_name[int32(FormatCode(err.errcode))] + "]"
 }
 
 func (err *jarvisError) ErrCode() pb.CODE {

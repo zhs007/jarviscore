@@ -23,14 +23,36 @@ enum CODE {
     INVALID_PUBLICKEY = 8;      
     // invalid file read size
     INVALID_FILEREADSIZE = 9;   
+
+    // sign fail
+    SIGN_FAIL = 14;
+    // invalid code
+    INVALID_CODE = 16;
+    // leveldb iter error
+    LEVELDB_ITER_ERROR = 18;
+
+    // NodeInfoInDB decode fail
+    NODEINFOINDB_DECODE_FAIL = 110;
+    // NodeInfoInDB encode fail
+    NODEINFOINDB_ENCODE_FAIL = 111;
+
+    // coredb open fail
+    COREDB_OPEN_FAIL = 120;
+    // coredb nodeinfo put fail
+    COREDB_NODEINFO_PUT_FAIL = 121;
+    // coredb no addr
+    COREDB_NO_ADDR = 122;
+
     // encode CtrlDataInDB fail
-    CTRLDATAINDB_ENCODE_FAIL = 10;
+    CTRLDATAINDB_ENCODE_FAIL = 200;
+    // decode CtrlDataInDB fail
+    CTRLDATAINDB_DECODE_FAIL = 201;
     // save CtrlDataInDB fail
-    CTRLDB_SAVE_CTRLDATA_FAIL = 11;
+    CTRLDB_SAVE_CTRLDATA_FAIL = 202;
     // ctrldb exist strlid
-    CTRLDB_EXIST_CTRLID = 12;
+    CTRLDB_EXIST_CTRLID = 203;
     // ctrldb not exist strlid
-    CTRLDB_NOT_EXIST_CTRLID = 13;
+    CTRLDB_NOT_EXIST_CTRLID = 204;
 }
 
 enum NODETYPE {
@@ -68,6 +90,7 @@ message NodeInfoInDB {
     NodeInfo nodeInfo = 1;
     int32 connectNums = 2;
     int32 connectedNums = 3;
+    int64 ctrlid = 4;
 }
 
 message CtrlDataInDB {

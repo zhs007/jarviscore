@@ -10,9 +10,9 @@ import (
 )
 
 const (
-	ctrldbAddr      = "addr"
-	ctrldbPublicKey = "pubkey"
-	ctrldbCtrl      = "ctrl:"
+	ctrldbAddr       = "addr"
+	ctrldbPublicKey  = "pubkey"
+	ctrldbCtrlPrefix = "ctrl:"
 )
 
 // nodeCtrlInfo -
@@ -24,7 +24,7 @@ type nodeCtrlInfo struct {
 }
 
 func newNodeCtrlInfo(addr string) *nodeCtrlInfo {
-	db, err := jarvisdb.NewJarvisLDB(getRealPath("ctrl"+addr), 16, 16)
+	db, err := jarvisdb.NewJarvisLDB(getRealPath("ctrl-"+addr), 16, 16)
 	if err != nil {
 		jarviserr.ErrorLog("newNodeCtrlInfo:NewJarvisLDB", err)
 		return nil
@@ -131,7 +131,7 @@ func (nci *nodeCtrlInfo) hasCtrl(ctrlid int64) bool {
 		return true
 	}
 
-	ok, err := nci.ctrldb.Has([]byte("ctrl:" + string(ctrlid)))
+	ok, err := nci.ctrldb.Has([]byte(ctrldbCtrlPrefix + string(ctrlid)))
 	if err != nil {
 		return false
 	}
@@ -157,7 +157,7 @@ func (nci *nodeCtrlInfo) addCtrl(ctrlid int64, ctrltype pb.CTRLTYPE, command []b
 		return jarviserr.NewError(pb.CODE_CTRLDATAINDB_ENCODE_FAIL)
 	}
 
-	err = nci.ctrldb.Put([]byte(ctrldbCtrl+string(ctrlid)), data)
+	err = nci.ctrldb.Put([]byte(ctrldbCtrlPrefix+string(ctrlid)), data)
 	if err != nil {
 		return jarviserr.NewError(pb.CODE_CTRLDB_SAVE_CTRLDATA_FAIL)
 	}
@@ -180,7 +180,7 @@ func (nci *nodeCtrlInfo) setCtrlResult(ctrlid int64, result []byte) error {
 		return jarviserr.NewError(pb.CODE_CTRLDATAINDB_ENCODE_FAIL)
 	}
 
-	err = nci.ctrldb.Put([]byte(ctrldbCtrl+string(ctrlid)), data)
+	err = nci.ctrldb.Put([]byte(ctrldbCtrlPrefix+string(ctrlid)), data)
 	if err != nil {
 		return jarviserr.NewError(pb.CODE_CTRLDB_SAVE_CTRLDATA_FAIL)
 	}

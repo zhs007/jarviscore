@@ -5,10 +5,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/golang/protobuf/proto"
-
-	"github.com/zhs007/jarviscore/crypto"
-	"github.com/zhs007/jarviscore/db"
 	"github.com/zhs007/jarviscore/err"
 	"github.com/zhs007/jarviscore/log"
 	pb "github.com/zhs007/jarviscore/proto"
@@ -32,8 +28,9 @@ type jarvisNode struct {
 	servstate   int
 	clientstate int
 	nodechan    chan int
-	coredb      jarvisdb.Database
-	privKey     *jarviscrypto.PrivateKey
+	coredb      *coreDB
+	// coredb      jarvisdb.Database
+	// privKey     *jarviscrypto.PrivateKey
 	// gen         *fortuna.Generator
 	// mgrpeeraddr *peerAddrMgr
 	// wg          sync.WaitGroup
@@ -45,17 +42,18 @@ const (
 	randomMax int64 = 0x7fffffffffffffff
 	// letterBytes             = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	// letterBytesLen  = int64(len(letterBytes))
-	stateNormal     = 0
-	stateStart      = 1
-	stateEnd        = 2
-	coredbMyPrivKey = "myprivkey"
+	stateNormal = 0
+	stateStart  = 1
+	stateEnd    = 2
+	// coredbMyPrivKey = "myprivkey"
 )
 
 // NewNode -
 func NewNode(baseinfo BaseInfo) JarvisNode {
-	db, err := jarvisdb.NewJarvisLDB(getRealPath("coredb"), 16, 16)
+	db, err := newCoreDB()
 	if err != nil {
 		jarviserr.ErrorLog("NewNode:NewJarvisLDB", err)
+
 		return nil
 	}
 
@@ -68,7 +66,7 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 		coredb:      db,
 	}
 
-	err = node.loadPrivateKey()
+	err = node.coredb.loadPrivateKey()
 	if err != nil {
 		jarviserr.ErrorLog("NewNode:loadPrivateKey", err)
 
@@ -79,7 +77,7 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 	node.mgrNodeInfo.loadFromDB()
 
 	// node.myinfo = baseinfo
-	node.myinfo.Addr = node.privKey.ToAddress()
+	node.myinfo.Addr = node.coredb.privKey.ToAddress()
 
 	// signal.Notify(node.signalchan)
 	signal.Notify(node.signalchan, os.Interrupt, os.Kill, syscall.SIGSTOP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGTSTP)
@@ -103,52 +101,52 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 	return node
 }
 
-func (n *jarvisNode) savePrivateKey() error {
-	privkey := &pb.PrivateKey{
-		PriKey: n.privKey.ToPrivateBytes(),
-	}
+// func (n *jarvisNode) savePrivateKey() error {
+// 	privkey := &pb.PrivateKey{
+// 		PriKey: n.privKey.ToPrivateBytes(),
+// 	}
 
-	data, err := proto.Marshal(privkey)
-	if err != nil {
-		return err
-	}
+// 	data, err := proto.Marshal(privkey)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	err = n.coredb.Put([]byte(coredbMyPrivKey), data)
-	if err != nil {
-		return err
-	}
+// 	err = n.coredb.Put([]byte(coredbMyPrivKey), data)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func (n *jarvisNode) loadPrivateKey() error {
-	dat, err := n.coredb.Get([]byte(coredbMyPrivKey))
-	if err != nil {
-		n.privKey = jarviscrypto.GenerateKey()
+// func (n *jarvisNode) loadPrivateKey() error {
+// 	dat, err := n.coredb.Get([]byte(coredbMyPrivKey))
+// 	if err != nil {
+// 		n.privKey = jarviscrypto.GenerateKey()
 
-		return n.savePrivateKey()
-	}
+// 		return n.savePrivateKey()
+// 	}
 
-	pbprivkey := &pb.PrivateKey{}
-	err = proto.Unmarshal(dat, pbprivkey)
-	if err != nil {
-		n.privKey = jarviscrypto.GenerateKey()
+// 	pbprivkey := &pb.PrivateKey{}
+// 	err = proto.Unmarshal(dat, pbprivkey)
+// 	if err != nil {
+// 		n.privKey = jarviscrypto.GenerateKey()
 
-		return n.savePrivateKey()
-	}
+// 		return n.savePrivateKey()
+// 	}
 
-	privkey := jarviscrypto.NewPrivateKey()
-	err = privkey.FromBytes(pbprivkey.PriKey)
-	if err != nil {
-		n.privKey = jarviscrypto.GenerateKey()
+// 	privkey := jarviscrypto.NewPrivateKey()
+// 	err = privkey.FromBytes(pbprivkey.PriKey)
+// 	if err != nil {
+// 		n.privKey = jarviscrypto.GenerateKey()
 
-		return n.savePrivateKey()
-	}
+// 		return n.savePrivateKey()
+// 	}
 
-	n.privKey = privkey
+// 	n.privKey = privkey
 
-	return nil
-}
+// 	return nil
+// }
 
 // // RandomInt64 -
 // func (n *jarvisNode) RandomInt64(maxval int64) int64 {
@@ -344,4 +342,35 @@ func (n *jarvisNode) onGetNewNode(bi *BaseInfo) {
 	if !connNode {
 		n.client.pushNewConnect(bi)
 	}
+}
+
+// requestCtrl
+func (n *jarvisNode) requestCtrl(addr string, ctrltype pb.CTRLTYPE, command []byte) error {
+	ctrlid := n.mgrNodeInfo.getCtrlID(addr)
+	if ctrlid < 0 {
+		return jarviserr.NewError(pb.CODE_COREDB_NO_ADDR)
+	}
+
+	buf := append([]byte(addr), command...)
+
+	r, s, err := n.coredb.privKey.Sign(buf)
+	if err != nil {
+		return jarviserr.NewError(pb.CODE_SIGN_FAIL)
+	}
+
+	ci := &pb.CtrlInfo{
+		Ctrlid:      ctrlid,
+		DestAddr:    addr,
+		SrcAddr:     n.myinfo.Addr,
+		CtrlType:    ctrltype,
+		Command:     command,
+		ForwordNums: 0,
+		SignR:       r.Bytes(),
+		SignS:       s.Bytes(),
+		PubKey:      n.coredb.privKey.ToPublicBytes(),
+	}
+
+	n.client.sendCtrl(ci)
+
+	return nil
 }
