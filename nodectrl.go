@@ -4,7 +4,7 @@ import (
 	"bytes"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/zhs007/jarviscore/db"
+	ankadatabase "github.com/zhs007/ankadb/database"
 	"github.com/zhs007/jarviscore/err"
 	pb "github.com/zhs007/jarviscore/proto"
 )
@@ -19,14 +19,14 @@ const (
 type nodeCtrlInfo struct {
 	srcAddr string
 	pubKey  []byte
-	ctrldb  jarvisdb.Database
+	ctrldb  ankadatabase.Database
 	mapCtrl map[int64]*pb.CtrlDataInDB
 }
 
 func newNodeCtrlInfo(addr string) *nodeCtrlInfo {
-	db, err := jarvisdb.NewJarvisLDB(getRealPath("ctrl-"+addr), 16, 16)
+	db, err := ankadatabase.NewAnkaLDB(getRealPath("ctrl-"+addr), 16, 16)
 	if err != nil {
-		jarviserr.ErrorLog("newNodeCtrlInfo:NewJarvisLDB", err)
+		jarviserr.ErrorLog("newNodeCtrlInfo:NewAnkaLDB", err)
 		return nil
 	}
 

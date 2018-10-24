@@ -53,7 +53,7 @@ const (
 func NewNode(baseinfo BaseInfo) JarvisNode {
 	db, err := newCoreDB()
 	if err != nil {
-		jarviserr.ErrorLog("NewNode:NewJarvisLDB", err)
+		jarviserr.ErrorLog("NewNode:newCoreDB", err)
 
 		return nil
 	}

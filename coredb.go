@@ -2,8 +2,8 @@ package jarviscore
 
 import (
 	"github.com/golang/protobuf/proto"
+	ankadatabase "github.com/zhs007/ankadb/database"
 	"github.com/zhs007/jarviscore/crypto"
-	"github.com/zhs007/jarviscore/db"
 	"github.com/zhs007/jarviscore/err"
 	pb "github.com/zhs007/jarviscore/proto"
 )
@@ -14,14 +14,14 @@ const (
 )
 
 type coreDB struct {
-	db      jarvisdb.Database
+	db      ankadatabase.Database
 	privKey *jarviscrypto.PrivateKey
 }
 
 func newCoreDB() (*coreDB, error) {
-	db, err := jarvisdb.NewJarvisLDB(getRealPath("coredb"), 16, 16)
+	db, err := ankadatabase.NewAnkaLDB(getRealPath("coredb"), 16, 16)
 	if err != nil {
-		jarviserr.ErrorLog("newCoreDB:NewJarvisLDB", err)
+		jarviserr.ErrorLog("newCoreDB:NewAnkaLDB", err)
 
 		return nil, jarviserr.NewError(pb.CODE_COREDB_OPEN_FAIL)
 	}
