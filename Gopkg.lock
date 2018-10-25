@@ -78,7 +78,7 @@
     "graphqlext",
     "proto"
   ]
-  revision = "b5ad16a6c00d2b5cf93a91c9c55088637f2763c8"
+  revision = "bd73dbb3afa3c4d7deedd43197c48809e9cd16b4"
 
 [[projects]]
   name = "go.uber.org/atomic"
