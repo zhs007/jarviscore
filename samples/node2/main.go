@@ -7,8 +7,11 @@ import (
 
 func main() {
 	cfg := jarviscore.Config{
-		RunPath:     "./",
-		DefPeerAddr: "127.0.0.1:7788",
+		DBPath:         "./dat",
+		LogPath:        "./log",
+		AnkaDBHttpServ: "127.0.0.1:8889",
+		AnkaDBEngine:   "leveldb",
+		DefPeerAddr:    "127.0.0.1:7788",
 		// DefPeerAddr: "jarvis.heyalgo.io:7788",
 	}
 

@@ -3,8 +3,8 @@ package jarviscore
 import (
 	"sync"
 
+	"github.com/zhs007/jarviscore/coredb/proto"
 	"github.com/zhs007/jarviscore/err"
-
 	pb "github.com/zhs007/jarviscore/proto"
 )
 
@@ -35,16 +35,16 @@ func (mgr *nodeInfoMgr) loadFromDB() {
 		delete(mgr.mapNodeInfo, k)
 	}
 
-	mgr.node.coredb.foreachNode(func(key []byte, val *pb.NodeInfoInDB) {
+	mgr.node.coredb.foreachNodeEx(func(key string, val *coredbpb.NodeInfo) {
 		bi := BaseInfo{
-			Name:     val.NodeInfo.Name,
-			ServAddr: val.NodeInfo.ServAddr,
-			Addr:     val.NodeInfo.Addr,
-			NodeType: val.NodeInfo.NodeType,
+			Name:     val.Name,
+			ServAddr: val.ServAddr,
+			Addr:     val.Addr,
+			NodeType: pb.NODETYPE_NORMAL,
 		}
 
 		mgr.addNodeInfo(&bi, true)
-	}, false)
+	})
 
 	// iter := mgr.node.coredb.db.NewIteratorWithPrefix([]byte(coredbMyNodeInfoPrefix))
 	// for iter.Next() {

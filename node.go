@@ -67,7 +67,7 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 		coredb:      db,
 	}
 
-	err = node.coredb.loadPrivateKey()
+	err = node.coredb.loadPrivateKeyEx()
 	if err != nil {
 		jarviserr.ErrorLog("NewNode:loadPrivateKey", err)
 

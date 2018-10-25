@@ -24,71 +24,33 @@ type nodeCtrlInfo struct {
 }
 
 func newNodeCtrlInfo(addr string) *nodeCtrlInfo {
-	db, err := ankadatabase.NewAnkaLDB(getRealPath("ctrl-"+addr), 16, 16)
-	if err != nil {
-		jarviserr.ErrorLog("newNodeCtrlInfo:NewAnkaLDB", err)
-		return nil
-	}
+	return nil
+	// db, err := ankadatabase.NewAnkaLDB(getRealPath("ctrl-"+addr), 16, 16)
+	// if err != nil {
+	// 	jarviserr.ErrorLog("newNodeCtrlInfo:NewAnkaLDB", err)
+	// 	return nil
+	// }
 
-	err = db.Put([]byte("addr"), []byte(addr))
-	if err != nil {
-		jarviserr.ErrorLog("newNodeCtrlInfo:saveAddr", err)
-		return nil
-	}
+	// err = db.Put([]byte("addr"), []byte(addr))
+	// if err != nil {
+	// 	jarviserr.ErrorLog("newNodeCtrlInfo:saveAddr", err)
+	// 	return nil
+	// }
 
-	nci := &nodeCtrlInfo{
-		srcAddr: addr,
-		ctrldb:  db,
-		mapCtrl: make(map[int64]*pb.CtrlDataInDB),
-	}
+	// nci := &nodeCtrlInfo{
+	// 	srcAddr: addr,
+	// 	ctrldb:  db,
+	// 	mapCtrl: make(map[int64]*pb.CtrlDataInDB),
+	// }
 
-	err = nci.onInit()
-	if err != nil {
-		jarviserr.ErrorLog("newNodeCtrlInfo:saveAddr", err)
-		return nil
-	}
+	// err = nci.onInit()
+	// if err != nil {
+	// 	jarviserr.ErrorLog("newNodeCtrlInfo:saveAddr", err)
+	// 	return nil
+	// }
 
-	return nci
+	// return nci
 }
-
-// func loadNodeCtrlInfo(filename string) (*nodeCtrlInfo, error) {
-// 	buf, err := loadFile(filename)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	nodectrlinfo := newNodeCtrlInfo()
-// 	err1 := yaml.Unmarshal(buf, nodectrlinfo)
-// 	if err1 != nil {
-// 		return nil, err1
-// 	}
-
-// 	return nodectrlinfo, nil
-// }
-
-// func (m *nodeCtrlInfo) save(filename string) error {
-// 	d, err := yaml.Marshal(m)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	ioutil.WriteFile(filename, d, 0755)
-
-// 	return nil
-// }
-
-// func (m *nodeCtrlInfo) clear() {
-// 	if len(m.Mapctrl) == 0 {
-// 		return
-// 	}
-
-// 	for k := range m.Mapctrl {
-// 		delete(m.Mapctrl, k)
-// 	}
-
-// 	m.Mapctrl = nil
-// 	m.Mapctrl = make(map[int32]*CtrlInfo)
-// }
 
 func (nci *nodeCtrlInfo) onInit() error {
 	addr, err := nci.ctrldb.Get([]byte(ctrldbAddr))

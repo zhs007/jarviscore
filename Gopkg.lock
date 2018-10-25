@@ -8,6 +8,12 @@
   revision = "00116ff8c62fc6d4daa24156ce0ad03ce49ae845"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/goinggo/mapstructure"
+  packages = ["."]
+  revision = "194205d9b4a98eff86d4e8d3c0dfe87dea59ef81"
+
+[[projects]]
   name = "github.com/golang/protobuf"
   packages = [
     "proto",
@@ -24,6 +30,24 @@
   name = "github.com/golang/snappy"
   packages = ["."]
   revision = "2e65f85255dbc3072edf28d6b5b8efc472979f5a"
+
+[[projects]]
+  name = "github.com/graphql-go/graphql"
+  packages = [
+    ".",
+    "gqlerrors",
+    "language/ast",
+    "language/kinds",
+    "language/lexer",
+    "language/location",
+    "language/parser",
+    "language/printer",
+    "language/source",
+    "language/typeInfo",
+    "language/visitor"
+  ]
+  revision = "5c1be0872a56fba73b279434ea95dfda735abedd"
+  version = "v0.7.6"
 
 [[projects]]
   branch = "master"
@@ -47,8 +71,14 @@
 [[projects]]
   branch = "master"
   name = "github.com/zhs007/ankadb"
-  packages = ["database"]
-  revision = "281107e2fb0edea697edeee97c50f6b414900d18"
+  packages = [
+    ".",
+    "database",
+    "err",
+    "graphqlext",
+    "proto"
+  ]
+  revision = "b5ad16a6c00d2b5cf93a91c9c55088637f2763c8"
 
 [[projects]]
   name = "go.uber.org/atomic"
@@ -79,7 +109,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ripemd160"]
-  revision = "0c41d7ab0a0ee717d4590a44bcb987dfd9e183eb"
+  revision = "85e1b3f9139abd58575d728a509643924e3b2ebf"
 
 [[projects]]
   branch = "master"
@@ -99,7 +129,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "44b849a8bc13eb42e95e6c6c5e360481b73ec710"
+  revision = "d989b31c87461dc8ab2f1cac6792814e27fadea9"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -161,9 +191,15 @@
   revision = "2e463a05d100327ca47ac218281906921038fd95"
   version = "v1.16.0"
 
+[[projects]]
+  name = "gopkg.in/yaml.v2"
+  packages = ["."]
+  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
+  version = "v2.2.1"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f10510e4d1ec9682a3ee46c918ac05de26452bb40442e5f064c2dbca00f919bc"
+  inputs-digest = "b9b5012c7fcdfa74367d833dbcec62a4c7197e421ce11f08acab2891b9b40a0f"
   solver-name = "gps-cdcl"
   solver-version = 1

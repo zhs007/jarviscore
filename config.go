@@ -10,23 +10,35 @@ import (
 
 // Config - config
 type Config struct {
-	RunPath     string
-	DefPeerAddr string
+	DBPath         string
+	LogPath        string
+	DefPeerAddr    string
+	AnkaDBHttpServ string
+	AnkaDBEngine   string
 }
 
 const normalLogFilename = "output.log"
 const errLogFilename = "error.log"
 
-var config = Config{RunPath: "./", DefPeerAddr: "jarvis.heyalgo.io:7788"}
+var config = Config{
+	DBPath:         "./data",
+	LogPath:        "./log",
+	DefPeerAddr:    "jarvis.heyalgo.io:7788",
+	AnkaDBHttpServ: "8888",
+	AnkaDBEngine:   "leveldb",
+}
 
 // InitJarvisCore -
 func InitJarvisCore(cfg Config) {
-	config.RunPath = cfg.RunPath
+	config.DBPath = cfg.DBPath
 	config.DefPeerAddr = cfg.DefPeerAddr
 
-	log.InitLogger(getRealPath(normalLogFilename), getRealPath(errLogFilename))
+	log.InitLogger(path.Join(config.LogPath, normalLogFilename), path.Join(config.LogPath, errLogFilename))
 
-	log.Info("InitJarvisCore", zap.String("RunPath", cfg.RunPath), zap.String("DefPeerAddr", cfg.DefPeerAddr))
+	log.Info("InitJarvisCore",
+		zap.String("DBPath", cfg.DBPath),
+		zap.String("DefPeerAddr", cfg.DefPeerAddr),
+		zap.String("LogPath", cfg.LogPath))
 
 	return
 }
@@ -38,6 +50,6 @@ func ReleaseJarvisCore() error {
 	return nil
 }
 
-func getRealPath(filename string) string {
-	return path.Join(config.RunPath, filename)
-}
+// func getRealPath(filename string) string {
+// 	return path.Join(config.RunPath, filename)
+// }

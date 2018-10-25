@@ -1,8 +1,13 @@
 package jarviscore
 
 import (
-	"github.com/golang/protobuf/proto"
-	ankadatabase "github.com/zhs007/ankadb/database"
+	"context"
+	"encoding/base64"
+	"time"
+
+	"github.com/zhs007/ankadb"
+	"github.com/zhs007/jarviscore/coredb"
+	"github.com/zhs007/jarviscore/coredb/proto"
 	"github.com/zhs007/jarviscore/crypto"
 	"github.com/zhs007/jarviscore/err"
 	pb "github.com/zhs007/jarviscore/proto"
@@ -13,13 +18,41 @@ const (
 	coredbMyNodeInfoPrefix = "ni:"
 )
 
+const queryNewPrivateData = `mutation NewPrivateData($priKey: ID!, $pubKey: ID!, $addr: ID!, $createTime: Timestamp!) {
+	newPrivateData(priKey: $priKey, pubKey: $pubKey, addr: $addr, createTime: $createTime) {
+		pubKey, addr, createTime
+	}
+}`
+
+const queryPrivateKey = `query PrivateKey() {
+	privateKey() {
+		priKey, pubKey, addr, createTime
+	}
+}`
+
+const queryNodeInfos = `query NodeInfos($snapshotID: Int64!, $beginIndex: Int!, $nums: Int!) {
+	nodeInfos(snapshotID: $snapshotID, beginIndex: $beginIndex, nums: $nums) {
+		snapshotID, endIndex, maxIndex, 
+		nodes {
+			addr, servAddr, name, connectNums, connectedNums, ctrlID, lstClientAddr, addTime
+		}
+	}
+}`
+
+const queryUpdNodeInfo = `query UpdNodeInfo($nodeInfo: NodeInfoInput!) {
+	updNodeInfo(nodeInfo: $nodeInfo) {
+		addr, servAddr, name, connectNums, connectedNums, ctrlID, lstClientAddr, addTime
+	}
+}`
+
 type coreDB struct {
-	db      ankadatabase.Database
+	ankaDB  *ankadb.AnkaDB
 	privKey *jarviscrypto.PrivateKey
+	// db      ankadatabase.Database
 }
 
 func newCoreDB() (*coreDB, error) {
-	db, err := ankadatabase.NewAnkaLDB(getRealPath("coredb"), 16, 16)
+	ankaDB, err := coredb.NewCoreDB(config.DBPath, config.AnkaDBHttpServ, config.AnkaDBEngine)
 	if err != nil {
 		jarviserr.ErrorLog("newCoreDB:NewAnkaLDB", err)
 
@@ -27,46 +60,62 @@ func newCoreDB() (*coreDB, error) {
 	}
 
 	return &coreDB{
-		db: db,
+		ankaDB: ankaDB,
 	}, nil
 }
 
 func (db *coreDB) savePrivateKey() error {
-	privkey := &pb.PrivateKey{
-		PriKey: db.privKey.ToPrivateBytes(),
+	if db.privKey == nil {
+		return jarviserr.NewError(pb.CODE_NO_PRIVATEKEY)
 	}
 
-	data, err := proto.Marshal(privkey)
-	if err != nil {
-		return err
-	}
+	params := make(map[string]interface{})
+	params["priKey"] = base64.StdEncoding.EncodeToString(db.privKey.ToPrivateBytes())
+	params["pubKey"] = base64.StdEncoding.EncodeToString(db.privKey.ToPublicBytes())
+	params["addr"] = db.privKey.ToAddress()
+	params["createTime"] = time.Now().Second()
 
-	err = db.db.Put([]byte(coredbMyPrivKey), data)
+	_, err := db.ankaDB.LocalQuery(context.Background(), queryNewPrivateData, params)
 	if err != nil {
 		return err
 	}
 
 	return nil
 }
-
-func (db *coreDB) loadPrivateKey() error {
-	dat, err := db.db.Get([]byte(coredbMyPrivKey))
+func (db *coreDB) loadPrivateKeyEx() error {
+	err := db._loadPrivateKey()
 	if err != nil {
 		db.privKey = jarviscrypto.GenerateKey()
 
 		return db.savePrivateKey()
 	}
 
-	pbprivkey := &pb.PrivateKey{}
-	err = proto.Unmarshal(dat, pbprivkey)
-	if err != nil {
-		db.privKey = jarviscrypto.GenerateKey()
+	return nil
+}
 
-		return db.savePrivateKey()
+func (db *coreDB) _loadPrivateKey() error {
+	result, err := db.ankaDB.LocalQuery(context.Background(), queryPrivateKey, nil)
+	if err != nil {
+		return err
+	}
+
+	if result.HasErrors() {
+		return result.Errors[0]
+	}
+
+	rpd := &coredb.ResultPrivateData{}
+	err = ankadb.MakeObjFromResult(result, rpd)
+	if err != nil {
+		return err
+	}
+
+	bytesPrikey, err := base64.StdEncoding.DecodeString(rpd.PrivateData.PriKey)
+	if err != nil {
+		return err
 	}
 
 	privkey := jarviscrypto.NewPrivateKey()
-	err = privkey.FromBytes(pbprivkey.PriKey)
+	err = privkey.FromBytes(bytesPrikey)
 	if err != nil {
 		db.privKey = jarviscrypto.GenerateKey()
 
@@ -78,54 +127,64 @@ func (db *coreDB) loadPrivateKey() error {
 	return nil
 }
 
-func (db *coreDB) foreachNode(oneach func([]byte, *pb.NodeInfoInDB), errisbreak bool) error {
-	iter := db.db.NewIteratorWithPrefix([]byte(coredbMyNodeInfoPrefix))
-	for iter.Next() {
-		// Remember that the contents of the returned slice should not be modified, and
-		// only valid until the next call to Next.
-		// key := iter.Key()
-		value := iter.Value()
+func (db *coreDB) _foreachNode(oneach func(string, *coredbpb.NodeInfo), snapshotID int64, beginIndex int, nums int) (*coredbpb.NodeInfoList, error) {
+	params := make(map[string]interface{})
+	params["snapshotID"] = snapshotID
+	params["beginIndex"] = beginIndex
+	params["nums"] = db.privKey.ToAddress()
+	params["createTime"] = time.Now().Second()
 
-		ni2db := &pb.NodeInfoInDB{}
-		err := proto.Unmarshal(value, ni2db)
-		if err != nil {
-			oneach(iter.Key(), ni2db)
-		} else if errisbreak {
-			return jarviserr.NewError(pb.CODE_NODEINFOINDB_DECODE_FAIL)
-		}
+	result, err := db.ankaDB.LocalQuery(context.Background(), queryNodeInfos, nil)
+	rnis := &coredbpb.NodeInfoList{}
+	err = ankadb.MakeMsgFromResult(result, rnis)
+	if err != nil {
+		return nil, err
 	}
 
-	iter.Release()
-	err := iter.Error()
+	for _, v := range rnis.Nodes {
+		oneach(v.Addr, v)
+	}
+
+	return rnis, nil
+}
+
+func (db *coreDB) foreachNodeEx(oneach func(string, *coredbpb.NodeInfo)) error {
+	rnis, err := db._foreachNode(oneach, 0, 0, 128)
 	if err != nil {
-		return jarviserr.NewError(pb.CODE_LEVELDB_ITER_ERROR)
+		return err
+	}
+
+	for bi := rnis.EndIndex; bi < rnis.MaxIndex; {
+		rnis, err = db._foreachNode(oneach, rnis.SnapshotID, int(bi), 128)
+		if err != nil {
+			return err
+		}
+
+		bi = rnis.EndIndex
 	}
 
 	return nil
 }
 
 func (db *coreDB) saveNode(cni *NodeInfo) error {
-	ni := &pb.NodeInfo{
-		Name:     cni.baseinfo.Name,
-		ServAddr: cni.baseinfo.ServAddr,
-		Addr:     cni.baseinfo.Addr,
-		NodeType: cni.baseinfo.NodeType,
-	}
-
-	ni2db := &pb.NodeInfoInDB{
-		NodeInfo:      ni,
+	ni := &coredbpb.NodeInfo{
+		ServAddr:      cni.baseinfo.ServAddr,
+		Addr:          cni.baseinfo.Addr,
+		Name:          cni.baseinfo.Name,
 		ConnectNums:   int32(cni.connectNums),
 		ConnectedNums: int32(cni.connectedNums),
 	}
 
-	data, err := proto.Marshal(ni2db)
+	params := make(map[string]interface{})
+
+	err := ankadb.MakeParamsFromMsg(params, "nodeInfo", ni)
 	if err != nil {
-		return jarviserr.NewError(pb.CODE_NODEINFOINDB_ENCODE_FAIL)
+		return err
 	}
 
-	err = db.db.Put(append([]byte(coredbMyNodeInfoPrefix), cni.baseinfo.Addr...), data)
+	_, err = db.ankaDB.LocalQuery(context.Background(), queryUpdNodeInfo, params)
 	if err != nil {
-		return jarviserr.NewError(pb.CODE_COREDB_NODEINFO_PUT_FAIL)
+		return err
 	}
 
 	return nil

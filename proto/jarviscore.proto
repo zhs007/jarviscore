@@ -20,7 +20,7 @@ enum CODE {
     // verify fail
     VERIFY_FAIL = 7;            
     // invalid public key
-    INVALID_PUBLICKEY = 8;      
+    INVALID_PUBLICKEY = 8;
     // invalid file read size
     INVALID_FILEREADSIZE = 9;   
 
@@ -58,6 +58,10 @@ enum CODE {
     CTRLDB_EXIST_CTRLID = 203;
     // ctrldb not exist strlid
     CTRLDB_NOT_EXIST_CTRLID = 204;
+
+
+    // no private key
+    NO_PRIVATEKEY = 10000;
 }
 
 enum NODETYPE {

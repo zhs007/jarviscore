@@ -1,0 +1,41 @@
+type PrivateData {
+    priKey: ID
+    pubKey: ID
+    createTime: Timestamp
+    onlineTime: Int64
+    addr: ID
+}
+
+type NodeInfo {
+    addr: ID!
+    servAddr: ID
+    name: String
+    connectNums: Int
+    connectedNums: Int
+    ctrlID: Int64
+    lstClientAddr: [ID]
+    addTime: Int64
+}
+
+type NodeInfoList {
+    snapshotID: Int64!
+    endIndex: Int!
+    maxIndex: Int!
+    nodes: [NodeInfo]!
+}
+
+type Query {
+    privateKey(): PrivateData!
+
+    privateData(): PrivateData!
+
+    nodeInfo(addr: ID!): NodeInfo!
+    nodeInfos(snapshotID: Int64!, beginIndex: Int!, nums: Int!): NodeInfoList!
+}
+
+type Mutation {
+    newPrivateData(priKey: ID!, pubKey: ID!, addr: ID!, createTime: Timestamp!) : PrivateData!
+    updPrivateData(curOnlineTime: Int64!) : PrivateData!
+
+    updNodeInfo(nodeInfo: NodeInfo!) : NodeInfo!
+}

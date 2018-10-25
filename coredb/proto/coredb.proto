@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package coredbpb;
+
+// private data
+message PrivateData {
+    bytes priKey = 1;
+    bytes pubKey = 2;
+    int64 createTime = 3;
+    int64 onlineTime = 4;
+    string addr = 5;
+}
+
+// node info
+message NodeInfo {
+    string servAddr = 1;
+    string addr = 2;
+    string name = 3;
+    int32 connectNums = 4;
+    int32 connectedNums = 5;
+    int64 ctrlID = 6;
+    repeated string lstClientAddr = 7;
+    int64 addTime = 8;
+}
+
+// node info list
+message NodeInfoList {
+    int64 snapshotID = 1;
+    int32 endIndex = 2;
+    int32 maxIndex = 3;
+    repeated NodeInfo nodes = 4;
+}
