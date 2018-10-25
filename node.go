@@ -256,6 +256,8 @@ func (n *jarvisNode) waitEnd() {
 
 // Start -
 func (n *jarvisNode) Start() (err error) {
+
+	go n.coredb.ankaDB.Start()
 	// n.mgrpeeraddr, err = newPeerAddrMgr(config.DefPeerAddr)
 	// if err != nil {
 	// 	return err

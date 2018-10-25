@@ -24,14 +24,13 @@ var config = Config{
 	DBPath:         "./data",
 	LogPath:        "./log",
 	DefPeerAddr:    "jarvis.heyalgo.io:7788",
-	AnkaDBHttpServ: "8888",
+	AnkaDBHttpServ: ":8888",
 	AnkaDBEngine:   "leveldb",
 }
 
 // InitJarvisCore -
 func InitJarvisCore(cfg Config) {
-	config.DBPath = cfg.DBPath
-	config.DefPeerAddr = cfg.DefPeerAddr
+	config = cfg
 
 	log.InitLogger(path.Join(config.LogPath, normalLogFilename), path.Join(config.LogPath, errLogFilename))
 
