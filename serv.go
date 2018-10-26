@@ -19,10 +19,10 @@ type serverClientChan (chan pb.ChannelInfo)
 type jarvisServer struct {
 	sync.RWMutex
 
-	node        *jarvisNode
-	lis         net.Listener
-	grpcServ    *grpc.Server
-	servchan    chan int
+	node     *jarvisNode
+	lis      net.Listener
+	grpcServ *grpc.Server
+	// servchan    chan int
 	mapChanInfo map[string]serverClientChan
 }
 
@@ -39,10 +39,10 @@ func newServer(node *jarvisNode) (*jarvisServer, error) {
 
 	grpcServ := grpc.NewServer()
 	s := &jarvisServer{
-		node:        node,
-		lis:         lis,
-		grpcServ:    grpcServ,
-		servchan:    make(chan int, 1),
+		node:     node,
+		lis:      lis,
+		grpcServ: grpcServ,
+		// servchan:    make(chan int, 1),
 		mapChanInfo: make(map[string]serverClientChan),
 	}
 	pb.RegisterJarvisCoreServServer(grpcServ, s)

@@ -2,9 +2,6 @@ package jarviscore
 
 import (
 	"context"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/zhs007/jarviscore/base"
 	pb "github.com/zhs007/jarviscore/proto"
@@ -24,7 +21,7 @@ type jarvisNode struct {
 	serv        *jarvisServer
 	mgrNodeInfo *nodeInfoMgr
 	mgrNodeCtrl *nodeCtrlMgr
-	signalchan  chan os.Signal
+	// signalchan  chan os.Signal
 	servstate   int
 	clientstate int
 	nodechan    chan int
@@ -60,8 +57,8 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 	// db.Get([]byte(coredbMyPrivKey))
 
 	node := &jarvisNode{
-		myinfo:      baseinfo,
-		signalchan:  make(chan os.Signal, 1),
+		myinfo: baseinfo,
+		// signalchan:  make(chan os.Signal, 1),
 		mgrNodeCtrl: newNodeCtrlMgr(),
 		coredb:      db,
 	}
@@ -80,7 +77,7 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 	node.myinfo.Addr = node.coredb.privKey.ToAddress()
 
 	// signal.Notify(node.signalchan)
-	signal.Notify(node.signalchan, os.Interrupt, os.Kill, syscall.SIGSTOP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGTSTP)
+	// signal.Notify(node.signalchan, os.Interrupt, os.Kill, syscall.SIGSTOP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGTSTP)
 
 	// var token string
 	// var prikey *privatekey
@@ -189,14 +186,14 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 // 	return nil
 // }
 
-// StopWithSignal -
-func (n *jarvisNode) StopWithSignal(signal string) error {
-	jarvisbase.Info("StopWithSignal", zap.String("signal", signal))
+// // StopWithSignal -
+// func (n *jarvisNode) StopWithSignal(signal string) error {
+// 	jarvisbase.Info("StopWithSignal", zap.String("signal", signal))
 
-	n.Stop()
+// 	n.Stop()
 
-	return nil
-}
+// 	return nil
+// }
 
 // Stop -
 func (n *jarvisNode) Stop() error {
@@ -230,28 +227,28 @@ func (n *jarvisNode) onStateChg() bool {
 	return false
 }
 
-func (n *jarvisNode) waitEnd() {
-	for {
-		select {
-		case signal := <-n.signalchan:
-			n.StopWithSignal(signal.String())
-		case <-n.serv.servchan:
-			jarvisbase.Info("ServEnd")
-			n.servstate = stateEnd
-			if n.onStateChg() {
-				return
-			}
-		case <-n.client.clientchan:
-			jarvisbase.Info("ClientEnd")
-			n.clientstate = stateEnd
-			if n.onStateChg() {
-				return
-			}
-		case <-n.nodechan:
-			jarvisbase.Info("SafeEnd")
-		}
-	}
-}
+// func (n *jarvisNode) waitEnd() {
+// 	for {
+// 		select {
+// 		case signal := <-n.signalchan:
+// 			n.StopWithSignal(signal.String())
+// 		case <-n.serv.servchan:
+// 			jarvisbase.Info("ServEnd")
+// 			n.servstate = stateEnd
+// 			if n.onStateChg() {
+// 				return
+// 			}
+// 		case <-n.client.clientchan:
+// 			jarvisbase.Info("ClientEnd")
+// 			n.clientstate = stateEnd
+// 			if n.onStateChg() {
+// 				return
+// 			}
+// 		case <-n.nodechan:
+// 			jarvisbase.Info("SafeEnd")
+// 		}
+// 	}
+// }
 
 // Start -
 func (n *jarvisNode) Start(ctx context.Context) (err error) {
@@ -286,11 +283,11 @@ func (n *jarvisNode) Start(ctx context.Context) (err error) {
 		case <-ctx.Done():
 			n.Stop()
 			return nil
-		case signal := <-n.signalchan:
-			jarvisbase.Info("StopWithSignal", zap.String("signal", signal.String()))
+			// case signal := <-n.signalchan:
+			// 	jarvisbase.Info("StopWithSignal", zap.String("signal", signal.String()))
 
-			n.Stop()
-			return nil
+			// 	n.Stop()
+			// 	return nil
 		}
 	}
 
