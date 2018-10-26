@@ -3,9 +3,10 @@ package jarviscore
 import (
 	"bytes"
 
-	"github.com/golang/protobuf/proto"
+	"go.uber.org/zap"
+
 	ankadatabase "github.com/zhs007/ankadb/database"
-	"github.com/zhs007/jarviscore/err"
+	"github.com/zhs007/jarviscore/base"
 	pb "github.com/zhs007/jarviscore/proto"
 )
 
@@ -57,7 +58,7 @@ func (nci *nodeCtrlInfo) onInit() error {
 	if err != nil {
 		err = nci.ctrldb.Put([]byte(ctrldbAddr), []byte(nci.srcAddr))
 	} else if bytes.Compare(addr, []byte(nci.srcAddr)) != 1 {
-		return jarviserr.NewError(pb.CODE_INVALID_ADDR)
+		return ErrInvalidAddr
 	}
 
 	pubkey, err := nci.ctrldb.Get([]byte(ctrldbPublicKey))
@@ -73,7 +74,7 @@ func (nci *nodeCtrlInfo) onInit() error {
 func (nci *nodeCtrlInfo) setPublicKey(pubKey []byte) error {
 	if len(nci.pubKey) != 0 {
 		if bytes.Compare(nci.pubKey, pubKey) != 1 {
-			return jarviserr.NewError(pb.CODE_INVALID_PUBLICKEY)
+			return ErrInvalidPublishKey
 		}
 
 		return nil
@@ -81,7 +82,8 @@ func (nci *nodeCtrlInfo) setPublicKey(pubKey []byte) error {
 
 	err := nci.ctrldb.Put([]byte(ctrldbPublicKey), pubKey)
 	if err != nil {
-		jarviserr.ErrorLog("newNodeCtrlInfo:saveAddr", err)
+		jarvisbase.Error("newNodeCtrlInfo:saveAddr", zap.Error(err))
+
 		return err
 	}
 
@@ -102,50 +104,50 @@ func (nci *nodeCtrlInfo) hasCtrl(ctrlid int64) bool {
 }
 
 func (nci *nodeCtrlInfo) addCtrl(ctrlid int64, ctrltype pb.CTRLTYPE, command []byte, forwordAddr string, forwordNums int32) error {
-	if _, ok := nci.mapCtrl[ctrlid]; ok {
-		return jarviserr.NewError(pb.CODE_CTRLDB_EXIST_CTRLID)
-	}
+	// if _, ok := nci.mapCtrl[ctrlid]; ok {
+	// 	return ErrExistCtrlID
+	// }
 
-	ctrlindb := &pb.CtrlDataInDB{
-		Ctrlid:      ctrlid,
-		CtrlType:    ctrltype,
-		ForwordAddr: forwordAddr,
-		Command:     command,
-		ForwordNums: forwordNums,
-	}
+	// ctrlindb := &pb.CtrlDataInDB{
+	// 	Ctrlid:      ctrlid,
+	// 	CtrlType:    ctrltype,
+	// 	ForwordAddr: forwordAddr,
+	// 	Command:     command,
+	// 	ForwordNums: forwordNums,
+	// }
 
-	data, err := proto.Marshal(ctrlindb)
-	if err != nil {
-		return jarviserr.NewError(pb.CODE_CTRLDATAINDB_ENCODE_FAIL)
-	}
+	// data, err := proto.Marshal(ctrlindb)
+	// if err != nil {
+	// 	return jarviserr.NewError(pb.CODE_CTRLDATAINDB_ENCODE_FAIL)
+	// }
 
-	err = nci.ctrldb.Put([]byte(ctrldbCtrlPrefix+string(ctrlid)), data)
-	if err != nil {
-		return jarviserr.NewError(pb.CODE_CTRLDB_SAVE_CTRLDATA_FAIL)
-	}
+	// err = nci.ctrldb.Put([]byte(ctrldbCtrlPrefix+string(ctrlid)), data)
+	// if err != nil {
+	// 	return jarviserr.NewError(pb.CODE_CTRLDB_SAVE_CTRLDATA_FAIL)
+	// }
 
-	nci.mapCtrl[ctrlid] = ctrlindb
+	// nci.mapCtrl[ctrlid] = ctrlindb
 
 	return nil
 }
 
 func (nci *nodeCtrlInfo) setCtrlResult(ctrlid int64, result []byte) error {
-	val, ok := nci.mapCtrl[ctrlid]
-	if !ok {
-		return jarviserr.NewError(pb.CODE_CTRLDB_NOT_EXIST_CTRLID)
-	}
+	// val, ok := nci.mapCtrl[ctrlid]
+	// if !ok {
+	// 	return jarviserr.NewError(pb.CODE_CTRLDB_NOT_EXIST_CTRLID)
+	// }
 
-	val.Result = result
+	// val.Result = result
 
-	data, err := proto.Marshal(val)
-	if err != nil {
-		return jarviserr.NewError(pb.CODE_CTRLDATAINDB_ENCODE_FAIL)
-	}
+	// data, err := proto.Marshal(val)
+	// if err != nil {
+	// 	return jarviserr.NewError(pb.CODE_CTRLDATAINDB_ENCODE_FAIL)
+	// }
 
-	err = nci.ctrldb.Put([]byte(ctrldbCtrlPrefix+string(ctrlid)), data)
-	if err != nil {
-		return jarviserr.NewError(pb.CODE_CTRLDB_SAVE_CTRLDATA_FAIL)
-	}
+	// err = nci.ctrldb.Put([]byte(ctrldbCtrlPrefix+string(ctrlid)), data)
+	// if err != nil {
+	// 	return jarviserr.NewError(pb.CODE_CTRLDB_SAVE_CTRLDATA_FAIL)
+	// }
 
 	return nil
 }

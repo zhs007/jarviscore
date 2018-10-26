@@ -5,9 +5,7 @@ import (
 
 	"github.com/graphql-go/graphql"
 	"github.com/zhs007/ankadb"
-	"github.com/zhs007/ankadb/err"
 	"github.com/zhs007/ankadb/graphqlext"
-	"github.com/zhs007/ankadb/proto"
 	pb "github.com/zhs007/jarviscore/coredb/proto"
 )
 
@@ -34,12 +32,12 @@ var typeMutation = graphql.NewObject(graphql.ObjectConfig{
 			Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 				anka := ankadb.GetContextValueAnkaDB(params.Context, interface{}("ankadb"))
 				if anka == nil {
-					return nil, ankadberr.NewError(ankadbpb.CODE_CTX_ANKADB_ERR)
+					return nil, ankadb.ErrCtxAnkaDB
 				}
 
 				curdb := anka.MgrDB.GetDB("coredb")
 				if curdb == nil {
-					return nil, ankadberr.NewError(ankadbpb.CODE_CTX_CURDB_ERR)
+					return nil, ankadb.ErrCtxCurDB
 				}
 
 				priKey := params.Args["priKey"].(string)
@@ -49,12 +47,12 @@ var typeMutation = graphql.NewObject(graphql.ObjectConfig{
 
 				priKeyBytes, err := base64.StdEncoding.DecodeString(priKey)
 				if err != nil {
-					return nil, ankadberr.NewError(ankadbpb.CODE_QUERY_PARAM_ERR)
+					return nil, ankadb.ErrQuertParams
 				}
 
 				pubKeyBytes, err := base64.StdEncoding.DecodeString(pubKey)
 				if err != nil {
-					return nil, ankadberr.NewError(ankadbpb.CODE_QUERY_PARAM_ERR)
+					return nil, ankadb.ErrQuertParams
 				}
 
 				pd := &pb.PrivateData{
@@ -87,12 +85,12 @@ var typeMutation = graphql.NewObject(graphql.ObjectConfig{
 			Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 				anka := ankadb.GetContextValueAnkaDB(params.Context, interface{}("ankadb"))
 				if anka == nil {
-					return nil, ankadberr.NewError(ankadbpb.CODE_CTX_ANKADB_ERR)
+					return nil, ankadb.ErrCtxAnkaDB
 				}
 
 				curdb := anka.MgrDB.GetDB("coredb")
 				if curdb == nil {
-					return nil, ankadberr.NewError(ankadbpb.CODE_CTX_CURDB_ERR)
+					return nil, ankadb.ErrCtxCurDB
 				}
 
 				curOnlineTime := params.Args["curOnlineTime"].(int64)
@@ -127,12 +125,12 @@ var typeMutation = graphql.NewObject(graphql.ObjectConfig{
 			Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 				anka := ankadb.GetContextValueAnkaDB(params.Context, interface{}("ankadb"))
 				if anka == nil {
-					return nil, ankadberr.NewError(ankadbpb.CODE_CTX_ANKADB_ERR)
+					return nil, ankadb.ErrCtxAnkaDB
 				}
 
 				curdb := anka.MgrDB.GetDB("coredb")
 				if curdb == nil {
-					return nil, ankadberr.NewError(ankadbpb.CODE_CTX_CURDB_ERR)
+					return nil, ankadb.ErrCtxCurDB
 				}
 
 				ni := &pb.NodeInfo{}

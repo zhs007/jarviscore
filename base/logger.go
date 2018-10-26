@@ -1,6 +1,7 @@
-package log
+package jarvisbase
 
 import (
+	"os"
 	"sync"
 
 	"go.uber.org/zap"
@@ -10,35 +11,31 @@ import (
 var logger *zap.Logger
 var onceLogger sync.Once
 
-func initLogger(logpath string, errlogpath string) (*zap.Logger, error) {
-	var cfgZap zap.Config
-	atom := zap.NewAtomicLevel()
-	atom.SetLevel(zap.DebugLevel)
+func initLogger(level zapcore.Level, isConsole bool, logpath string) *zap.Logger {
+	loglevel := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+		return lvl >= level
+	})
 
-	cfgZap.Encoding = "json"
-	cfgZap.OutputPaths = []string{logpath}
-	cfgZap.ErrorOutputPaths = []string{errlogpath}
-	cfgZap.Level = atom
-	cfgZap.EncoderConfig = zap.NewProductionEncoderConfig()
-	cfgZap.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	if isConsole {
+		consoleEncoder := zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
+		consoleDebugging := zapcore.Lock(os.Stdout)
+		core := zapcore.NewTee(
+			zapcore.NewCore(consoleEncoder, consoleDebugging, loglevel),
+		)
 
-	return cfgZap.Build()
-}
-
-// ReleaseLogger -
-func ReleaseLogger() error {
-	if logger != nil {
-		logger.Sync()
+		cl := zap.New(core)
+		// defer cl.Sync()
+		return cl
 	}
 
 	return nil
 }
 
 // InitLogger - initializes a thread-safe singleton logger
-func InitLogger(logpath string, errlogpath string) (err error) {
+func InitLogger(level zapcore.Level, isConsole bool, logpath string) {
 	// once ensures the singleton is initialized only once
 	onceLogger.Do(func() {
-		logger, err = initLogger(logpath, errlogpath)
+		logger = initLogger(level, isConsole, logpath)
 	})
 
 	return
@@ -72,4 +69,9 @@ func Error(message string, fields ...zap.Field) {
 // Fatal logs a message than calls os.Exit(1)
 func Fatal(message string, fields ...zap.Field) {
 	logger.Fatal(message, fields...)
+}
+
+// SyncLogger - sync logger
+func SyncLogger() {
+	logger.Sync()
 }

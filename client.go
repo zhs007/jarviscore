@@ -7,8 +7,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/zhs007/jarviscore/err"
-	"github.com/zhs007/jarviscore/log"
+	"github.com/zhs007/jarviscore/base"
 	pb "github.com/zhs007/jarviscore/proto"
 	"google.golang.org/grpc"
 )
@@ -61,8 +60,8 @@ func (c *jarvisClient) startConnectAllNode() {
 	})
 }
 
-func (c *jarvisClient) Start() {
-	ctx, cancel := context.WithCancel(context.Background())
+func (c *jarvisClient) Start(ctx context.Context) {
+	ctx, cancel := context.WithCancel(ctx)
 
 	go c.connectRoot(ctx, config.DefPeerAddr)
 	go c.startConnectAllNode()
@@ -115,7 +114,7 @@ func (c *jarvisClient) onConnectEnd() {
 
 //
 func (c *jarvisClient) connectRoot(ctx context.Context, servaddr string) error {
-	log.Info("jarvisClient.connectRoot", zap.String("servaddr", servaddr))
+	jarvisbase.Info("jarvisClient.connectRoot", zap.String("servaddr", servaddr))
 
 	c.activitychan <- 1
 	defer c.onConnectEnd()
@@ -125,7 +124,7 @@ func (c *jarvisClient) connectRoot(ctx context.Context, servaddr string) error {
 
 	conn, err := mgrconn.getConn(servaddr)
 	if err != nil {
-		jarviserr.WarnLog("JarvisClient.connectRoot:getConn", err)
+		jarvisbase.Warn("JarvisClient.connectRoot:getConn", zap.Error(err))
 
 		return err
 	}
@@ -144,15 +143,15 @@ func (c *jarvisClient) connectRoot(ctx context.Context, servaddr string) error {
 		Name:     c.node.myinfo.Name,
 		NodeType: c.node.myinfo.NodeType})
 	if err1 != nil {
-		jarviserr.WarnLog("JarvisClient.connectRoot:Join", err1)
+		jarvisbase.Warn("JarvisClient.connectRoot:Join", zap.Error(err1))
 
 		mgrconn.delConn(servaddr)
 
 		return err1
 	}
 
-	if r.Code == pb.CODE_OK {
-		log.Info("jarvisClient.connectRoot:OK")
+	if r.Err == "" {
+		jarvisbase.Info("jarvisClient.connectRoot:OK")
 
 		c.node.onIConnectNode(&BaseInfo{
 			Name:     r.Name,
@@ -169,7 +168,7 @@ func (c *jarvisClient) connectRoot(ctx context.Context, servaddr string) error {
 		return nil
 	}
 
-	log.Info("JarvisClient.connectRoot:Join", zap.Int("code", int(r.Code)))
+	jarvisbase.Info("JarvisClient.connectRoot:Join", zap.String("err", r.Err))
 
 	mgrconn.delConn(servaddr)
 
@@ -178,7 +177,7 @@ func (c *jarvisClient) connectRoot(ctx context.Context, servaddr string) error {
 
 //
 func (c *jarvisClient) connect(ctx context.Context, bi *BaseInfo) error {
-	log.Info("jarvisClient.connect", zap.String("servaddr", bi.ServAddr))
+	jarvisbase.Info("jarvisClient.connect", zap.String("servaddr", bi.ServAddr))
 
 	c.activitychan <- 1
 	defer c.onConnectEnd()
@@ -188,7 +187,7 @@ func (c *jarvisClient) connect(ctx context.Context, bi *BaseInfo) error {
 
 	conn, err := mgrconn.getConn(bi.ServAddr)
 	if err != nil {
-		jarviserr.WarnLog("JarvisClient.connect:getConn", err)
+		jarvisbase.Warn("JarvisClient.connect:getConn", zap.Error(err))
 
 		return err
 	}
@@ -207,15 +206,15 @@ func (c *jarvisClient) connect(ctx context.Context, bi *BaseInfo) error {
 		Name:     c.node.myinfo.Name,
 		NodeType: c.node.myinfo.NodeType})
 	if err1 != nil {
-		jarviserr.WarnLog("JarvisClient.connect:Join", err1)
+		jarvisbase.Warn("JarvisClient.connect:Join", zap.Error(err1))
 
 		mgrconn.delConn(bi.ServAddr)
 
 		return err1
 	}
 
-	if r.Code == pb.CODE_OK {
-		log.Info("jarvisClient.connect:OK")
+	if r.Err == "" {
+		jarvisbase.Info("jarvisClient.connect:OK")
 
 		c.node.onIConnectNode(&BaseInfo{
 			Name:     r.Name,
@@ -232,7 +231,7 @@ func (c *jarvisClient) connect(ctx context.Context, bi *BaseInfo) error {
 		return nil
 	}
 
-	log.Info("JarvisClient.Join", zap.Int("code", int(r.Code)))
+	jarvisbase.Info("JarvisClient.Join", zap.String("err", r.Err))
 
 	mgrconn.delConn(bi.ServAddr)
 
@@ -240,7 +239,7 @@ func (c *jarvisClient) connect(ctx context.Context, bi *BaseInfo) error {
 }
 
 func (c *jarvisClient) subscribe(ctx context.Context, ci *clientInfo, ct pb.CHANNELTYPE) error {
-	log.Info("jarvisClient.subscribe")
+	jarvisbase.Info("jarvisClient.subscribe")
 
 	curctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -250,28 +249,28 @@ func (c *jarvisClient) subscribe(ctx context.Context, ci *clientInfo, ct pb.CHAN
 		Addr:        c.node.myinfo.Addr,
 	})
 	if err != nil {
-		jarviserr.WarnLog("JarvisClient.subscribe:Subscribe", err)
+		jarvisbase.Warn("JarvisClient.subscribe:Subscribe", zap.Error(err))
 		return err
 	}
 
 	for {
 		reply, err := stream.Recv()
 		if err == io.EOF {
-			log.Info("jarvisClient.subscribe:stream.EOF")
+			jarvisbase.Info("jarvisClient.subscribe:stream.EOF")
 			break
 		}
 		if err != nil {
-			jarviserr.WarnLog("JarvisClient.subscribe:stream.Recv", err)
+			jarvisbase.Warn("JarvisClient.subscribe:stream.Recv", zap.Error(err))
 
 			return err
 		}
 
 		if reply.ChannelType == ct {
-			log.Info("jarvisClient.subscribe:NodeInfo")
+			jarvisbase.Info("jarvisClient.subscribe:NodeInfo")
 
 			ni := reply.GetNodeInfo()
 			if ni != nil {
-				log.Info("JarvisClient.subscribe:NODEINFO",
+				jarvisbase.Info("JarvisClient.subscribe:NODEINFO",
 					zap.String("Servaddr", ni.ServAddr),
 					zap.String("Addr", ni.Addr),
 					zap.String("Name", ni.Name),
@@ -294,7 +293,7 @@ func (c *jarvisClient) subscribe(ctx context.Context, ci *clientInfo, ct pb.CHAN
 func (c *jarvisClient) sendCtrl(ctx context.Context, ci *pb.CtrlInfo) error {
 	curclient, ok := c.mapClient[ci.DestAddr]
 	if !ok {
-		return jarviserr.NewError(pb.CODE_NOT_CONNECTNODE)
+		return ErrNotConnectNode
 	}
 
 	curctx, cancel := context.WithCancel(ctx)
@@ -305,7 +304,7 @@ func (c *jarvisClient) sendCtrl(ctx context.Context, ci *pb.CtrlInfo) error {
 		return err1
 	}
 
-	if r.Code == pb.CODE_OK {
+	if r.Err == "" {
 		return nil
 	}
 

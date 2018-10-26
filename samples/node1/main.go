@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	"github.com/zhs007/jarviscore"
 	pb "github.com/zhs007/jarviscore/proto"
 )
@@ -12,6 +14,8 @@ func main() {
 		AnkaDBHttpServ: "127.0.0.1:8888",
 		AnkaDBEngine:   "leveldb",
 		DefPeerAddr:    "127.0.0.1:7789",
+		LogConsole:     true,
+		LogLevel:       "debug",
 	}
 
 	myinfo := jarviscore.BaseInfo{
@@ -35,5 +39,5 @@ func main() {
 	node := jarviscore.NewNode(myinfo)
 	// defer node.Stop()
 
-	node.Start()
+	node.Start(context.Background())
 }

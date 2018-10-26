@@ -38,10 +38,6 @@
   version = "0.7.6"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/zhs007/ankadb"
-
-[[constraint]]
   name = "go.uber.org/zap"
   version = "1.9.1"
 
@@ -60,3 +56,7 @@
 [prune]
   go-tests = true
   unused-packages = true
+
+[[constraint]]
+  name = "github.com/zhs007/ankadb"
+  version = "0.2.1"

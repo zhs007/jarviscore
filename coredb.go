@@ -5,12 +5,13 @@ import (
 	"encoding/base64"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/zhs007/ankadb"
+	"github.com/zhs007/jarviscore/base"
 	"github.com/zhs007/jarviscore/coredb"
 	"github.com/zhs007/jarviscore/coredb/proto"
 	"github.com/zhs007/jarviscore/crypto"
-	"github.com/zhs007/jarviscore/err"
-	pb "github.com/zhs007/jarviscore/proto"
 )
 
 const (
@@ -54,9 +55,9 @@ type coreDB struct {
 func newCoreDB() (*coreDB, error) {
 	ankaDB, err := coredb.NewCoreDB(config.DBPath, config.AnkaDBHttpServ, config.AnkaDBEngine)
 	if err != nil {
-		jarviserr.ErrorLog("newCoreDB:NewAnkaLDB", err)
+		jarvisbase.Error("newCoreDB:NewAnkaLDB", zap.Error(err))
 
-		return nil, jarviserr.NewError(pb.CODE_COREDB_OPEN_FAIL)
+		return nil, err
 	}
 
 	return &coreDB{
@@ -66,7 +67,7 @@ func newCoreDB() (*coreDB, error) {
 
 func (db *coreDB) savePrivateKey() error {
 	if db.privKey == nil {
-		return jarviserr.NewError(pb.CODE_NO_PRIVATEKEY)
+		return ErrNoPrivateKey
 	}
 
 	params := make(map[string]interface{})

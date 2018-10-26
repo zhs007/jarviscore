@@ -6,15 +6,14 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/zhs007/jarviscore/err"
-	"github.com/zhs007/jarviscore/log"
+	"github.com/zhs007/jarviscore/base"
 	pb "github.com/zhs007/jarviscore/proto"
 	"go.uber.org/zap"
 )
 
 // JarvisNode -
 type JarvisNode interface {
-	Start() (err error)
+	Start(ctx context.Context) (err error)
 	Stop() (err error)
 }
 
@@ -53,7 +52,7 @@ const (
 func NewNode(baseinfo BaseInfo) JarvisNode {
 	db, err := newCoreDB()
 	if err != nil {
-		jarviserr.ErrorLog("NewNode:newCoreDB", err)
+		jarvisbase.Error("NewNode:newCoreDB", zap.Error(err))
 
 		return nil
 	}
@@ -69,7 +68,7 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 
 	err = node.coredb.loadPrivateKeyEx()
 	if err != nil {
-		jarviserr.ErrorLog("NewNode:loadPrivateKey", err)
+		jarvisbase.Error("NewNode:loadPrivateKey", zap.Error(err))
 
 		return nil
 	}
@@ -192,7 +191,7 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 
 // StopWithSignal -
 func (n *jarvisNode) StopWithSignal(signal string) error {
-	log.Info("StopWithSignal", zap.String("signal", signal))
+	jarvisbase.Info("StopWithSignal", zap.String("signal", signal))
 
 	n.Stop()
 
@@ -237,33 +236,36 @@ func (n *jarvisNode) waitEnd() {
 		case signal := <-n.signalchan:
 			n.StopWithSignal(signal.String())
 		case <-n.serv.servchan:
-			log.Info("ServEnd")
+			jarvisbase.Info("ServEnd")
 			n.servstate = stateEnd
 			if n.onStateChg() {
 				return
 			}
 		case <-n.client.clientchan:
-			log.Info("ClientEnd")
+			jarvisbase.Info("ClientEnd")
 			n.clientstate = stateEnd
 			if n.onStateChg() {
 				return
 			}
 		case <-n.nodechan:
-			log.Info("SafeEnd")
+			jarvisbase.Info("SafeEnd")
 		}
 	}
 }
 
 // Start -
-func (n *jarvisNode) Start() (err error) {
+func (n *jarvisNode) Start(ctx context.Context) (err error) {
 
-	go n.coredb.ankaDB.Start()
+	coredbctx, coredbcancel := context.WithCancel(ctx)
+	defer coredbcancel()
+
+	go n.coredb.ankaDB.Start(coredbctx)
 	// n.mgrpeeraddr, err = newPeerAddrMgr(config.DefPeerAddr)
 	// if err != nil {
 	// 	return err
 	// }
 
-	log.Info("StartServer", zap.String("ServAddr", n.myinfo.ServAddr))
+	jarvisbase.Info("StartServer", zap.String("ServAddr", n.myinfo.ServAddr))
 	n.serv, err = newServer(n)
 	if err != nil {
 		return err
@@ -271,12 +273,28 @@ func (n *jarvisNode) Start() (err error) {
 
 	n.client = newClient(n)
 
-	go n.serv.Start()
-	go n.client.Start()
+	servctx, servcancel := context.WithCancel(ctx)
+	defer servcancel()
+	go n.serv.Start(servctx)
 
-	n.waitEnd()
+	clientctx, clientcancel := context.WithCancel(ctx)
+	defer clientcancel()
+	go n.client.Start(clientctx)
 
-	return nil
+	for {
+		select {
+		case <-ctx.Done():
+			n.Stop()
+			return nil
+		case signal := <-n.signalchan:
+			jarvisbase.Info("StopWithSignal", zap.String("signal", signal.String()))
+
+			n.Stop()
+			return nil
+		}
+	}
+
+	// n.waitEnd()
 }
 
 func (n *jarvisNode) hasNodeWithAddr(addr string) bool {
@@ -351,14 +369,14 @@ func (n *jarvisNode) onGetNewNode(bi *BaseInfo) {
 func (n *jarvisNode) requestCtrl(ctx context.Context, addr string, ctrltype pb.CTRLTYPE, command []byte) error {
 	ctrlid := n.mgrNodeInfo.getCtrlID(addr)
 	if ctrlid < 0 {
-		return jarviserr.NewError(pb.CODE_COREDB_NO_ADDR)
+		return ErrCoreDBNoAddr
 	}
 
 	buf := append([]byte(addr), command...)
 
 	r, s, err := n.coredb.privKey.Sign(buf)
 	if err != nil {
-		return jarviserr.NewError(pb.CODE_SIGN_FAIL)
+		return ErrSign
 	}
 
 	ci := &pb.CtrlInfo{

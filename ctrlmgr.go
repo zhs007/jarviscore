@@ -3,7 +3,6 @@ package jarviscore
 import (
 	"sync"
 
-	"github.com/zhs007/jarviscore/err"
 	pb "github.com/zhs007/jarviscore/proto"
 )
 
@@ -28,5 +27,5 @@ func (mgr *ctrlMgr) Run(ctrltype pb.CTRLTYPE, command []byte) ([]byte, error) {
 		return (*c).Run(command)
 	}
 
-	return nil, jarviserr.NewError(pb.CODE_NOCTRLMOD)
+	return nil, ErrNoCtrlCmd
 }

@@ -8,11 +8,14 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"fmt"
-	"log"
 	"math/big"
+
+	"go.uber.org/zap"
 
 	"github.com/fomichev/secp256k1"
 	"golang.org/x/crypto/ripemd160"
+
+	"github.com/zhs007/jarviscore/base"
 )
 
 const privKeyBytesLen = 32
@@ -47,7 +50,7 @@ func NewPublicKey() *PublicKey {
 func GenerateKey() *PrivateKey {
 	privkey, err := ecdsa.GenerateKey(secp256k1.SECP256K1(), rand.Reader)
 	if err != nil {
-		log.Panic(err)
+		jarvisbase.Fatal("ecdsa.GenerateKey", zap.Error(err))
 	}
 
 	return &PrivateKey{priKey: privkey}

@@ -1,7 +1,8 @@
 package jarviscore
 
 import (
-	"github.com/zhs007/jarviscore/err"
+	"github.com/zhs007/jarviscore/base"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
@@ -17,7 +18,7 @@ func (mgr connMgr) getConn(servaddr string) (*grpc.ClientConn, error) {
 
 	conn, err := grpc.Dial(servaddr, grpc.WithInsecure())
 	if err != nil {
-		jarviserr.WarnLog("connMgr.getConn", err)
+		jarvisbase.Warn("connMgr.getConn", zap.Error(err))
 
 		return nil, err
 	}

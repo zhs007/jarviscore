@@ -69,22 +69,21 @@
   revision = "6b91fda63f2e36186f1c9d0e48578defb69c5d43"
 
 [[projects]]
-  branch = "master"
   name = "github.com/zhs007/ankadb"
   packages = [
     ".",
     "database",
-    "err",
     "graphqlext",
     "proto"
   ]
-  revision = "bd73dbb3afa3c4d7deedd43197c48809e9cd16b4"
+  revision = "2aba4684dc064c24d33b4cc0f7dd2316459f0a22"
+  version = "v0.2.1"
 
 [[projects]]
   name = "go.uber.org/atomic"
   packages = ["."]
-  revision = "4e336646b2ef9fc6e47be8e21594178f98e5ebcf"
-  version = "v1.2.0"
+  revision = "1ea20fb1cbb1cc08cbd0d913a96dead89aa18289"
+  version = "v1.3.2"
 
 [[projects]]
   name = "go.uber.org/multierr"
@@ -109,7 +108,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ripemd160"]
-  revision = "85e1b3f9139abd58575d728a509643924e3b2ebf"
+  revision = "e84da0312774c21d64ee2317962ef669b27ffb41"
 
 [[projects]]
   branch = "master"
@@ -129,7 +128,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "d989b31c87461dc8ab2f1cac6792814e27fadea9"
+  revision = "731415f00dce967a133e841b3079eda31c996761"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -200,6 +199,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b9b5012c7fcdfa74367d833dbcec62a4c7197e421ce11f08acab2891b9b40a0f"
+  inputs-digest = "c110745ccb5d6646519d2b3812a826331e6d7ff2424b3b551f8a815242a8e0c9"
   solver-name = "gps-cdcl"
   solver-version = 1

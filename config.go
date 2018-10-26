@@ -1,11 +1,10 @@
 package jarviscore
 
 import (
-	"path"
+	"go.uber.org/zap/zapcore"
 
+	"github.com/zhs007/jarviscore/base"
 	"go.uber.org/zap"
-
-	"github.com/zhs007/jarviscore/log"
 )
 
 // Config - config
@@ -15,6 +14,8 @@ type Config struct {
 	DefPeerAddr    string
 	AnkaDBHttpServ string
 	AnkaDBEngine   string
+	LogLevel       string
+	LogConsole     bool
 }
 
 const normalLogFilename = "output.log"
@@ -28,13 +29,26 @@ var config = Config{
 	AnkaDBEngine:   "leveldb",
 }
 
+func getLogLevel(str string) zapcore.Level {
+	switch str {
+	case "debug":
+		return zapcore.DebugLevel
+	case "info":
+		return zapcore.InfoLevel
+	case "warn":
+		return zapcore.WarnLevel
+	default:
+		return zapcore.ErrorLevel
+	}
+}
+
 // InitJarvisCore -
 func InitJarvisCore(cfg Config) {
 	config = cfg
 
-	log.InitLogger(path.Join(config.LogPath, normalLogFilename), path.Join(config.LogPath, errLogFilename))
+	jarvisbase.InitLogger(getLogLevel(cfg.LogLevel), cfg.LogConsole, cfg.LogPath)
 
-	log.Info("InitJarvisCore",
+	jarvisbase.Info("InitJarvisCore",
 		zap.String("DBPath", cfg.DBPath),
 		zap.String("DefPeerAddr", cfg.DefPeerAddr),
 		zap.String("LogPath", cfg.LogPath))
@@ -44,7 +58,7 @@ func InitJarvisCore(cfg Config) {
 
 // ReleaseJarvisCore -
 func ReleaseJarvisCore() error {
-	log.ReleaseLogger()
+	jarvisbase.SyncLogger()
 
 	return nil
 }

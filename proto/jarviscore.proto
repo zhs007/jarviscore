@@ -2,68 +2,6 @@ syntax = "proto3";
 
 package jarviscorepb;
 
-enum CODE {
-    OK = 0;
-
-    // addr fail 
-    INVALID_ADDR = 1;
-    // already in
-    ALREADY_IN = 2;           
-    // forward msg
-    FORWARD_MSG = 3;            
-    // broadcast msg
-    BROADCAST_MSG = 4;          
-    // no ctrl module
-    NOCTRLMOD = 5;              
-    // client already start
-    CLIENT_ALREADY_START = 6;   
-    // verify fail
-    VERIFY_FAIL = 7;            
-    // invalid public key
-    INVALID_PUBLICKEY = 8;
-    // invalid file read size
-    INVALID_FILEREADSIZE = 9;   
-
-    // sign fail
-    SIGN_FAIL = 10;
-    // invalid code
-    INVALID_CODE = 11;
-    // leveldb iter error
-    LEVELDB_ITER_ERROR = 12;
-
-    // node not connect me
-    NODE_NOT_CONNECTME = 20;
-    // not connect node
-    NOT_CONNECTNODE = 21;
-
-    // NodeInfoInDB decode fail
-    NODEINFOINDB_DECODE_FAIL = 110;
-    // NodeInfoInDB encode fail
-    NODEINFOINDB_ENCODE_FAIL = 111;
-
-    // coredb open fail
-    COREDB_OPEN_FAIL = 120;
-    // coredb nodeinfo put fail
-    COREDB_NODEINFO_PUT_FAIL = 121;
-    // coredb no addr
-    COREDB_NO_ADDR = 122;
-
-    // encode CtrlDataInDB fail
-    CTRLDATAINDB_ENCODE_FAIL = 200;
-    // decode CtrlDataInDB fail
-    CTRLDATAINDB_DECODE_FAIL = 201;
-    // save CtrlDataInDB fail
-    CTRLDB_SAVE_CTRLDATA_FAIL = 202;
-    // ctrldb exist strlid
-    CTRLDB_EXIST_CTRLID = 203;
-    // ctrldb not exist strlid
-    CTRLDB_NOT_EXIST_CTRLID = 204;
-
-
-    // no private key
-    NO_PRIVATEKEY = 10000;
-}
-
 enum NODETYPE {
     NORMAL = 0;
     SH = 1;
@@ -78,6 +16,12 @@ enum CHANNELTYPE {
 enum CTRLTYPE {
     SHELL = 0;
     FILE = 2;
+}
+
+enum REPLYTYPE {
+    NONE = 0;
+    FORWARD = 1;
+    BROADCAST = 2;
 }
 
 message PrivateKey {
@@ -119,14 +63,15 @@ message Join {
 }
 
 message ReplyJoin {
-    CODE code = 1;
+    string err = 1;
     string addr = 2;
     string name = 3;
     NODETYPE nodeType = 4;
 }
 
 message BaseReply {
-    CODE code = 1;
+    string err = 1;
+    REPLYTYPE replyType = 2;
 }
 
 message Subscribe {

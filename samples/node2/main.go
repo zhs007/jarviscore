@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	"github.com/zhs007/jarviscore"
 	pb "github.com/zhs007/jarviscore/proto"
 )
@@ -28,5 +30,5 @@ func main() {
 	node := jarviscore.NewNode(myinfo)
 	// defer node.Stop()
 
-	node.Start()
+	node.Start(context.Background())
 }

@@ -8,8 +8,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/zhs007/jarviscore/err"
-	"github.com/zhs007/jarviscore/log"
+	"github.com/zhs007/jarviscore/base"
 	pb "github.com/zhs007/jarviscore/proto"
 	"google.golang.org/grpc"
 )
@@ -31,12 +30,12 @@ type jarvisServer struct {
 func newServer(node *jarvisNode) (*jarvisServer, error) {
 	lis, err := net.Listen("tcp", node.myinfo.BindAddr)
 	if err != nil {
-		jarviserr.ErrorLog("newServer", err)
+		jarvisbase.Error("newServer", zap.Error(err))
 
 		return nil, err
 	}
 
-	log.Info("Listen", zap.String("addr", node.myinfo.BindAddr))
+	jarvisbase.Info("Listen", zap.String("addr", node.myinfo.BindAddr))
 
 	grpcServ := grpc.NewServer()
 	s := &jarvisServer{
@@ -52,10 +51,10 @@ func newServer(node *jarvisNode) (*jarvisServer, error) {
 }
 
 // Start -
-func (s *jarvisServer) Start() (err error) {
+func (s *jarvisServer) Start(ctx context.Context) (err error) {
 	err = s.grpcServ.Serve(s.lis)
 
-	s.servchan <- 0
+	// s.servchan <- 0
 
 	return
 }
@@ -87,7 +86,7 @@ func (s *jarvisServer) hasClient(token string) bool {
 
 // Join implements jarviscorepb.JarvisCoreServ
 func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, error) {
-	log.Info("JarvisServ.Join",
+	jarvisbase.Info("JarvisServ.Join",
 		zap.String("Servaddr", in.ServAddr),
 		zap.String("Addr", in.Addr),
 		zap.String("Name", in.Name),
@@ -122,7 +121,6 @@ func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, er
 
 	if isvalidnode {
 		return &pb.ReplyJoin{
-			Code:     pb.CODE_OK,
 			Name:     s.node.myinfo.Name,
 			Addr:     s.node.myinfo.Addr,
 			NodeType: s.node.myinfo.NodeType,
@@ -130,7 +128,7 @@ func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, er
 	}
 
 	return &pb.ReplyJoin{
-		Code:     pb.CODE_ALREADY_IN,
+		Err:      ErrAlreadyJoin.Error(),
 		Name:     s.node.myinfo.Name,
 		Addr:     s.node.myinfo.Addr,
 		NodeType: s.node.myinfo.NodeType,
@@ -166,7 +164,7 @@ func (s *jarvisServer) sendCtrl(ctrlinfo *pb.CtrlInfo) error {
 
 	curChan, ok := s.mapChanInfo[ctrlinfo.DestAddr]
 	if !ok {
-		return jarviserr.NewError(pb.CODE_NODE_NOT_CONNECTME)
+		return ErrNotConnectMe
 	}
 
 	ci := pb.ChannelInfo{
@@ -248,30 +246,24 @@ func (s *jarvisServer) RequestCtrl(ctx context.Context, in *pb.CtrlInfo) (*pb.Ba
 	if in.DestAddr == s.node.myinfo.Addr {
 		_, err := mgrCtrl.Run(in.CtrlType, in.Command)
 		if err != nil {
-			return &pb.BaseReply{
-				Code: pb.CODE_OK,
-			}, nil
+			return &pb.BaseReply{}, nil
 		}
 
-		return &pb.BaseReply{
-			Code: pb.CODE_OK,
-		}, nil
+		return &pb.BaseReply{}, nil
 	}
 
 	if s.hasClient(in.DestAddr) {
 		return &pb.BaseReply{
-			Code: pb.CODE_FORWARD_MSG,
+			ReplyType: pb.REPLYTYPE_FORWARD,
 		}, nil
 	}
 
 	return &pb.BaseReply{
-		Code: pb.CODE_BROADCAST_MSG,
+		ReplyType: pb.REPLYTYPE_BROADCAST,
 	}, nil
 }
 
 // ReplyCtrl implements jarviscorepb.JarvisCoreServ
 func (s *jarvisServer) ReplyCtrl(ctx context.Context, in *pb.CtrlResult) (*pb.BaseReply, error) {
-	return &pb.BaseReply{
-		Code: pb.CODE_OK,
-	}, nil
+	return &pb.BaseReply{}, nil
 }
