@@ -5,8 +5,10 @@ import (
 	"path"
 
 	"github.com/graphql-go/graphql"
+	"go.uber.org/zap"
 
 	"github.com/zhs007/ankadb"
+	"github.com/zhs007/jarviscore/base"
 )
 
 // NewCoreDB - new core db
@@ -23,8 +25,13 @@ func NewCoreDB(dbpath string, httpAddr string, engine string) (*ankadb.AnkaDB, e
 
 	ankaDB, err := ankadb.NewAnkaDB(cfg, newDBLogic())
 	if ankaDB == nil {
+		jarvisbase.Error("NewCoreDB", zap.Error(err))
+
 		return nil, err
 	}
+
+	jarvisbase.Info("NewCoreDB", zap.String("dbpath", dbpath),
+		zap.String("httpAddr", httpAddr), zap.String("engine", engine))
 
 	return ankaDB, err
 }
