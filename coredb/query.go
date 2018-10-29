@@ -7,6 +7,7 @@ import (
 	"github.com/zhs007/ankadb/graphqlext"
 	"github.com/zhs007/ankadb/proto"
 	pb "github.com/zhs007/jarviscore/coredb/proto"
+	"github.com/zhs007/jarviscore/crypto"
 )
 
 var typeQuery = graphql.NewObject(
@@ -33,6 +34,11 @@ var typeQuery = graphql.NewObject(
 						return nil, err
 					}
 
+					pd.StrPriKey = jarviscrypto.Base58Encode(pd.PriKey)
+					pd.StrPubKey = jarviscrypto.Base58Encode(pd.PubKey)
+					pd.PriKey = nil
+					pd.PubKey = nil
+
 					return pd, nil
 				},
 			},
@@ -57,7 +63,9 @@ var typeQuery = graphql.NewObject(
 					}
 
 					// private key not allow query
+					pd.StrPubKey = jarviscrypto.Base58Encode(pd.PubKey)
 					pd.PriKey = nil
+					pd.PubKey = nil
 
 					return pd, nil
 				},

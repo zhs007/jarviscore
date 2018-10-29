@@ -2,7 +2,6 @@ package jarviscore
 
 import (
 	"context"
-	"encoding/base64"
 	"time"
 
 	"go.uber.org/zap"
@@ -19,15 +18,18 @@ const (
 	coredbMyNodeInfoPrefix = "ni:"
 )
 
-const queryNewPrivateData = `mutation NewPrivateData($priKey: ID!, $pubKey: ID!, $addr: ID!, $createTime: Timestamp!) {
-	newPrivateData(priKey: $priKey, pubKey: $pubKey, addr: $addr, createTime: $createTime) {
-		pubKey, addr, createTime
+const queryNewPrivateData = `mutation NewPrivateData($strPriKey: ID!, $strPubKey: ID!, $addr: ID!, $createTime: Timestamp!) {
+	newPrivateData(strPriKey: $strPriKey, strPubKey: $strPubKey, addr: $addr, createTime: $createTime) {
+		strPubKey, addr, createTime
 	}
 }`
 
-const queryPrivateKey = `query PrivateKey() {
-	privateKey() {
-		priKey, pubKey, addr, createTime
+const queryPrivateKey = `{
+	privateKey {
+	  strPriKey
+	  strPubKey
+	  addr
+	  createTime
 	}
 }`
 
@@ -71,10 +73,10 @@ func (db *coreDB) savePrivateKey() error {
 	}
 
 	params := make(map[string]interface{})
-	params["priKey"] = base64.StdEncoding.EncodeToString(db.privKey.ToPrivateBytes())
-	params["pubKey"] = base64.StdEncoding.EncodeToString(db.privKey.ToPublicBytes())
+	params["strPriKey"] = jarviscrypto.Base58Encode(db.privKey.ToPrivateBytes())
+	params["strPubKey"] = jarviscrypto.Base58Encode(db.privKey.ToPublicBytes())
 	params["addr"] = db.privKey.ToAddress()
-	params["createTime"] = time.Now().Second()
+	params["createTime"] = time.Now().Unix()
 
 	_, err := db.ankaDB.LocalQuery(context.Background(), queryNewPrivateData, params)
 	if err != nil {
@@ -110,7 +112,7 @@ func (db *coreDB) _loadPrivateKey() error {
 		return err
 	}
 
-	bytesPrikey, err := base64.StdEncoding.DecodeString(rpd.PrivateData.PriKey)
+	bytesPrikey, err := jarviscrypto.Base58Decode(rpd.PrivateData.StrPriKey)
 	if err != nil {
 		return err
 	}
@@ -133,7 +135,7 @@ func (db *coreDB) _foreachNode(oneach func(string, *coredbpb.NodeInfo), snapshot
 	params["snapshotID"] = snapshotID
 	params["beginIndex"] = beginIndex
 	params["nums"] = db.privKey.ToAddress()
-	params["createTime"] = time.Now().Second()
+	params["createTime"] = time.Now().Unix()
 
 	result, err := db.ankaDB.LocalQuery(context.Background(), queryNodeInfos, nil)
 	rnis := &coredbpb.NodeInfoList{}

@@ -1,6 +1,6 @@
 type PrivateData {
-    priKey: ID
-    pubKey: ID
+    strPriKey: ID
+    strPubKey: ID
     createTime: Timestamp
     onlineTime: Int64
     addr: ID
@@ -34,7 +34,7 @@ type Query {
 }
 
 type Mutation {
-    newPrivateData(priKey: ID!, pubKey: ID!, addr: ID!, createTime: Timestamp!) : PrivateData!
+    newPrivateData(strPriKey: ID!, strPubKey: ID!, addr: ID!, createTime: Timestamp!) : PrivateData!
     updPrivateData(curOnlineTime: Int64!) : PrivateData!
 
     updNodeInfo(nodeInfo: NodeInfo!) : NodeInfo!

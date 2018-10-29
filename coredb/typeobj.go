@@ -11,10 +11,10 @@ var typePrivateData = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "PrivateData",
 		Fields: graphql.Fields{
-			"priKey": &graphql.Field{
+			"strPriKey": &graphql.Field{
 				Type: graphql.ID,
 			},
-			"pubKey": &graphql.Field{
+			"strPubKey": &graphql.Field{
 				Type: graphql.ID,
 			},
 			"createTime": &graphql.Field{

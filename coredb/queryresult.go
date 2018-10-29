@@ -3,8 +3,8 @@ package coredb
 // ResultPrivateKey -
 type ResultPrivateKey struct {
 	PrivateKey struct {
-		PriKey     string `json:"priKey"`
-		PubKey     string `json:"pubKey"`
+		StrPriKey  string `json:"strPriKey"`
+		StrPubKey  string `json:"strPubKey"`
 		CreateTime int64  `json:"createTime"`
 		OnlineTime int64  `json:"onlineTime"`
 		Addr       string `json:"addr"`
@@ -14,8 +14,8 @@ type ResultPrivateKey struct {
 // ResultPrivateData -
 type ResultPrivateData struct {
 	PrivateData struct {
-		PriKey     string `json:"priKey"`
-		PubKey     string `json:"pubKey"`
+		StrPriKey  string `json:"strPriKey"`
+		StrPubKey  string `json:"strPubKey"`
 		CreateTime int64  `json:"createTime"`
 		OnlineTime int64  `json:"onlineTime"`
 		Addr       string `json:"addr"`

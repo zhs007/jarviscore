@@ -1,12 +1,11 @@
 package coredb
 
 import (
-	"encoding/base64"
-
 	"github.com/graphql-go/graphql"
 	"github.com/zhs007/ankadb"
 	"github.com/zhs007/ankadb/graphqlext"
 	pb "github.com/zhs007/jarviscore/coredb/proto"
+	"github.com/zhs007/jarviscore/crypto"
 )
 
 var typeMutation = graphql.NewObject(graphql.ObjectConfig{
@@ -16,10 +15,10 @@ var typeMutation = graphql.NewObject(graphql.ObjectConfig{
 			Type:        typePrivateData,
 			Description: "new private data",
 			Args: graphql.FieldConfigArgument{
-				"priKey": &graphql.ArgumentConfig{
+				"strPriKey": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
-				"pubKey": &graphql.ArgumentConfig{
+				"strPubKey": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 				"addr": &graphql.ArgumentConfig{
@@ -40,17 +39,17 @@ var typeMutation = graphql.NewObject(graphql.ObjectConfig{
 					return nil, ankadb.ErrCtxCurDB
 				}
 
-				priKey := params.Args["priKey"].(string)
-				pubKey := params.Args["pubKey"].(string)
+				priKey := params.Args["strPriKey"].(string)
+				pubKey := params.Args["strPubKey"].(string)
 				addr := params.Args["addr"].(string)
 				createTime := params.Args["createTime"].(int64)
 
-				priKeyBytes, err := base64.StdEncoding.DecodeString(priKey)
+				priKeyBytes, err := jarviscrypto.Base58Decode(priKey)
 				if err != nil {
 					return nil, ankadb.ErrQuertParams
 				}
 
-				pubKeyBytes, err := base64.StdEncoding.DecodeString(pubKey)
+				pubKeyBytes, err := jarviscrypto.Base58Decode(pubKey)
 				if err != nil {
 					return nil, ankadb.ErrQuertParams
 				}
@@ -70,6 +69,8 @@ var typeMutation = graphql.NewObject(graphql.ObjectConfig{
 
 				// private key not allow query
 				pd.PriKey = nil
+				pd.PubKey = nil
+				pd.StrPubKey = pubKey
 
 				return pd, nil
 			},
@@ -109,7 +110,9 @@ var typeMutation = graphql.NewObject(graphql.ObjectConfig{
 				}
 
 				// private key not allow query
+				pd.StrPubKey = jarviscrypto.Base58Encode(pd.PubKey)
 				pd.PriKey = nil
+				pd.PubKey = nil
 
 				return pd, nil
 			},

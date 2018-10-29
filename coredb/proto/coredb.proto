@@ -9,6 +9,8 @@ message PrivateData {
     int64 createTime = 3;
     int64 onlineTime = 4;
     string addr = 5;
+    string strPriKey = 6;
+    string strPubKey = 7;    
 }
 
 // node info
