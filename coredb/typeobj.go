@@ -73,7 +73,10 @@ var typeNodeInfoList = graphql.NewObject(
 			"snapshotID": &graphql.Field{
 				Type: graphql.NewNonNull(graphqlext.Int64),
 			},
-			"beginIndex": &graphql.Field{
+			"endIndex": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.Int),
+			},
+			"maxIndex": &graphql.Field{
 				Type: graphql.NewNonNull(graphql.Int),
 			},
 			"nodes": &graphql.Field{

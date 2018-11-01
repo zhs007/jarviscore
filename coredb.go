@@ -69,6 +69,8 @@ func newCoreDB() (*coreDB, error) {
 
 func (db *coreDB) savePrivateKey() error {
 	if db.privKey == nil {
+		jarvisbase.Error("savePrivateKey", zap.Error(ErrNoPrivateKey))
+
 		return ErrNoPrivateKey
 	}
 
@@ -78,20 +80,33 @@ func (db *coreDB) savePrivateKey() error {
 	params["addr"] = db.privKey.ToAddress()
 	params["createTime"] = time.Now().Unix()
 
-	_, err := db.ankaDB.LocalQuery(context.Background(), queryNewPrivateData, params)
+	ret, err := db.ankaDB.LocalQuery(context.Background(), queryNewPrivateData, params)
 	if err != nil {
+		jarvisbase.Error("savePrivateKey", zap.Error(err))
+
 		return err
 	}
+
+	jarvisbase.Info("savePrivateKey",
+		jarvisbase.JSON("result", ret))
 
 	return nil
 }
 func (db *coreDB) loadPrivateKeyEx() error {
 	err := db._loadPrivateKey()
 	if err != nil {
+		jarvisbase.Info("loadPrivateKeyEx:_loadPrivateKey",
+			zap.Error(err))
+
 		db.privKey = jarviscrypto.GenerateKey()
+		jarvisbase.Info("loadPrivateKeyEx:GenerateKey",
+			zap.String("privkey", db.privKey.ToAddress()))
 
 		return db.savePrivateKey()
 	}
+
+	jarvisbase.Info("loadPrivateKeyEx:OK",
+		zap.String("privkey", db.privKey.ToAddress()))
 
 	return nil
 }
@@ -102,27 +117,38 @@ func (db *coreDB) _loadPrivateKey() error {
 		return err
 	}
 
+	jarvisbase.Info("_loadPrivateKey",
+		jarvisbase.JSON("result", result))
+
 	if result.HasErrors() {
 		return result.Errors[0]
 	}
 
-	rpd := &coredb.ResultPrivateData{}
+	rpd := &coredb.ResultPrivateKey{}
 	err = ankadb.MakeObjFromResult(result, rpd)
 	if err != nil {
 		return err
 	}
 
-	bytesPrikey, err := jarviscrypto.Base58Decode(rpd.PrivateData.StrPriKey)
+	jarvisbase.Info("_loadPrivateKey",
+		jarvisbase.JSON("rpd", rpd))
+
+	bytesPrikey, err := jarviscrypto.Base58Decode(rpd.PrivateKey.StrPriKey)
 	if err != nil {
 		return err
 	}
 
+	// tmp := jarviscrypto.Base58Encode(bytesPrikey)
+	// jarvisbase.Info("_loadPrivateKey",
+	// 	zap.String("recheck base58", tmp))
+
 	privkey := jarviscrypto.NewPrivateKey()
 	err = privkey.FromBytes(bytesPrikey)
 	if err != nil {
-		db.privKey = jarviscrypto.GenerateKey()
+		return err
+		// db.privKey = jarviscrypto.GenerateKey()
 
-		return db.savePrivateKey()
+		// return db.savePrivateKey()
 	}
 
 	db.privKey = privkey
