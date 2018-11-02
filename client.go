@@ -129,6 +129,8 @@ func (c *jarvisClient) connectRoot(ctx context.Context, servaddr string) error {
 		return err
 	}
 
+	// jarvisbase.Info("jarvisClient.connectRoot:getConn:ok")
+
 	curctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -136,6 +138,8 @@ func (c *jarvisClient) connectRoot(ctx context.Context, servaddr string) error {
 		conn:   conn,
 		client: pb.NewJarvisCoreServClient(conn),
 	}
+
+	// jarvisbase.Info("jarvisClient.connectRoot:getConn:clientinfo ok")
 
 	r, err1 := ci.client.Join(curctx, &pb.Join{
 		ServAddr: c.node.myinfo.ServAddr,
@@ -149,6 +153,9 @@ func (c *jarvisClient) connectRoot(ctx context.Context, servaddr string) error {
 
 		return err1
 	}
+
+	jarvisbase.Info("jarvisClient.connectRoot",
+		jarvisbase.JSON("result", r))
 
 	if r.Err == "" {
 		jarvisbase.Info("jarvisClient.connectRoot:OK")
@@ -168,7 +175,8 @@ func (c *jarvisClient) connectRoot(ctx context.Context, servaddr string) error {
 		return nil
 	}
 
-	jarvisbase.Info("JarvisClient.connectRoot:Join", zap.String("err", r.Err))
+	jarvisbase.Info("JarvisClient.connectRoot:Join",
+		zap.String("err", r.Err))
 
 	mgrconn.delConn(servaddr)
 

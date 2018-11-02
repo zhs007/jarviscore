@@ -42,7 +42,7 @@ const queryNodeInfos = `query NodeInfos($snapshotID: Int64!, $beginIndex: Int!, 
 	}
 }`
 
-const queryUpdNodeInfo = `query UpdNodeInfo($nodeInfo: NodeInfoInput!) {
+const queryUpdNodeInfo = `mutation UpdNodeInfo($nodeInfo: NodeInfoInput!) {
 	updNodeInfo(nodeInfo: $nodeInfo) {
 		addr, servAddr, name, connectNums, connectedNums, ctrlID, lstClientAddr, addTime
 	}
@@ -211,10 +211,12 @@ func (db *coreDB) saveNode(cni *NodeInfo) error {
 		return err
 	}
 
-	_, err = db.ankaDB.LocalQuery(context.Background(), queryUpdNodeInfo, params)
+	result, err := db.ankaDB.LocalQuery(context.Background(), queryUpdNodeInfo, params)
 	if err != nil {
 		return err
 	}
+
+	jarvisbase.Info("saveNode", jarvisbase.JSON("result", result))
 
 	return nil
 }

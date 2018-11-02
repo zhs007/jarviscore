@@ -159,7 +159,7 @@ var typeQuery = graphql.NewObject(
 						ni := pb.NodeInfo{}
 						err := ankadb.GetMsgFromDB(curdb, []byte(pSnapshot.Keys[curi]), &ni)
 						if err == nil {
-							lstNodeInfo.Nodes = append(lstNodeInfo.Nodes)
+							lstNodeInfo.Nodes = append(lstNodeInfo.Nodes, &ni)
 						}
 					}
 

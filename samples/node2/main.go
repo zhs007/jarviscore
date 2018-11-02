@@ -14,7 +14,8 @@ func main() {
 		AnkaDBHttpServ: "127.0.0.1:8889",
 		AnkaDBEngine:   "leveldb",
 		DefPeerAddr:    "127.0.0.1:7788",
-		// DefPeerAddr: "jarvis.heyalgo.io:7788",
+		LogConsole:     true,
+		LogLevel:       "debug",
 	}
 
 	myinfo := jarviscore.BaseInfo{
