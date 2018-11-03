@@ -9,10 +9,10 @@ import (
 // ctrlMgr -
 type ctrlMgr struct {
 	sync.RWMutex
-	mapCtrl map[pb.CTRLTYPE](*Ctrl)
+	mapCtrl map[pb.CTRLTYPE](Ctrl)
 }
 
-func (mgr *ctrlMgr) Reg(ctrltype pb.CTRLTYPE, ctrl *Ctrl) {
+func (mgr *ctrlMgr) Reg(ctrltype pb.CTRLTYPE, ctrl Ctrl) {
 	mgr.Lock()
 	defer mgr.Unlock()
 
@@ -24,7 +24,7 @@ func (mgr *ctrlMgr) Run(ctrltype pb.CTRLTYPE, command []byte) ([]byte, error) {
 	defer mgr.RUnlock()
 
 	if c, ok := mgr.mapCtrl[ctrltype]; ok {
-		return (*c).Run(command)
+		return c.Run(command)
 	}
 
 	return nil, ErrNoCtrlCmd

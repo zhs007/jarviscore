@@ -60,6 +60,12 @@ var typeNodeInfo = graphql.NewObject(
 			"addTime": &graphql.Field{
 				Type: graphqlext.Int64,
 			},
+			"connectMe": &graphql.Field{
+				Type: graphql.Boolean,
+			},
+			"connectNode": &graphql.Field{
+				Type: graphql.Boolean,
+			},
 		},
 	},
 )

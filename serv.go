@@ -2,13 +2,17 @@ package jarviscore
 
 import (
 	"context"
+	"math/big"
 	"net"
 	"strings"
 	"sync"
 
+	"github.com/zhs007/jarviscore/crypto"
+
 	"go.uber.org/zap"
 
 	"github.com/zhs007/jarviscore/base"
+	"github.com/zhs007/jarviscore/coredb/proto"
 	pb "github.com/zhs007/jarviscore/proto"
 	"google.golang.org/grpc"
 )
@@ -185,12 +189,12 @@ func (s *jarvisServer) Subscribe(in *pb.Subscribe, stream pb.JarvisCoreServ_Subs
 		return nil
 	}
 
-	s.node.mgrNodeInfo.foreach(func(cn *NodeInfo) {
+	s.node.mgrNodeInfo.foreach(func(cn *coredbpb.NodeInfo) {
 		ni := pb.NodeInfo{
-			ServAddr: cn.baseinfo.ServAddr,
-			Addr:     cn.baseinfo.Addr,
-			Name:     cn.baseinfo.Name,
-			NodeType: cn.baseinfo.NodeType,
+			ServAddr: cn.ServAddr,
+			Addr:     cn.Addr,
+			Name:     cn.Name,
+			NodeType: pb.NODETYPE_NORMAL,
 		}
 
 		stream.SendMsg(&pb.ChannelInfo{
@@ -244,10 +248,39 @@ func (s *jarvisServer) Subscribe(in *pb.Subscribe, stream pb.JarvisCoreServ_Subs
 // RequestCtrl implements jarviscorepb.JarvisCoreServ
 func (s *jarvisServer) RequestCtrl(ctx context.Context, in *pb.CtrlInfo) (*pb.BaseReply, error) {
 	if in.DestAddr == s.node.myinfo.Addr {
-		_, err := mgrCtrl.Run(in.CtrlType, in.Command)
+		pk := jarviscrypto.PublicKey{}
+		pk.FromBytes(in.PubKey)
+
+		if pk.ToAddress() != in.SrcAddr {
+			jarvisbase.Warn("RequestCtrl", zap.Error(ErrPublicKeyAddr))
+
+			return &pb.BaseReply{
+				Err: ErrPublicKeyAddr.Error(),
+			}, nil
+		}
+
+		buf := append([]byte(in.DestAddr), in.Command...)
+
+		s := new(big.Int)
+		r := new(big.Int)
+
+		s.SetBytes(in.SignS)
+		r.SetBytes(in.SignR)
+
+		if !pk.Verify(buf, r, s) {
+			jarvisbase.Warn("RequestCtrl", zap.Error(ErrPublicKeyVerify))
+
+			return &pb.BaseReply{
+				Err: ErrPublicKeyVerify.Error(),
+			}, nil
+		}
+
+		result, err := mgrCtrl.Run(in.CtrlType, in.Command)
 		if err != nil {
 			return &pb.BaseReply{}, nil
 		}
+
+		jarvisbase.Info("jarvisServer.RequestCtrl", zap.String("result", string(result)))
 
 		return &pb.BaseReply{}, nil
 	}
@@ -266,4 +299,20 @@ func (s *jarvisServer) RequestCtrl(ctx context.Context, in *pb.CtrlInfo) (*pb.Ba
 // ReplyCtrl implements jarviscorepb.JarvisCoreServ
 func (s *jarvisServer) ReplyCtrl(ctx context.Context, in *pb.CtrlResult) (*pb.BaseReply, error) {
 	return &pb.BaseReply{}, nil
+}
+
+// GetMyServAddr implements jarviscorepb.JarvisCoreServ
+func (s *jarvisServer) GetMyServAddr(ctx context.Context, in *pb.ServAddr) (*pb.ServAddr, error) {
+	peeripaddr := in.ServAddr
+	addrSlice := strings.Split(in.ServAddr, ":")
+	if len(addrSlice) == 2 {
+		if (addrSlice[0] == "" || addrSlice[0] == "0.0.0.0") && addrSlice[1] != "" {
+			clientip := getGRPCClientIP(ctx)
+			if clientip != "" {
+				peeripaddr = clientip + ":" + addrSlice[1]
+			}
+		}
+	}
+
+	return &pb.ServAddr{ServAddr: peeripaddr}, nil
 }

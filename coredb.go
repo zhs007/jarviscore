@@ -44,7 +44,7 @@ const queryNodeInfos = `query NodeInfos($snapshotID: Int64!, $beginIndex: Int!, 
 
 const queryUpdNodeInfo = `mutation UpdNodeInfo($nodeInfo: NodeInfoInput!) {
 	updNodeInfo(nodeInfo: $nodeInfo) {
-		addr, servAddr, name, connectNums, connectedNums, ctrlID, lstClientAddr, addTime
+		addr, servAddr, name, connectNums, connectedNums, ctrlID, lstClientAddr, addTime, connectMe, connectNode
 	}
 }`
 
@@ -195,18 +195,44 @@ func (db *coreDB) foreachNodeEx(oneach func(string, *coredbpb.NodeInfo)) error {
 	return nil
 }
 
-func (db *coreDB) saveNode(cni *NodeInfo) error {
-	ni := &coredbpb.NodeInfo{
-		ServAddr:      cni.baseinfo.ServAddr,
-		Addr:          cni.baseinfo.Addr,
-		Name:          cni.baseinfo.Name,
-		ConnectNums:   int32(cni.connectNums),
-		ConnectedNums: int32(cni.connectedNums),
-	}
+// func (db *coreDB) saveNode(cni *NodeInfo) error {
+// 	ni := &coredbpb.NodeInfo{
+// 		ServAddr:      cni.baseinfo.ServAddr,
+// 		Addr:          cni.baseinfo.Addr,
+// 		Name:          cni.baseinfo.Name,
+// 		ConnectNums:   int32(cni.connectNums),
+// 		ConnectedNums: int32(cni.connectedNums),
+// 	}
+
+// 	params := make(map[string]interface{})
+
+// 	err := ankadb.MakeParamsFromMsg(params, "nodeInfo", ni)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	result, err := db.ankaDB.LocalQuery(context.Background(), queryUpdNodeInfo, params)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	jarvisbase.Info("saveNode", jarvisbase.JSON("result", result))
+
+// 	return nil
+// }
+
+func (db *coreDB) saveNodeEx(cni *coredbpb.NodeInfo) error {
+	// ni := &coredbpb.NodeInfo{
+	// 	ServAddr:      cni.baseinfo.ServAddr,
+	// 	Addr:          cni.baseinfo.Addr,
+	// 	Name:          cni.baseinfo.Name,
+	// 	ConnectNums:   int32(cni.connectNums),
+	// 	ConnectedNums: int32(cni.connectedNums),
+	// }
 
 	params := make(map[string]interface{})
 
-	err := ankadb.MakeParamsFromMsg(params, "nodeInfo", ni)
+	err := ankadb.MakeParamsFromMsg(params, "nodeInfo", cni)
 	if err != nil {
 		return err
 	}

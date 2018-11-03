@@ -328,7 +328,7 @@ func (n *jarvisNode) onNodeConnectMe(bi *BaseInfo) {
 		return
 	}
 
-	n.mgrNodeInfo.addNodeInfo(bi, false)
+	n.mgrNodeInfo.addNodeInfo(bi)
 	n.mgrNodeInfo.chg2ConnectMe(bi.Addr)
 
 	_, connNode := n.mgrNodeInfo.getNodeConnectState(bi.Addr)
@@ -343,7 +343,7 @@ func (n *jarvisNode) onIConnectNode(bi *BaseInfo) {
 		return
 	}
 
-	n.mgrNodeInfo.addNodeInfo(bi, false)
+	n.mgrNodeInfo.addNodeInfo(bi)
 	n.mgrNodeInfo.chg2ConnectNode(bi.Addr)
 
 	n.serv.broadcastNode(bi)
@@ -355,7 +355,7 @@ func (n *jarvisNode) onGetNewNode(bi *BaseInfo) {
 		return
 	}
 
-	n.mgrNodeInfo.addNodeInfo(bi, false)
+	n.mgrNodeInfo.addNodeInfo(bi)
 	_, connNode := n.mgrNodeInfo.getNodeConnectState(bi.Addr)
 	if !connNode {
 		n.client.pushNewConnect(bi)
@@ -375,6 +375,12 @@ func (n *jarvisNode) requestCtrl(ctx context.Context, addr string, ctrltype pb.C
 	if err != nil {
 		return ErrSign
 	}
+
+	// pk := jarviscrypto.NewPublicKey()
+	// pk.FromBytes(n.coredb.privKey.ToPublicBytes())
+	// if !pk.Verify(buf, r, s) {
+	// 	return ErrPublicKeyVerify
+	// }
 
 	ci := &pb.CtrlInfo{
 		Ctrlid:      ctrlid,

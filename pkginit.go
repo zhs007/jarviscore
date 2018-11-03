@@ -10,5 +10,7 @@ var mgrCtrl *ctrlMgr
 
 func init() {
 	mgrconn = &connMgr{mapConn: make(map[string]*grpc.ClientConn)}
-	mgrCtrl = &ctrlMgr{mapCtrl: make(map[pb.CTRLTYPE](*Ctrl))}
+
+	mgrCtrl = &ctrlMgr{mapCtrl: make(map[pb.CTRLTYPE](Ctrl))}
+	mgrCtrl.Reg(pb.CTRLTYPE_SHELL, &CtrlShell{})
 }

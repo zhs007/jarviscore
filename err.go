@@ -25,4 +25,12 @@ var (
 	ErrAlreadyJoin = errors.New("already join")
 	// ErrNotConnectMe - not connect me
 	ErrNotConnectMe = errors.New("not connect me")
+	// ErrGRPCPeerFromContext - grpc.peer.FromContext err
+	ErrGRPCPeerFromContext = errors.New("grpc.peer.FromContext err")
+	// ErrGRPCPeerAddr - grpc.peer.Addr err
+	ErrGRPCPeerAddr = errors.New("grpc.peer.Addr err")
+	// ErrPublicKeyAddr - public key and address do not match
+	ErrPublicKeyAddr = errors.New("public key and address do not match")
+	// ErrPublicKeyVerify - public key verify err
+	ErrPublicKeyVerify = errors.New("public key verify err")
 )

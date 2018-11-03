@@ -35,6 +35,12 @@ var inputTypeNodeInfo = graphql.NewInputObject(
 			"addTime": &graphql.InputObjectFieldConfig{
 				Type: graphqlext.Int64,
 			},
+			"connectMe": &graphql.InputObjectFieldConfig{
+				Type: graphql.Boolean,
+			},
+			"connectNode": &graphql.InputObjectFieldConfig{
+				Type: graphql.Boolean,
+			},
 		},
 	},
 )

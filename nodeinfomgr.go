@@ -7,7 +7,6 @@ import (
 
 	"github.com/zhs007/jarviscore/base"
 	"github.com/zhs007/jarviscore/coredb/proto"
-	pb "github.com/zhs007/jarviscore/proto"
 )
 
 // const coredbMyNodeInfoPrefix = "ni:"
@@ -15,16 +14,16 @@ import (
 // nodeInfoMgr -
 type nodeInfoMgr struct {
 	sync.RWMutex
-	mapNodeInfo map[string]*NodeInfo
+	mapNodeInfo map[string]*coredbpb.NodeInfo
 	node        *jarvisNode
 }
 
-type funcEachNodeInfo func(*NodeInfo)
+type funcEachNodeInfo func(*coredbpb.NodeInfo)
 
 // nodeInfoMgr -
 func newNodeInfoMgr(node *jarvisNode) *nodeInfoMgr {
 	return &nodeInfoMgr{
-		mapNodeInfo: make(map[string]*NodeInfo),
+		mapNodeInfo: make(map[string]*coredbpb.NodeInfo),
 		node:        node,
 	}
 }
@@ -40,15 +39,23 @@ func (mgr *nodeInfoMgr) loadFromDB() {
 	}
 
 	mgr.node.coredb.foreachNodeEx(func(key string, val *coredbpb.NodeInfo) {
-		bi := BaseInfo{
-			Name:     val.Name,
-			ServAddr: val.ServAddr,
-			Addr:     val.Addr,
-			NodeType: pb.NODETYPE_NORMAL,
-		}
+		val.ConnectMe = false
+		val.ConnectNode = false
 
-		mgr.addNodeInfo(&bi, true)
+		mgr.mapNodeInfo[val.Addr] = val
+		// bi := BaseInfo{
+		// 	Name:     val.Name,
+		// 	ServAddr: val.ServAddr,
+		// 	Addr:     val.Addr,
+		// 	NodeType: pb.NODETYPE_NORMAL,
+		// }
+
+		// mgr.addNodeInfo(&bi, true)
 	})
+
+	for k := range mgr.mapNodeInfo {
+		mgr._saveToDB(k)
+	}
 
 	jarvisbase.Debug("nodeInfoMgr.loadFromDB end")
 
@@ -91,7 +98,7 @@ func (mgr *nodeInfoMgr) _saveToDB(addr string) {
 		return
 	}
 
-	err := mgr.node.coredb.saveNode(cni)
+	err := mgr.node.coredb.saveNodeEx(cni)
 	if err != nil {
 		jarvisbase.Error("nodeInfoMgr:saveToDB:saveNode", zap.Error(err))
 	}
@@ -120,21 +127,37 @@ func (mgr *nodeInfoMgr) _saveToDB(addr string) {
 	// }
 }
 
-func (mgr *nodeInfoMgr) addNodeInfo(bi *BaseInfo, isload bool) {
+func (mgr *nodeInfoMgr) addNodeInfo(bi *BaseInfo) {
 	jarvisbase.Debug("nodeInfoMgr.addNodeInfo")
 
 	mgr.Lock()
 	defer mgr.Unlock()
 
-	if _, ok := mgr.mapNodeInfo[bi.Addr]; ok {
+	cni, ok := mgr.mapNodeInfo[bi.Addr]
+	if ok {
+		cni.ServAddr = bi.ServAddr
+		cni.Name = bi.Name
+
+		mgr._saveToDB(bi.Addr)
+
 		return
 	}
 
-	mgr.mapNodeInfo[bi.Addr] = NewNodeInfo(bi)
-
-	if !isload {
-		mgr._saveToDB(bi.Addr)
+	pbni := &coredbpb.NodeInfo{
+		ServAddr:      bi.ServAddr,
+		Addr:          bi.Addr,
+		Name:          bi.Name,
+		ConnectNums:   0,
+		ConnectedNums: 0,
+		CtrlID:        0,
+		AddTime:       0,
 	}
+
+	mgr.mapNodeInfo[bi.Addr] = pbni
+
+	// if !isload {
+	mgr._saveToDB(bi.Addr)
+	// }
 }
 
 func (mgr *nodeInfoMgr) chg2ConnectMe(addr string) {
@@ -147,7 +170,7 @@ func (mgr *nodeInfoMgr) chg2ConnectMe(addr string) {
 		return
 	}
 
-	mgr.mapNodeInfo[addr].connectMe = true
+	mgr.mapNodeInfo[addr].ConnectMe = true
 }
 
 func (mgr *nodeInfoMgr) chg2ConnectNode(addr string) {
@@ -160,7 +183,7 @@ func (mgr *nodeInfoMgr) chg2ConnectNode(addr string) {
 		return
 	}
 
-	mgr.mapNodeInfo[addr].connectNode = true
+	mgr.mapNodeInfo[addr].ConnectNode = true
 }
 
 func (mgr *nodeInfoMgr) hasNodeInfo(addr string) bool {
@@ -186,10 +209,10 @@ func (mgr *nodeInfoMgr) getNodeConnectState(addr string) (bool, bool) {
 		return false, false
 	}
 
-	return mgr.mapNodeInfo[addr].connectMe, mgr.mapNodeInfo[addr].connectNode
+	return mgr.mapNodeInfo[addr].ConnectMe, mgr.mapNodeInfo[addr].ConnectNode
 }
 
-func (mgr *nodeInfoMgr) foreach(oneach func(*NodeInfo)) {
+func (mgr *nodeInfoMgr) foreach(oneach func(*coredbpb.NodeInfo)) {
 	jarvisbase.Debug("nodeInfoMgr.foreach")
 
 	mgr.RLock()
@@ -206,14 +229,14 @@ func (mgr *nodeInfoMgr) foreach(oneach func(*NodeInfo)) {
 func (mgr *nodeInfoMgr) onStartConnect(addr string) {
 	jarvisbase.Debug("nodeInfoMgr.onStartConnect")
 
-	mgr.RLock()
-	defer mgr.RUnlock()
+	mgr.Lock()
+	defer mgr.Unlock()
 
 	if _, ok := mgr.mapNodeInfo[addr]; !ok {
 		return
 	}
 
-	mgr.mapNodeInfo[addr].connectNums++
+	mgr.mapNodeInfo[addr].ConnectNums++
 
 	mgr._saveToDB(addr)
 }
@@ -222,14 +245,14 @@ func (mgr *nodeInfoMgr) onStartConnect(addr string) {
 func (mgr *nodeInfoMgr) onConnected(addr string) {
 	jarvisbase.Debug("nodeInfoMgr.onConnected")
 
-	mgr.RLock()
-	defer mgr.RUnlock()
+	mgr.Lock()
+	defer mgr.Unlock()
 
 	if _, ok := mgr.mapNodeInfo[addr]; !ok {
 		return
 	}
 
-	mgr.mapNodeInfo[addr].connectedNums++
+	mgr.mapNodeInfo[addr].ConnectedNums++
 
 	mgr._saveToDB(addr)
 }
@@ -238,12 +261,16 @@ func (mgr *nodeInfoMgr) onConnected(addr string) {
 func (mgr *nodeInfoMgr) getCtrlID(addr string) int64 {
 	jarvisbase.Debug("nodeInfoMgr.getCtrlID")
 
-	mgr.RLock()
-	defer mgr.RUnlock()
+	mgr.Lock()
+	defer mgr.Unlock()
 
-	if _, ok := mgr.mapNodeInfo[addr]; !ok {
+	cn, ok := mgr.mapNodeInfo[addr]
+	if !ok {
 		return -1
 	}
 
-	return mgr.mapNodeInfo[addr].ctrlid + 1
+	cn.CtrlID++
+	mgr._saveToDB(addr)
+
+	return cn.CtrlID
 }

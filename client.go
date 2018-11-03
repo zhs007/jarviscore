@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/zhs007/jarviscore/base"
+	"github.com/zhs007/jarviscore/coredb/proto"
 	pb "github.com/zhs007/jarviscore/proto"
 	"google.golang.org/grpc"
 )
@@ -55,8 +56,14 @@ func (c *jarvisClient) onStop() {
 }
 
 func (c *jarvisClient) startConnectAllNode() {
-	c.node.mgrNodeInfo.foreach(func(cn *NodeInfo) {
-		c.pushNewConnect(&cn.baseinfo)
+	c.node.mgrNodeInfo.foreach(func(cn *coredbpb.NodeInfo) {
+		bi := &BaseInfo{
+			Name:     cn.Name,
+			ServAddr: cn.ServAddr,
+			Addr:     cn.Addr,
+			NodeType: pb.NODETYPE_NORMAL,
+		}
+		c.pushNewConnect(bi)
 	})
 }
 
@@ -160,12 +167,16 @@ func (c *jarvisClient) connectRoot(ctx context.Context, servaddr string) error {
 	if r.Err == "" {
 		jarvisbase.Info("jarvisClient.connectRoot:OK")
 
+		c.mapClient[r.Addr] = &ci
+
 		c.node.onIConnectNode(&BaseInfo{
 			Name:     r.Name,
 			Addr:     r.Addr,
 			NodeType: r.NodeType,
 			ServAddr: servaddr,
 		})
+
+		c.node.requestCtrl(ctx, r.Addr, pb.CTRLTYPE_SHELL, []byte("whami"))
 
 		// c.node.mgrNodeInfo.onConnected(bi.Addr)
 		// c.mgrpeeraddr.onConnected(servaddr)
