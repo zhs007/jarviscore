@@ -66,7 +66,7 @@
     "leveldb/table",
     "leveldb/util"
   ]
-  revision = "6b91fda63f2e36186f1c9d0e48578defb69c5d43"
+  revision = "a4119e27a65dc634683dd798846ce8ee09620ae9"
 
 [[projects]]
   name = "github.com/zhs007/ankadb"
@@ -76,8 +76,8 @@
     "graphqlext",
     "proto"
   ]
-  revision = "3f896050297309fd12edc7e56b2f52d7ddafae4d"
-  version = "v0.2.4"
+  revision = "9f4701bfbcb2c95ce5b2bde4887fcec07290e4f3"
+  version = "v0.2.5"
 
 [[projects]]
   name = "go.uber.org/atomic"
@@ -108,7 +108,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ripemd160"]
-  revision = "dab2b1051b5dd33a57e97c4774ed152e6a6c9a13"
+  revision = "4d3f4d9ffa16a13f451c3b2999e9c49e9750bf06"
 
 [[projects]]
   branch = "master"
@@ -122,13 +122,13 @@
     "internal/timeseries",
     "trace"
   ]
-  revision = "c44066c5c816ec500d459a2a324a753f78531ae0"
+  revision = "c10e9556a7bc0e7c942242b606f0acf024ad5d6a"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "95b1ffbd15a57cc5abb3f04402b9e8ec0016a52c"
+  revision = "9b800f95dbbc54abff0acf7ee32d88ba4e328c89"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -155,7 +155,7 @@
   branch = "master"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
-  revision = "8b5d7a19e2d98fbad9aaf9c599776bf066d7c70f"
+  revision = "c830210a61dfaa790e1920f8d0470fc27bc2efbe"
 
 [[projects]]
   name = "google.golang.org/grpc"
@@ -199,6 +199,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "01d4b980a79f9720e0679e01d9ec4a794a55331ab44393c30bbc825a1b531432"
+  inputs-digest = "85a1def5508cd33bae0a0223adb7179a2f9b24dd7b688f0e7a13f863ced663a4"
   solver-name = "gps-cdcl"
   solver-version = 1

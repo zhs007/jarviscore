@@ -11,7 +11,7 @@ func main() {
 	cfg := jarviscore.Config{
 		DBPath:         "./dat",
 		LogPath:        "./log",
-		AnkaDBHttpServ: "127.0.0.1:8888",
+		AnkaDBHttpServ: "127.0.0.1:8880",
 		AnkaDBEngine:   "leveldb",
 		DefPeerAddr:    "jarvis.heyalgo.io:7788",
 		LogConsole:     true,
