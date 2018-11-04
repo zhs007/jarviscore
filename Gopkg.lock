@@ -76,8 +76,8 @@
     "graphqlext",
     "proto"
   ]
-  revision = "9f4701bfbcb2c95ce5b2bde4887fcec07290e4f3"
-  version = "v0.2.5"
+  revision = "ef6651b14ec19cf5ffe33ecc445bf468d56a16fe"
+  version = "v0.2.7"
 
 [[projects]]
   name = "go.uber.org/atomic"
@@ -199,6 +199,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "85a1def5508cd33bae0a0223adb7179a2f9b24dd7b688f0e7a13f863ced663a4"
+  inputs-digest = "2eb6e78b036670b9bd71d22f4390ac9a0f74e27f08e2204a96906880dbe29ff0"
   solver-name = "gps-cdcl"
   solver-version = 1
