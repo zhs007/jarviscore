@@ -143,7 +143,7 @@ func (s *jarvisServer) broadcastNode(bi *BaseInfo) {
 	s.RLock()
 	defer s.RUnlock()
 
-	ni := pb.NodeInfo{
+	ni := pb.NodeBaseInfo{
 		ServAddr: bi.ServAddr,
 		Addr:     bi.Addr,
 		Name:     bi.Name,
@@ -190,7 +190,7 @@ func (s *jarvisServer) Subscribe(in *pb.Subscribe, stream pb.JarvisCoreServ_Subs
 	}
 
 	s.node.mgrNodeInfo.foreach(func(cn *coredbpb.NodeInfo) {
-		ni := pb.NodeInfo{
+		ni := pb.NodeBaseInfo{
 			ServAddr: cn.ServAddr,
 			Addr:     cn.Addr,
 			Name:     cn.Name,
@@ -315,4 +315,9 @@ func (s *jarvisServer) GetMyServAddr(ctx context.Context, in *pb.ServAddr) (*pb.
 	}
 
 	return &pb.ServAddr{ServAddr: peeripaddr}, nil
+}
+
+// Trust implements jarviscorepb.JarvisCoreServ
+func (s *jarvisServer) Trust(ctx context.Context, in *pb.TrustNode) (*pb.BaseReply, error) {
+	return &pb.BaseReply{}, nil
 }

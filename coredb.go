@@ -30,6 +30,7 @@ const queryPrivateKey = `{
 	  strPubKey
 	  addr
 	  createTime
+	  lstTrustNode
 	}
 }`
 
@@ -48,9 +49,16 @@ const queryUpdNodeInfo = `mutation UpdNodeInfo($nodeInfo: NodeInfoInput!) {
 	}
 }`
 
+const queryTrustNode = `mutation TrustNode($addr: ID!) {
+	trustNode(addr: $addr) {
+		strPubKey, addr, createTime, lstTrustNode
+	}
+}`
+
 type coreDB struct {
-	ankaDB  *ankadb.AnkaDB
-	privKey *jarviscrypto.PrivateKey
+	ankaDB       *ankadb.AnkaDB
+	privKey      *jarviscrypto.PrivateKey
+	lstTrustNode []string
 	// db      ankadatabase.Database
 }
 
@@ -92,6 +100,7 @@ func (db *coreDB) savePrivateKey() error {
 
 	return nil
 }
+
 func (db *coreDB) loadPrivateKeyEx() error {
 	err := db._loadPrivateKey()
 	if err != nil {
@@ -152,6 +161,7 @@ func (db *coreDB) _loadPrivateKey() error {
 	}
 
 	db.privKey = privkey
+	db.lstTrustNode = rpd.PrivateKey.LstTrustNode
 
 	return nil
 }
@@ -245,4 +255,43 @@ func (db *coreDB) saveNodeEx(cni *coredbpb.NodeInfo) error {
 	jarvisbase.Info("saveNode", jarvisbase.JSON("result", result))
 
 	return nil
+}
+
+func (db *coreDB) trustNode(addr string) error {
+	params := make(map[string]interface{})
+	params["addr"] = addr
+
+	ret, err := db.ankaDB.LocalQuery(context.Background(), queryNewPrivateData, params)
+	if err != nil {
+		jarvisbase.Error("trustNode", zap.Error(err))
+
+		return err
+	}
+
+	jarvisbase.Info("trustNode",
+		jarvisbase.JSON("result", ret))
+
+	rpd := &coredb.ResultPrivateKey{}
+	err = ankadb.MakeObjFromResult(ret, rpd)
+	if err != nil {
+		return err
+	}
+
+	db.lstTrustNode = rpd.PrivateKey.LstTrustNode
+
+	return nil
+}
+
+func (db *coreDB) isTrustNode(addr string) bool {
+	if len(db.lstTrustNode) <= 0 {
+		return false
+	}
+
+	for i := range db.lstTrustNode {
+		if db.lstTrustNode[i] == addr {
+			return true
+		}
+	}
+
+	return false
 }

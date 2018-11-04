@@ -4,6 +4,7 @@ type PrivateData {
     createTime: Timestamp
     onlineTime: Int64
     addr: ID
+    lstTrustNode: [ID]
 }
 
 type NodeInfo {
@@ -38,6 +39,7 @@ type Query {
 type Mutation {
     newPrivateData(strPriKey: ID!, strPubKey: ID!, addr: ID!, createTime: Timestamp!) : PrivateData!
     updPrivateData(curOnlineTime: Int64!) : PrivateData!
+    trustNode(addr: ID!) : PrivateData!
 
     updNodeInfo(nodeInfo: NodeInfo!) : NodeInfo!
 }

@@ -10,7 +10,8 @@ message PrivateData {
     int64 onlineTime = 4;
     string addr = 5;
     string strPriKey = 6;
-    string strPubKey = 7;    
+    string strPubKey = 7;
+    repeated string lstTrustNode = 8;
 }
 
 // node info

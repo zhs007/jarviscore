@@ -3,22 +3,24 @@ package coredb
 // ResultPrivateKey -
 type ResultPrivateKey struct {
 	PrivateKey struct {
-		StrPriKey  string `json:"strPriKey"`
-		StrPubKey  string `json:"strPubKey"`
-		CreateTime int64  `json:"createTime"`
-		OnlineTime int64  `json:"onlineTime"`
-		Addr       string `json:"addr"`
+		StrPriKey    string   `json:"strPriKey"`
+		StrPubKey    string   `json:"strPubKey"`
+		CreateTime   int64    `json:"createTime"`
+		OnlineTime   int64    `json:"onlineTime"`
+		Addr         string   `json:"addr"`
+		LstTrustNode []string `json:"lstTrustNode"`
 	} `json:"privateKey"`
 }
 
 // ResultPrivateData -
 type ResultPrivateData struct {
 	PrivateData struct {
-		StrPriKey  string `json:"strPriKey"`
-		StrPubKey  string `json:"strPubKey"`
-		CreateTime int64  `json:"createTime"`
-		OnlineTime int64  `json:"onlineTime"`
-		Addr       string `json:"addr"`
+		StrPriKey    string   `json:"strPriKey"`
+		StrPubKey    string   `json:"strPubKey"`
+		CreateTime   int64    `json:"createTime"`
+		OnlineTime   int64    `json:"onlineTime"`
+		Addr         string   `json:"addr"`
+		LstTrustNode []string `json:"lstTrustNode"`
 	} `json:"privateData"`
 }
 
