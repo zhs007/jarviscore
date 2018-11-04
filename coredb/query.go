@@ -39,6 +39,10 @@ var typeQuery = graphql.NewObject(
 					pd.PriKey = nil
 					pd.PubKey = nil
 
+					if pd.LstTrustNode == nil || len(pd.LstTrustNode) <= 0 {
+						pd.LstTrustNode = []string{pd.Addr}
+					}
+
 					return pd, nil
 				},
 			},
@@ -66,6 +70,10 @@ var typeQuery = graphql.NewObject(
 					pd.StrPubKey = jarviscrypto.Base58Encode(pd.PubKey)
 					pd.PriKey = nil
 					pd.PubKey = nil
+
+					if pd.LstTrustNode == nil || len(pd.LstTrustNode) <= 0 {
+						pd.LstTrustNode = []string{pd.Addr}
+					}
 
 					return pd, nil
 				},

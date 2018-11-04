@@ -16,6 +16,7 @@ type Config struct {
 	AnkaDBEngine   string
 	LogLevel       string
 	LogConsole     bool
+	LstTrustNode   []string
 }
 
 const normalLogFilename = "output.log"

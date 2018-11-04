@@ -16,6 +16,7 @@ func main() {
 		DefPeerAddr:    "jarvis.heyalgo.io:7788",
 		LogConsole:     true,
 		LogLevel:       "debug",
+		LstTrustNode:   []string{"1JJaKpZGhYPuVHc1EKiiHZEswPAB5SybW5"},
 	}
 
 	myinfo := jarviscore.BaseInfo{

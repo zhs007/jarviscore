@@ -26,6 +26,9 @@ var typePrivateData = graphql.NewObject(
 			"addr": &graphql.Field{
 				Type: graphql.ID,
 			},
+			"lstTrustNode": &graphql.Field{
+				Type: graphql.NewList(graphql.ID),
+			},
 		},
 	},
 )

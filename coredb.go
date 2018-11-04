@@ -117,6 +117,14 @@ func (db *coreDB) loadPrivateKeyEx() error {
 	jarvisbase.Info("loadPrivateKeyEx:OK",
 		zap.String("privkey", db.privKey.ToAddress()))
 
+	if len(config.LstTrustNode) > 0 {
+		for i := range config.LstTrustNode {
+			if !db.isTrustNode(config.LstTrustNode[i]) {
+				db.trustNode(config.LstTrustNode[i])
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -261,7 +269,7 @@ func (db *coreDB) trustNode(addr string) error {
 	params := make(map[string]interface{})
 	params["addr"] = addr
 
-	ret, err := db.ankaDB.LocalQuery(context.Background(), queryNewPrivateData, params)
+	ret, err := db.ankaDB.LocalQuery(context.Background(), queryTrustNode, params)
 	if err != nil {
 		jarvisbase.Error("trustNode", zap.Error(err))
 

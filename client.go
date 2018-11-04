@@ -176,7 +176,7 @@ func (c *jarvisClient) connectRoot(ctx context.Context, servaddr string) error {
 			ServAddr: servaddr,
 		})
 
-		c.node.requestCtrl(ctx, r.Addr, pb.CTRLTYPE_SHELL, []byte("whami"))
+		// c.node.requestCtrl(ctx, r.Addr, pb.CTRLTYPE_SHELL, []byte("whami"))
 
 		// c.node.mgrNodeInfo.onConnected(bi.Addr)
 		// c.mgrpeeraddr.onConnected(servaddr)
