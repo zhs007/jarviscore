@@ -1,14 +1,33 @@
+#jarvis node config
+
+# rootservaddr - jarvis root node address
 rootservaddr: 'jarvis.heyalgo.io:7788'
+# lsttrustnode - trust node list
 lsttrustnode: ['1JJaKpZGhYPuVHc1EKiiHZEswPAB5SybW5']
+
+# ankadb - ankadb config
 ankadb:
+  # dbpath - dbpath
   dbpath: './dat'
+  # httpserv - http service address, it can be empty
   httpserv: ':8880'
+  # ankadb engine
   engine: 'leveldb'
+
+# log - log config
 log:
+  # logpath - log path
   logpath: './logs'
+  # loglevel - log level, it can be debug, info, warn, error
   loglevel: 'debug'
+  # logconsole - it can be output to console
   logconsole: true
+
+# basenodeinfo - my node base config  
 basenodeinfo:
+  # nodename - my node name
   nodename: 'node001'
+  # bindaddr - my bind address
   bindaddr: ':7788'
+  # servaddr - other node connct me
   servaddr: '127.0.0.1:7788'
