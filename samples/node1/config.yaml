@@ -1,0 +1,14 @@
+rootservaddr: 'jarvis.heyalgo.io:7788'
+lsttrustnode: ['1JJaKpZGhYPuVHc1EKiiHZEswPAB5SybW5']
+ankadb:
+  dbpath: './dat'
+  httpserv: ':8880'
+  engine: 'leveldb'
+log:
+  logpath: './logs'
+  loglevel: 'debug'
+  logconsole: true
+basenodeinfo:
+  nodename: 'node001'
+  bindaddr: ':7788'
+  servaddr: '127.0.0.1:7788'

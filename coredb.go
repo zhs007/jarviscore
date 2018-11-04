@@ -63,7 +63,7 @@ type coreDB struct {
 }
 
 func newCoreDB() (*coreDB, error) {
-	ankaDB, err := coredb.NewCoreDB(config.DBPath, config.AnkaDBHttpServ, config.AnkaDBEngine)
+	ankaDB, err := coredb.NewCoreDB(config.AnkaDB.DBPath, config.AnkaDB.HTTPServ, config.AnkaDB.Engine)
 	if err != nil {
 		jarvisbase.Error("newCoreDB:NewAnkaLDB", zap.Error(err))
 

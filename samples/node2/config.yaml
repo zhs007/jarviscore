@@ -1,0 +1,14 @@
+rootservaddr: '127.0.0.1:7788'
+lsttrustnode: ['1JJaKpZGhYPuVHc1EKiiHZEswPAB5SybW5']
+ankadb:
+  dbpath: './dat'
+  httpserv: ':8881'
+  engine: 'leveldb'
+log:
+  logpath: './logs'
+  loglevel: 'debug'
+  logconsole: true
+basenodeinfo:
+  nodename: 'node002'
+  bindaddr: ':7789'
+  servaddr: '127.0.0.1:7789'

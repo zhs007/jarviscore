@@ -70,7 +70,7 @@ func (c *jarvisClient) startConnectAllNode() {
 func (c *jarvisClient) Start(ctx context.Context) {
 	ctx, cancel := context.WithCancel(ctx)
 
-	go c.connectRoot(ctx, config.DefPeerAddr)
+	go c.connectRoot(ctx, config.RootServAddr)
 	go c.startConnectAllNode()
 	// c.mgrpeeraddr = mgrpeeraddr
 

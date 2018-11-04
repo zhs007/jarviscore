@@ -1,7 +1,11 @@
 package jarviscore
 
 import (
+	"io/ioutil"
+	"os"
+
 	"go.uber.org/zap/zapcore"
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/zhs007/jarviscore/base"
 	"go.uber.org/zap"
@@ -9,26 +13,32 @@ import (
 
 // Config - config
 type Config struct {
-	DBPath         string
-	LogPath        string
-	DefPeerAddr    string
-	AnkaDBHttpServ string
-	AnkaDBEngine   string
-	LogLevel       string
-	LogConsole     bool
-	LstTrustNode   []string
+	RootServAddr string
+	LstTrustNode []string
+
+	AnkaDB struct {
+		DBPath   string
+		HTTPServ string
+		Engine   string
+	}
+
+	Log struct {
+		LogPath    string
+		LogLevel   string
+		LogConsole bool
+	}
+
+	BaseNodeInfo struct {
+		NodeName string
+		BindAddr string
+		ServAddr string
+	}
 }
 
-const normalLogFilename = "output.log"
-const errLogFilename = "error.log"
+// const normalLogFilename = "output.log"
+// const errLogFilename = "error.log"
 
-var config = Config{
-	DBPath:         "./data",
-	LogPath:        "./log",
-	DefPeerAddr:    "jarvis.heyalgo.io:7788",
-	AnkaDBHttpServ: ":8888",
-	AnkaDBEngine:   "leveldb",
-}
+var config Config
 
 func getLogLevel(str string) zapcore.Level {
 	switch str {
@@ -47,12 +57,12 @@ func getLogLevel(str string) zapcore.Level {
 func InitJarvisCore(cfg Config) {
 	config = cfg
 
-	jarvisbase.InitLogger(getLogLevel(cfg.LogLevel), cfg.LogConsole, cfg.LogPath)
+	jarvisbase.InitLogger(getLogLevel(cfg.Log.LogLevel), cfg.Log.LogConsole, cfg.Log.LogPath)
 
 	jarvisbase.Info("InitJarvisCore",
-		zap.String("DBPath", cfg.DBPath),
-		zap.String("DefPeerAddr", cfg.DefPeerAddr),
-		zap.String("LogPath", cfg.LogPath))
+		zap.String("DBPath", cfg.AnkaDB.DBPath),
+		zap.String("RootServAddr", cfg.RootServAddr),
+		zap.String("LogPath", cfg.Log.LogPath))
 
 	return
 }
@@ -67,3 +77,26 @@ func ReleaseJarvisCore() error {
 // func getRealPath(filename string) string {
 // 	return path.Join(config.RunPath, filename)
 // }
+
+// LoadConfig - load config
+func LoadConfig(filename string) (*Config, error) {
+	fi, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	defer fi.Close()
+	fd, err1 := ioutil.ReadAll(fi)
+	if err1 != nil {
+		return nil, err1
+	}
+
+	cfg := Config{}
+
+	err2 := yaml.Unmarshal(fd, &cfg)
+	if err2 != nil {
+		return nil, err2
+	}
+
+	return &cfg, nil
+}
