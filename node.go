@@ -10,8 +10,12 @@ import (
 
 // JarvisNode -
 type JarvisNode interface {
+	// Start - start jarvis node
 	Start(ctx context.Context) (err error)
+	// Stop - stop jarvis node
 	Stop() (err error)
+	// GetCoreDB - get jarvis node coredb
+	GetCoreDB() *CoreDB
 }
 
 // jarvisNode -
@@ -21,16 +25,10 @@ type jarvisNode struct {
 	serv        *jarvisServer
 	mgrNodeInfo *nodeInfoMgr
 	mgrNodeCtrl *nodeCtrlMgr
-	// signalchan  chan os.Signal
 	servstate   int
 	clientstate int
 	nodechan    chan int
-	coredb      *coreDB
-	// coredb      jarvisdb.Database
-	// privKey     *jarviscrypto.PrivateKey
-	// gen         *fortuna.Generator
-	// mgrpeeraddr *peerAddrMgr
-	// wg          sync.WaitGroup
+	coredb      *CoreDB
 }
 
 const (
@@ -408,4 +406,9 @@ func (n *jarvisNode) requestCtrl(ctx context.Context, addr string, ctrltype pb.C
 	}
 
 	return nil
+}
+
+// GetCoreDB - get coredb
+func (n *jarvisNode) GetCoreDB() *CoreDB {
+	return n.coredb
 }
