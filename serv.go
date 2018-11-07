@@ -94,7 +94,7 @@ func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, er
 		zap.String("Servaddr", in.ServAddr),
 		zap.String("Addr", in.Addr),
 		zap.String("Name", in.Name),
-		zap.String("Nodetype", in.NodeType))
+	)
 
 	peeripaddr := in.ServAddr
 	addrSlice := strings.Split(in.ServAddr, ":")
@@ -120,22 +120,19 @@ func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, er
 		Name:     in.Name,
 		ServAddr: peeripaddr,
 		Addr:     in.Addr,
-		NodeType: in.NodeType,
 	})
 
 	if isvalidnode {
 		return &pb.ReplyJoin{
-			Name:     s.node.myinfo.Name,
-			Addr:     s.node.myinfo.Addr,
-			NodeType: s.node.myinfo.NodeType,
+			Name: s.node.myinfo.Name,
+			Addr: s.node.myinfo.Addr,
 		}, nil
 	}
 
 	return &pb.ReplyJoin{
-		Err:      ErrAlreadyJoin.Error(),
-		Name:     s.node.myinfo.Name,
-		Addr:     s.node.myinfo.Addr,
-		NodeType: s.node.myinfo.NodeType,
+		Err:  ErrAlreadyJoin.Error(),
+		Name: s.node.myinfo.Name,
+		Addr: s.node.myinfo.Addr,
 	}, nil
 }
 
@@ -147,7 +144,6 @@ func (s *jarvisServer) broadcastNode(bi *BaseInfo) {
 		ServAddr: bi.ServAddr,
 		Addr:     bi.Addr,
 		Name:     bi.Name,
-		NodeType: bi.NodeType,
 	}
 
 	ci := pb.ChannelInfo{
@@ -194,7 +190,6 @@ func (s *jarvisServer) Subscribe(in *pb.Subscribe, stream pb.JarvisCoreServ_Subs
 			ServAddr: cn.ServAddr,
 			Addr:     cn.Addr,
 			Name:     cn.Name,
-			NodeType: "normal",
 		}
 
 		stream.SendMsg(&pb.ChannelInfo{

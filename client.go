@@ -61,7 +61,6 @@ func (c *jarvisClient) startConnectAllNode() {
 			Name:     cn.Name,
 			ServAddr: cn.ServAddr,
 			Addr:     cn.Addr,
-			NodeType: "normal",
 		}
 		c.pushNewConnect(bi)
 	})
@@ -152,7 +151,7 @@ func (c *jarvisClient) connectRoot(ctx context.Context, servaddr string) error {
 		ServAddr: c.node.myinfo.ServAddr,
 		Addr:     c.node.myinfo.Addr,
 		Name:     c.node.myinfo.Name,
-		NodeType: c.node.myinfo.NodeType})
+	})
 	if err1 != nil {
 		jarvisbase.Warn("JarvisClient.connectRoot:Join", zap.Error(err1))
 
@@ -172,7 +171,6 @@ func (c *jarvisClient) connectRoot(ctx context.Context, servaddr string) error {
 		c.node.onIConnectNode(&BaseInfo{
 			Name:     r.Name,
 			Addr:     r.Addr,
-			NodeType: r.NodeType,
 			ServAddr: servaddr,
 		})
 
@@ -223,7 +221,7 @@ func (c *jarvisClient) connect(ctx context.Context, bi *BaseInfo) error {
 		ServAddr: c.node.myinfo.ServAddr,
 		Addr:     c.node.myinfo.Addr,
 		Name:     c.node.myinfo.Name,
-		NodeType: c.node.myinfo.NodeType})
+	})
 	if err1 != nil {
 		jarvisbase.Warn("JarvisClient.connect:Join", zap.Error(err1))
 
@@ -238,7 +236,6 @@ func (c *jarvisClient) connect(ctx context.Context, bi *BaseInfo) error {
 		c.node.onIConnectNode(&BaseInfo{
 			Name:     r.Name,
 			Addr:     r.Addr,
-			NodeType: r.NodeType,
 			ServAddr: bi.ServAddr,
 		})
 
@@ -293,13 +290,12 @@ func (c *jarvisClient) subscribe(ctx context.Context, ci *clientInfo, ct pb.CHAN
 					zap.String("Servaddr", ni.ServAddr),
 					zap.String("Addr", ni.Addr),
 					zap.String("Name", ni.Name),
-					zap.String("Nodetype", ni.NodeType))
+				)
 
 				c.node.onGetNewNode(&BaseInfo{
 					Name:     ni.Name,
 					ServAddr: ni.ServAddr,
 					Addr:     ni.Addr,
-					NodeType: ni.NodeType,
 				})
 			}
 		}

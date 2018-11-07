@@ -6,5 +6,4 @@ type BaseInfo struct {
 	BindAddr string
 	ServAddr string
 	Addr     string
-	NodeType string
 }

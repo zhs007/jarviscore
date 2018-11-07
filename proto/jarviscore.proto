@@ -36,7 +36,7 @@ message NodeBaseInfo {
     string servAddr = 1;
     string addr = 2;
     string name = 3;
-    string nodeType = 4;
+    // string nodeType = 4;
 }
 
 // message NodeInfoInDB {
@@ -59,14 +59,14 @@ message Join {
     string servAddr = 1;
     string addr = 2;
     string name = 3;
-    string nodeType = 4;
+    // string nodeType = 4;
 }
 
 message ReplyJoin {
     string err = 1;
     string addr = 2;
     string name = 3;
-    string nodeType = 4;
+    // string nodeType = 4;
 }
 
 message BaseReply {

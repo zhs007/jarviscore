@@ -417,5 +417,5 @@ func (n *jarvisNode) GetCoreDB() *CoreDB {
 
 // SendCtrl - send ctrl to jarvisnode with addr
 func (n *jarvisNode) SendCtrl(ctx context.Context, addr string, ctrltype string, command string) error {
-	return nil
+	return n.requestCtrl(ctx, addr, ctrltype, []byte(command))
 }

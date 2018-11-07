@@ -27,7 +27,6 @@ func main() {
 		Name:     cfg.BaseNodeInfo.NodeName,
 		BindAddr: cfg.BaseNodeInfo.BindAddr,
 		ServAddr: cfg.BaseNodeInfo.ServAddr,
-		NodeType: "normal",
 	}
 
 	jarviscore.InitJarvisCore(*cfg)
