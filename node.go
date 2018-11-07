@@ -31,6 +31,7 @@ type jarvisNode struct {
 	clientstate int
 	nodechan    chan int
 	coredb      *CoreDB
+	mgrCtrlMsg  *ctrlMsgMgr
 }
 
 const (
@@ -61,6 +62,7 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 		// signalchan:  make(chan os.Signal, 1),
 		mgrNodeCtrl: newNodeCtrlMgr(),
 		coredb:      db,
+		mgrCtrlMsg:  newCtrlMsgMgr(),
 	}
 
 	err = node.coredb.loadPrivateKeyEx()

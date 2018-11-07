@@ -316,3 +316,8 @@ func (s *jarvisServer) GetMyServAddr(ctx context.Context, in *pb.ServAddr) (*pb.
 func (s *jarvisServer) Trust(ctx context.Context, in *pb.TrustNode) (*pb.BaseReply, error) {
 	return &pb.BaseReply{}, nil
 }
+
+// Trust implements jarviscorepb.JarvisCoreServ
+func (s *jarvisServer) SendMsg(ctx context.Context, in *pb.JarvisMsg) (*pb.JarvisMsg, error) {
+	return &pb.JarvisMsg{}, nil
+}

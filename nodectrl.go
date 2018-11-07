@@ -1,15 +1,5 @@
 package jarviscore
 
-import (
-	"bytes"
-
-	"go.uber.org/zap"
-
-	ankadatabase "github.com/zhs007/ankadb/database"
-	"github.com/zhs007/jarviscore/base"
-	pb "github.com/zhs007/jarviscore/proto"
-)
-
 const (
 	ctrldbAddr       = "addr"
 	ctrldbPublicKey  = "pubkey"
@@ -20,8 +10,8 @@ const (
 type nodeCtrlInfo struct {
 	srcAddr string
 	pubKey  []byte
-	ctrldb  ankadatabase.Database
-	mapCtrl map[int64]*pb.CtrlDataInDB
+	// ctrldb  ankadatabase.Database
+	// mapCtrl map[int64]*pb.CtrlDataInDB
 }
 
 func newNodeCtrlInfo(addr string) *nodeCtrlInfo {
@@ -54,53 +44,54 @@ func newNodeCtrlInfo(addr string) *nodeCtrlInfo {
 }
 
 func (nci *nodeCtrlInfo) onInit() error {
-	addr, err := nci.ctrldb.Get([]byte(ctrldbAddr))
-	if err != nil {
-		err = nci.ctrldb.Put([]byte(ctrldbAddr), []byte(nci.srcAddr))
-	} else if bytes.Compare(addr, []byte(nci.srcAddr)) != 1 {
-		return ErrInvalidAddr
-	}
+	// addr, err := nci.ctrldb.Get([]byte(ctrldbAddr))
+	// if err != nil {
+	// 	err = nci.ctrldb.Put([]byte(ctrldbAddr), []byte(nci.srcAddr))
+	// } else if bytes.Compare(addr, []byte(nci.srcAddr)) != 1 {
+	// 	return ErrInvalidAddr
+	// }
 
-	pubkey, err := nci.ctrldb.Get([]byte(ctrldbPublicKey))
-	if err != nil {
-		return nil
-	}
+	// pubkey, err := nci.ctrldb.Get([]byte(ctrldbPublicKey))
+	// if err != nil {
+	// 	return nil
+	// }
 
-	nci.pubKey = pubkey
+	// nci.pubKey = pubkey
 
 	return nil
 }
 
 func (nci *nodeCtrlInfo) setPublicKey(pubKey []byte) error {
-	if len(nci.pubKey) != 0 {
-		if bytes.Compare(nci.pubKey, pubKey) != 1 {
-			return ErrInvalidPublishKey
-		}
+	// if len(nci.pubKey) != 0 {
+	// 	if bytes.Compare(nci.pubKey, pubKey) != 1 {
+	// 		return ErrInvalidPublishKey
+	// 	}
 
-		return nil
-	}
+	// 	return nil
+	// }
 
-	err := nci.ctrldb.Put([]byte(ctrldbPublicKey), pubKey)
-	if err != nil {
-		jarvisbase.Error("newNodeCtrlInfo:saveAddr", zap.Error(err))
+	// err := nci.ctrldb.Put([]byte(ctrldbPublicKey), pubKey)
+	// if err != nil {
+	// 	jarvisbase.Error("newNodeCtrlInfo:saveAddr", zap.Error(err))
 
-		return err
-	}
+	// 	return err
+	// }
 
 	return nil
 }
 
 func (nci *nodeCtrlInfo) hasCtrl(ctrlid int64) bool {
-	if _, ok := nci.mapCtrl[ctrlid]; ok {
-		return true
-	}
+	return false
+	// if _, ok := nci.mapCtrl[ctrlid]; ok {
+	// 	return true
+	// }
 
-	ok, err := nci.ctrldb.Has([]byte(ctrldbCtrlPrefix + string(ctrlid)))
-	if err != nil {
-		return false
-	}
+	// ok, err := nci.ctrldb.Has([]byte(ctrldbCtrlPrefix + string(ctrlid)))
+	// if err != nil {
+	// 	return false
+	// }
 
-	return ok
+	// return ok
 }
 
 func (nci *nodeCtrlInfo) addCtrl(ctrlid int64, ctrltype string, command []byte, forwordAddr string, forwordNums int32) error {
