@@ -16,6 +16,8 @@ type JarvisNode interface {
 	Stop() (err error)
 	// GetCoreDB - get jarvis node coredb
 	GetCoreDB() *CoreDB
+	// SendCtrl - send ctrl to jarvisnode with addr
+	SendCtrl(ctx context.Context, addr string, ctrltype string, command string) error
 }
 
 // jarvisNode -
@@ -361,7 +363,7 @@ func (n *jarvisNode) onGetNewNode(bi *BaseInfo) {
 }
 
 // requestCtrl
-func (n *jarvisNode) requestCtrl(ctx context.Context, addr string, ctrltype pb.CTRLTYPE, command []byte) error {
+func (n *jarvisNode) requestCtrl(ctx context.Context, addr string, ctrltype string, command []byte) error {
 	ctrlid := n.mgrNodeInfo.getCtrlID(addr)
 	if ctrlid < 0 {
 		return ErrCoreDBNoAddr
@@ -411,4 +413,9 @@ func (n *jarvisNode) requestCtrl(ctx context.Context, addr string, ctrltype pb.C
 // GetCoreDB - get coredb
 func (n *jarvisNode) GetCoreDB() *CoreDB {
 	return n.coredb
+}
+
+// SendCtrl - send ctrl to jarvisnode with addr
+func (n *jarvisNode) SendCtrl(ctx context.Context, addr string, ctrltype string, command string) error {
+	return nil
 }

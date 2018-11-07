@@ -61,7 +61,7 @@ func (c *jarvisClient) startConnectAllNode() {
 			Name:     cn.Name,
 			ServAddr: cn.ServAddr,
 			Addr:     cn.Addr,
-			NodeType: pb.NODETYPE_NORMAL,
+			NodeType: "normal",
 		}
 		c.pushNewConnect(bi)
 	})
@@ -293,7 +293,7 @@ func (c *jarvisClient) subscribe(ctx context.Context, ci *clientInfo, ct pb.CHAN
 					zap.String("Servaddr", ni.ServAddr),
 					zap.String("Addr", ni.Addr),
 					zap.String("Name", ni.Name),
-					zap.Int("Nodetype", int(ni.NodeType)))
+					zap.String("Nodetype", ni.NodeType))
 
 				c.node.onGetNewNode(&BaseInfo{
 					Name:     ni.Name,

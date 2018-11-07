@@ -2,21 +2,21 @@ syntax = "proto3";
 
 package jarviscorepb;
 
-enum NODETYPE {
-    NORMAL = 0;
-    SH = 1;
-    TELEBOT = 2;
-}
+// enum NODETYPE {
+//     NORMAL = 0;
+//     SH = 1;
+//     TELEBOT = 2;
+// }
 
 enum CHANNELTYPE {
     NODEINFO = 0;
     CTRL = 1;
 }
 
-enum CTRLTYPE {
-    SHELL = 0;
-    FILE = 2;
-}
+// enum CTRLTYPE {
+//     SHELL = 0;
+//     FILE = 2;
+// }
 
 enum REPLYTYPE {
     NONE = 0;
@@ -36,7 +36,7 @@ message NodeBaseInfo {
     string servAddr = 1;
     string addr = 2;
     string name = 3;
-    NODETYPE nodeType = 4;
+    string nodeType = 4;
 }
 
 // message NodeInfoInDB {
@@ -48,7 +48,7 @@ message NodeBaseInfo {
 
 message CtrlDataInDB {
     int64 ctrlid = 1;
-    CTRLTYPE ctrlType = 2;
+    string ctrlType = 2;
     string forwordAddr = 3;
     bytes command = 4;
     bytes result = 5;
@@ -59,14 +59,14 @@ message Join {
     string servAddr = 1;
     string addr = 2;
     string name = 3;
-    NODETYPE nodeType = 4;
+    string nodeType = 4;
 }
 
 message ReplyJoin {
     string err = 1;
     string addr = 2;
     string name = 3;
-    NODETYPE nodeType = 4;
+    string nodeType = 4;
 }
 
 message BaseReply {
@@ -84,7 +84,7 @@ message CtrlInfo {
     string destAddr = 2;
     string srcAddr = 3;
     string myAddr = 4;
-    CTRLTYPE ctrlType = 5;
+    string ctrlType = 5;
     bytes command = 6;
     int32 forwordNums = 7;
     bytes signR = 8;

@@ -2,8 +2,6 @@ package jarviscore
 
 import (
 	"sync"
-
-	pb "github.com/zhs007/jarviscore/proto"
 )
 
 // nodeCtrlMgr -
@@ -62,7 +60,7 @@ func (mgr *nodeCtrlMgr) isNeedRun(addr string, ctrlid int64) bool {
 	return true
 }
 
-func (mgr *nodeCtrlMgr) addCtrl(addr string, ctrlid int64, ctrltype pb.CTRLTYPE, command []byte, forwordAddr string, forwordNums int32) {
+func (mgr *nodeCtrlMgr) addCtrl(addr string, ctrlid int64, ctrltype string, command []byte, forwordAddr string, forwordNums int32) {
 	mgr.Lock()
 	defer mgr.Unlock()
 

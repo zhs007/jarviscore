@@ -1,7 +1,6 @@
 package jarviscore
 
 import (
-	pb "github.com/zhs007/jarviscore/proto"
 	"google.golang.org/grpc"
 )
 
@@ -11,6 +10,6 @@ var mgrCtrl *ctrlMgr
 func init() {
 	mgrconn = &connMgr{mapConn: make(map[string]*grpc.ClientConn)}
 
-	mgrCtrl = &ctrlMgr{mapCtrl: make(map[pb.CTRLTYPE](Ctrl))}
-	mgrCtrl.Reg(pb.CTRLTYPE_SHELL, &CtrlShell{})
+	mgrCtrl = &ctrlMgr{mapCtrl: make(map[string](Ctrl))}
+	mgrCtrl.Reg("shell", &CtrlShell{})
 }

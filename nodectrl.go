@@ -103,7 +103,7 @@ func (nci *nodeCtrlInfo) hasCtrl(ctrlid int64) bool {
 	return ok
 }
 
-func (nci *nodeCtrlInfo) addCtrl(ctrlid int64, ctrltype pb.CTRLTYPE, command []byte, forwordAddr string, forwordNums int32) error {
+func (nci *nodeCtrlInfo) addCtrl(ctrlid int64, ctrltype string, command []byte, forwordAddr string, forwordNums int32) error {
 	// if _, ok := nci.mapCtrl[ctrlid]; ok {
 	// 	return ErrExistCtrlID
 	// }

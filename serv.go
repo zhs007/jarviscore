@@ -94,7 +94,7 @@ func (s *jarvisServer) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, er
 		zap.String("Servaddr", in.ServAddr),
 		zap.String("Addr", in.Addr),
 		zap.String("Name", in.Name),
-		zap.Int("Nodetype", int(in.NodeType)))
+		zap.String("Nodetype", in.NodeType))
 
 	peeripaddr := in.ServAddr
 	addrSlice := strings.Split(in.ServAddr, ":")
@@ -194,7 +194,7 @@ func (s *jarvisServer) Subscribe(in *pb.Subscribe, stream pb.JarvisCoreServ_Subs
 			ServAddr: cn.ServAddr,
 			Addr:     cn.Addr,
 			Name:     cn.Name,
-			NodeType: pb.NODETYPE_NORMAL,
+			NodeType: "normal",
 		}
 
 		stream.SendMsg(&pb.ChannelInfo{

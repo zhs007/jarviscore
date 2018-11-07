@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/zhs007/jarviscore"
-	pb "github.com/zhs007/jarviscore/proto"
 )
 
 func main() {
@@ -28,7 +27,7 @@ func main() {
 		Name:     cfg.BaseNodeInfo.NodeName,
 		BindAddr: cfg.BaseNodeInfo.BindAddr,
 		ServAddr: cfg.BaseNodeInfo.ServAddr,
-		NodeType: pb.NODETYPE_NORMAL,
+		NodeType: "normal",
 	}
 
 	jarviscore.InitJarvisCore(*cfg)
