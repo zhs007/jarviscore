@@ -188,10 +188,10 @@ func (db *CoreDB) _foreachNode(oneach func(string, *coredbpb.NodeInfo), snapshot
 	params := make(map[string]interface{})
 	params["snapshotID"] = snapshotID
 	params["beginIndex"] = beginIndex
-	params["nums"] = db.privKey.ToAddress()
+	params["nums"] = nums
 	params["createTime"] = time.Now().Unix()
 
-	result, err := db.ankaDB.LocalQuery(context.Background(), queryNodeInfos, nil)
+	result, err := db.ankaDB.LocalQuery(context.Background(), queryNodeInfos, params)
 	rnis := &coredbpb.NodeInfoList{}
 	err = ankadb.MakeMsgFromResult(result, rnis)
 	if err != nil {
@@ -349,6 +349,29 @@ func (db *CoreDB) GetMyState() (string, error) {
 	}
 
 	db.lstTrustNode = rpd.PrivateKey.LstTrustNode
+
+	return string(s), nil
+}
+
+// GetNodes - get jarvis nodes
+func (db *CoreDB) GetNodes(nums int) (string, error) {
+	params := make(map[string]interface{})
+	params["snapshotID"] = 0
+	params["beginIndex"] = 0
+	params["nums"] = nums
+	params["createTime"] = time.Now().Unix()
+
+	ret, err := db.ankaDB.LocalQuery(context.Background(), queryNodeInfos, params)
+
+	s, err := json.Marshal(ret)
+	if err != nil {
+		jarvisbase.Error("CoreDB.GetNodes", zap.Error(err))
+
+		return err.Error(), err
+	}
+
+	jarvisbase.Info("GetNodes",
+		zap.String("result", string(s)))
 
 	return string(s), nil
 }
