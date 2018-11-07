@@ -48,7 +48,7 @@ const queryNodeInfos = `query NodeInfos($snapshotID: Int64!, $beginIndex: Int!, 
 	nodeInfos(snapshotID: $snapshotID, beginIndex: $beginIndex, nums: $nums) {
 		snapshotID, endIndex, maxIndex, 
 		nodes {
-			addr, servAddr, name, connectNums, connectedNums, ctrlID, lstClientAddr, addTime
+			addr, servAddr, name, connectNums, connectedNums, ctrlID, lstClientAddr, addTime, connectMe, connectNode
 		}
 	}
 }`
@@ -356,7 +356,7 @@ func (db *CoreDB) GetMyState() (string, error) {
 // GetNodes - get jarvis nodes
 func (db *CoreDB) GetNodes(nums int) (string, error) {
 	params := make(map[string]interface{})
-	params["snapshotID"] = 0
+	params["snapshotID"] = int64(0)
 	params["beginIndex"] = 0
 	params["nums"] = nums
 	params["createTime"] = time.Now().Unix()
