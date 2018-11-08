@@ -2,6 +2,24 @@ syntax = "proto3";
 
 package jarviscorepb;
 
+// jarvis msg type
+enum MSGTYPE {
+    // join jarvis network
+    JOIN = 0;
+    // request a node's child nodes
+    REQUEST_NODES = 1;
+    // forward message
+    FORWARD_MSG = 2;
+    // request a ctrl msg
+    REQUEST_CTRL = 3;
+    // reply a ctrl result
+    REPLY_CTRL_RESULT = 4;
+    // trusted node request you trust a other node
+    TRUST_NODE = 5;
+    // trusted node request you remove a trusted node
+    RM_TRUST_NODE = 6;
+}
+
 // enum NODETYPE {
 //     NORMAL = 0;
 //     SH = 1;
@@ -135,6 +153,7 @@ message JarvisMsg {
     string srcAddr = 7;
     string myAddr = 8;
     string destAddr = 9;
+    MSGTYPE msgType = 10;
 
     oneof data {
         NodeBaseInfo nodeInfo = 100;
@@ -152,6 +171,5 @@ service JarvisCoreServ {
     rpc getMyServAddr(ServAddr) returns (ServAddr) {}
     rpc trust(TrustNode) returns (BaseReply) {}
 
-    rpc join2(JarvisMsg) returns (JarvisMsg) {}
-    rpc sendMsg(JarvisMsg) returns (stream JarvisMsg) {}
+    rpc procMsg(JarvisMsg) returns (stream JarvisMsg) {}
 }

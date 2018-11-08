@@ -3,6 +3,7 @@ package jarviscore
 import (
 	"context"
 
+	"github.com/zhs007/jarviscore/base"
 	pb "github.com/zhs007/jarviscore/proto"
 )
 
@@ -17,15 +18,17 @@ func (task *jarvisMsgTask) Run(ctx context.Context) error {
 
 // jarvisMsgMgr - jarvis msg mgr
 type jarvisMsgMgr struct {
-	pool RoutinePool
+	pool jarvisbase.RoutinePool
 	node JarvisNode
+	// mgrClient2 *jarvisClient2
 }
 
 // newJarvisMsgMgr - new jarvisMsgMgr
 func newJarvisMsgMgr(node JarvisNode) *jarvisMsgMgr {
 	mgr := &jarvisMsgMgr{
-		pool: NewRoutinePool(),
+		pool: jarvisbase.NewRoutinePool(),
 		node: node,
+		// mgrClient2: newClient2(node),
 	}
 
 	return mgr

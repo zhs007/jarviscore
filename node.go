@@ -36,6 +36,7 @@ type jarvisNode struct {
 	coredb       *CoreDB
 	mgrCtrlMsg   *ctrlMsgMgr
 	mgrJasvisMsg *jarvisMsgMgr
+	mgrClient2   *jarvisClient2
 }
 
 const (
@@ -82,8 +83,11 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 	// node.myinfo = baseinfo
 	node.myinfo.Addr = node.coredb.privKey.ToAddress()
 
-	// newJarvisMsgMgr
+	// mgrJasvisMsg
 	node.mgrJasvisMsg = newJarvisMsgMgr(node)
+
+	// mgrClient2
+	node.mgrClient2 = newClient2(node)
 
 	// signal.Notify(node.signalchan)
 	// signal.Notify(node.signalchan, os.Interrupt, os.Kill, syscall.SIGSTOP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGTSTP)
@@ -431,5 +435,11 @@ func (n *jarvisNode) SendCtrl(ctx context.Context, addr string, ctrltype string,
 
 // OnMsg - proc JarvisMsg
 func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg) error {
+	if n.coredb.addr != msg.DestAddr {
+		n.mgrClient2.broadCastMsg(ctx, msg)
+	} else {
+
+	}
+
 	return nil
 }

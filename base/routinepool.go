@@ -1,9 +1,7 @@
-package jarviscore
+package jarvisbase
 
 import (
 	"context"
-
-	"github.com/zhs007/jarviscore/base"
 )
 
 // Task - task
@@ -26,7 +24,7 @@ func (r *routine) sendTask(task Task) {
 
 // start - start a routine
 func (r *routine) start(ctx context.Context) error {
-	jarvisbase.Debug("routine.Start...")
+	Debug("routine.Start...")
 
 	for {
 		isend := false
@@ -37,7 +35,7 @@ func (r *routine) start(ctx context.Context) error {
 				break
 			}
 
-			jarvisbase.Debug("routine.Start:get new task")
+			Debug("routine.Start:get new task")
 
 			if task != nil {
 				task.Run(ctx)
@@ -45,7 +43,7 @@ func (r *routine) start(ctx context.Context) error {
 
 			r.chanWaiting <- r
 		case <-ctx.Done():
-			jarvisbase.Debug("routine.Start:context done")
+			Debug("routine.Start:context done")
 			isend = true
 			break
 		}
@@ -95,7 +93,7 @@ func (pool *routinePool) SendTask(task Task) {
 
 // Start - start a routine pool
 func (pool *routinePool) Start(ctx context.Context, maxNums int) error {
-	jarvisbase.Debug("RoutinePool.Start...")
+	Debug("RoutinePool.Start...")
 
 	pool.maxNums = maxNums
 
@@ -108,7 +106,7 @@ func (pool *routinePool) Start(ctx context.Context, maxNums int) error {
 				break
 			}
 
-			jarvisbase.Debug("RoutinePool.Start:new task")
+			Debug("RoutinePool.Start:new task")
 
 			pool.run(ctx, task)
 		case r, ok := <-pool.chanWaiting:
@@ -117,7 +115,7 @@ func (pool *routinePool) Start(ctx context.Context, maxNums int) error {
 				break
 			}
 
-			jarvisbase.Debug("RoutinePool.Start:new waiting")
+			Debug("RoutinePool.Start:new waiting")
 
 			pool.lstWaiting = append(pool.lstWaiting, r)
 
@@ -128,11 +126,11 @@ func (pool *routinePool) Start(ctx context.Context, maxNums int) error {
 				break
 			}
 
-			jarvisbase.Debug("RoutinePool.Start:new remove")
+			Debug("RoutinePool.Start:new remove")
 
 			pool.removeRoutine(r)
 		case <-ctx.Done():
-			jarvisbase.Debug("RoutinePool.Start:context done")
+			Debug("RoutinePool.Start:context done")
 
 			isend = true
 			break

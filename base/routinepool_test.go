@@ -1,4 +1,4 @@
-package jarviscore
+package jarvisbase
 
 import (
 	"context"
@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"go.uber.org/zap"
-
-	"github.com/zhs007/jarviscore/base"
 )
 
 type taskMgr struct {
@@ -46,7 +44,7 @@ type taskTest struct {
 
 func (task *taskTest) Run(ctx context.Context) error {
 	// time.Sleep(1 * time.Second)
-	jarvisbase.Debug("run ", zap.Int("index", task.index))
+	Debug("run ", zap.Int("index", task.index))
 	task.mgr.finish()
 
 	return nil
@@ -66,14 +64,14 @@ func makeTask(mgr *taskMgr, pool RoutinePool, cancel context.CancelFunc) {
 	}
 
 	time.Sleep(3 * time.Second)
-	jarvisbase.Debug("end")
+	Debug("end")
 	// fmt.Print("end\n")
 	cancel()
 }
 
 func Test_RountinePool(t *testing.T) {
-	jarvisbase.InitLogger(zap.DebugLevel, true, "")
-	jarvisbase.Debug("start...")
+	InitLogger(zap.DebugLevel, true, "")
+	Debug("start...")
 	// fmt.Print("haha\n")
 
 	pool := NewRoutinePool()
