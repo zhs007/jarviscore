@@ -18,20 +18,24 @@ type JarvisNode interface {
 	GetCoreDB() *CoreDB
 	// SendCtrl - send ctrl to jarvisnode with addr
 	SendCtrl(ctx context.Context, addr string, ctrltype string, command string) error
+
+	// OnMsg - proc JarvisMsg
+	OnMsg(ctx context.Context, msg *pb.JarvisMsg) error
 }
 
 // jarvisNode -
 type jarvisNode struct {
-	myinfo      BaseInfo
-	client      *jarvisClient
-	serv        *jarvisServer
-	mgrNodeInfo *nodeInfoMgr
-	mgrNodeCtrl *nodeCtrlMgr
-	servstate   int
-	clientstate int
-	nodechan    chan int
-	coredb      *CoreDB
-	mgrCtrlMsg  *ctrlMsgMgr
+	myinfo       BaseInfo
+	client       *jarvisClient
+	serv         *jarvisServer
+	mgrNodeInfo  *nodeInfoMgr
+	mgrNodeCtrl  *nodeCtrlMgr
+	servstate    int
+	clientstate  int
+	nodechan     chan int
+	coredb       *CoreDB
+	mgrCtrlMsg   *ctrlMsgMgr
+	mgrJasvisMsg *jarvisMsgMgr
 }
 
 const (
@@ -77,6 +81,9 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 
 	// node.myinfo = baseinfo
 	node.myinfo.Addr = node.coredb.privKey.ToAddress()
+
+	// newJarvisMsgMgr
+	node.mgrJasvisMsg = newJarvisMsgMgr(node)
 
 	// signal.Notify(node.signalchan)
 	// signal.Notify(node.signalchan, os.Interrupt, os.Kill, syscall.SIGSTOP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGTSTP)
@@ -420,4 +427,9 @@ func (n *jarvisNode) GetCoreDB() *CoreDB {
 // SendCtrl - send ctrl to jarvisnode with addr
 func (n *jarvisNode) SendCtrl(ctx context.Context, addr string, ctrltype string, command string) error {
 	return n.requestCtrl(ctx, addr, ctrltype, []byte(command))
+}
+
+// OnMsg - proc JarvisMsg
+func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg) error {
+	return nil
 }

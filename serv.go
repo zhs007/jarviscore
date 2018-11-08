@@ -318,6 +318,11 @@ func (s *jarvisServer) Trust(ctx context.Context, in *pb.TrustNode) (*pb.BaseRep
 }
 
 // Trust implements jarviscorepb.JarvisCoreServ
-func (s *jarvisServer) SendMsg(ctx context.Context, in *pb.JarvisMsg) (*pb.JarvisMsg, error) {
+func (s *jarvisServer) Join2(ctx context.Context, in *pb.JarvisMsg) (*pb.JarvisMsg, error) {
 	return &pb.JarvisMsg{}, nil
+}
+
+// SendMsg implements jarviscorepb.JarvisCoreServ
+func (s *jarvisServer) SendMsg(in *pb.JarvisMsg, stream pb.JarvisCoreServ_SendMsgServer) error {
+	return nil
 }

@@ -117,20 +117,41 @@ message TrustNode {
     string addr = 1;
 }
 
+message JoinInfo {
+    string servAddr = 1;
+    string addr = 2;
+    string name = 3;
+}
+
+// JarvisMsg - jarvis base msg
+//      sign(destAddr + curTime + data + srcAddr)
 message JarvisMsg {
     int64 msgID = 1;
-    repeated NodeBaseInfo nodeInfo = 2;
-    repeated CtrlInfo ctrlInfo = 3;
-    repeated CtrlResult ctrlResult = 4;
+    REPLYTYPE replyType = 2 [deprecated=true];
+    int64 curTime = 3;
+    bytes signR = 4;
+    bytes signS = 5;
+    bytes pubKey = 6;
+    string srcAddr = 7;
+    string myAddr = 8;
+    string destAddr = 9;
+
+    oneof data {
+        NodeBaseInfo nodeInfo = 100;
+        CtrlInfo ctrlInfo = 101;
+        CtrlResult ctrlResult = 102;
+        JoinInfo joinInfo = 103;
+    }
 }
 
 service JarvisCoreServ {
     rpc join(Join) returns (ReplyJoin) {}
-    rpc sendMsg(JarvisMsg) returns (JarvisMsg) {}
-
     rpc requestCtrl(CtrlInfo) returns (BaseReply) {}
     rpc replyCtrl(CtrlResult) returns (BaseReply) {}
     rpc subscribe(Subscribe) returns (stream ChannelInfo) {}
     rpc getMyServAddr(ServAddr) returns (ServAddr) {}
     rpc trust(TrustNode) returns (BaseReply) {}
+
+    rpc join2(JarvisMsg) returns (JarvisMsg) {}
+    rpc sendMsg(JarvisMsg) returns (stream JarvisMsg) {}
 }
