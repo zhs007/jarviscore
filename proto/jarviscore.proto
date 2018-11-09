@@ -18,121 +18,14 @@ enum MSGTYPE {
     TRUST_NODE = 5;
     // trusted node request you remove a trusted node
     RM_TRUST_NODE = 6;
+    // reply msg
+    REPLY = 7;
 }
-
-// enum NODETYPE {
-//     NORMAL = 0;
-//     SH = 1;
-//     TELEBOT = 2;
-// }
-
-enum CHANNELTYPE {
-    NODEINFO = 0;
-    CTRL = 1;
-}
-
-// enum CTRLTYPE {
-//     SHELL = 0;
-//     FILE = 2;
-// }
-
-enum REPLYTYPE {
-    NONE = 0;
-    FORWARD = 1;
-    BROADCAST = 2;
-}
-
-// message PrivateKey {
-//     bytes priKey = 1;
-// }
-
-// message PublicKey {
-//     bytes pubKey = 1;
-// }
 
 message NodeBaseInfo {
     string servAddr = 1;
     string addr = 2;
     string name = 3;
-    // string nodeType = 4;
-}
-
-// message NodeInfoInDB {
-//     NodeInfo nodeInfo = 1;
-//     int32 connectNums = 2;
-//     int32 connectedNums = 3;
-//     int64 ctrlid = 4;
-// }
-
-// message CtrlDataInDB {
-//     int64 ctrlid = 1;
-//     string ctrlType = 2;
-//     string forwordAddr = 3;
-//     bytes command = 4;
-//     bytes result = 5;
-//     int32 forwordNums = 6;
-// }
-
-message Join {
-    string servAddr = 1;
-    string addr = 2;
-    string name = 3;
-    // string nodeType = 4;
-}
-
-message ReplyJoin {
-    string err = 1;
-    string addr = 2;
-    string name = 3;
-    // string nodeType = 4;
-}
-
-message BaseReply {
-    string err = 1;
-    REPLYTYPE replyType = 2;
-}
-
-message Subscribe {
-    CHANNELTYPE channelType = 1;
-    string addr = 2;
-}
-
-message CtrlInfo {
-    int64 ctrlid = 1;
-    string destAddr = 2;
-    string srcAddr = 3;
-    string myAddr = 4;
-    string ctrlType = 5;
-    bytes command = 6;
-    int32 forwordNums = 7;
-    bytes signR = 8;
-    bytes signS = 9;
-    bytes pubKey = 10;
-}
-
-message CtrlResult {
-    int64 ctrlid = 1;
-    string destAddr = 2;
-    string srcAddr = 3;
-    string myAddr = 4;
-    bytes ctrlResult = 5;
-    int32 forwordNums = 6;
-}
-
-message ChannelInfo {
-    CHANNELTYPE channelType = 1;
-    oneof data {
-        NodeBaseInfo nodeInfo = 2;
-        CtrlInfo ctrlInfo = 3;
-    }
-}
-
-message ServAddr {
-    string servAddr = 1;
-}
-
-message TrustNode {
-    string addr = 1;
 }
 
 message JoinInfo {
@@ -141,19 +34,35 @@ message JoinInfo {
     string name = 3;
 }
 
+message ReplyJoin {
+    string addr = 1;
+    string name = 2;
+}
+
+message CtrlInfo {
+    int64 ctrlID = 1;
+    string ctrlType = 2;
+    string command = 3;
+    repeated string params = 4;
+}
+
+message CtrlResult {
+    int64 ctrlID = 1;
+    string ctrlResult = 2;
+}
+
 // JarvisMsg - jarvis base msg
 //      sign(destAddr + curTime + data + srcAddr)
 message JarvisMsg {
     int64 msgID = 1;
-    REPLYTYPE replyType = 2 [deprecated=true];
-    int64 curTime = 3;
-    bytes signR = 4;
-    bytes signS = 5;
-    bytes pubKey = 6;
-    string srcAddr = 7;
-    string myAddr = 8;
-    string destAddr = 9;
-    MSGTYPE msgType = 10;
+    int64 curTime = 2;
+    bytes signR = 3;
+    bytes signS = 4;
+    bytes pubKey = 5;
+    string srcAddr = 6;
+    string myAddr = 7;
+    string destAddr = 8;
+    MSGTYPE msgType = 9;
 
     oneof data {
         NodeBaseInfo nodeInfo = 100;
@@ -164,12 +73,5 @@ message JarvisMsg {
 }
 
 service JarvisCoreServ {
-    rpc join(Join) returns (ReplyJoin) {}
-    rpc requestCtrl(CtrlInfo) returns (BaseReply) {}
-    rpc replyCtrl(CtrlResult) returns (BaseReply) {}
-    rpc subscribe(Subscribe) returns (stream ChannelInfo) {}
-    rpc getMyServAddr(ServAddr) returns (ServAddr) {}
-    rpc trust(TrustNode) returns (BaseReply) {}
-
     rpc procMsg(JarvisMsg) returns (stream JarvisMsg) {}
 }

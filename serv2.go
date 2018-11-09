@@ -54,36 +54,6 @@ func (s *jarvisServer2) Stop() {
 	return
 }
 
-// Join implements jarviscorepb.JarvisCoreServ
-func (s *jarvisServer2) Join(ctx context.Context, in *pb.Join) (*pb.ReplyJoin, error) {
-	return &pb.ReplyJoin{}, nil
-}
-
-// Subscribe implements jarviscorepb.JarvisCoreServ
-func (s *jarvisServer2) Subscribe(in *pb.Subscribe, stream pb.JarvisCoreServ_SubscribeServer) error {
-	return nil
-}
-
-// RequestCtrl implements jarviscorepb.JarvisCoreServ
-func (s *jarvisServer2) RequestCtrl(ctx context.Context, in *pb.CtrlInfo) (*pb.BaseReply, error) {
-	return &pb.BaseReply{}, nil
-}
-
-// ReplyCtrl implements jarviscorepb.JarvisCoreServ
-func (s *jarvisServer2) ReplyCtrl(ctx context.Context, in *pb.CtrlResult) (*pb.BaseReply, error) {
-	return &pb.BaseReply{}, nil
-}
-
-// GetMyServAddr implements jarviscorepb.JarvisCoreServ
-func (s *jarvisServer2) GetMyServAddr(ctx context.Context, in *pb.ServAddr) (*pb.ServAddr, error) {
-	return &pb.ServAddr{}, nil
-}
-
-// Trust implements jarviscorepb.JarvisCoreServ
-func (s *jarvisServer2) Trust(ctx context.Context, in *pb.TrustNode) (*pb.BaseReply, error) {
-	return &pb.BaseReply{}, nil
-}
-
 // ProcMsg implements jarviscorepb.JarvisCoreServ
 func (s *jarvisServer2) ProcMsg(in *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer) error {
 	s.node.mgrJasvisMsg.sendMsg(in)

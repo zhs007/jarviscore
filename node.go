@@ -25,18 +25,17 @@ type JarvisNode interface {
 
 // jarvisNode -
 type jarvisNode struct {
-	myinfo       BaseInfo
-	client       *jarvisClient
-	serv         *jarvisServer
-	mgrNodeInfo  *nodeInfoMgr
-	mgrNodeCtrl  *nodeCtrlMgr
-	servstate    int
-	clientstate  int
-	nodechan     chan int
-	coredb       *CoreDB
-	mgrCtrlMsg   *ctrlMsgMgr
+	myinfo BaseInfo
+	// mgrNodeInfo *nodeInfoMgr
+	// mgrNodeCtrl *nodeCtrlMgr
+	// servstate    int
+	// clientstate  int
+	// nodechan     chan int
+	coredb *CoreDB
+	// mgrCtrlMsg   *ctrlMsgMgr
 	mgrJasvisMsg *jarvisMsgMgr
 	mgrClient2   *jarvisClient2
+	serv2        *jarvisServer2
 }
 
 const (
@@ -65,9 +64,9 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 	node := &jarvisNode{
 		myinfo: baseinfo,
 		// signalchan:  make(chan os.Signal, 1),
-		mgrNodeCtrl: newNodeCtrlMgr(),
-		coredb:      db,
-		mgrCtrlMsg:  newCtrlMsgMgr(),
+		// mgrNodeCtrl: newNodeCtrlMgr(),
+		coredb: db,
+		// mgrCtrlMsg: newCtrlMsgMgr(),
 	}
 
 	err = node.coredb.loadPrivateKeyEx()
@@ -77,8 +76,10 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 		return nil
 	}
 
-	node.mgrNodeInfo = newNodeInfoMgr(node)
-	node.mgrNodeInfo.loadFromDB()
+	node.coredb.loadAllNodes()
+
+	// node.mgrNodeInfo = newNodeInfoMgr(node)
+	// node.mgrNodeInfo.loadFromDB()
 
 	// node.myinfo = baseinfo
 	node.myinfo.Addr = node.coredb.privKey.ToAddress()
@@ -210,13 +211,13 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 
 // Stop -
 func (n *jarvisNode) Stop() error {
-	if n.serv != nil {
-		n.serv.Stop()
+	if n.serv2 != nil {
+		n.serv2.Stop()
 	}
 
-	if n.client != nil {
-		n.client.Stop()
-	}
+	// if n.client != nil {
+	// 	n.client.Stop()
+	// }
 
 	// n.mgrpeeraddr.savePeerAddrFile()
 	// n.mgrNodeCtrl.save()
@@ -232,13 +233,13 @@ func (n *jarvisNode) Stop() error {
 // 	log.Info("Signal", zap.String("signal", s.String()))
 // }
 
-func (n *jarvisNode) onStateChg() bool {
-	if n.servstate == stateEnd && n.clientstate == stateEnd {
-		return true
-	}
+// func (n *jarvisNode) onStateChg() bool {
+// 	if n.servstate == stateEnd && n.clientstate == stateEnd {
+// 		return true
+// 	}
 
-	return false
-}
+// 	return false
+// }
 
 // func (n *jarvisNode) waitEnd() {
 // 	for {
@@ -275,21 +276,28 @@ func (n *jarvisNode) Start(ctx context.Context) (err error) {
 	// 	return err
 	// }
 
+	msgmgrctx, msgmgrcancel := context.WithCancel(ctx)
+	defer msgmgrcancel()
+	go n.mgrJasvisMsg.start(msgmgrctx)
+
 	jarvisbase.Info("StartServer", zap.String("ServAddr", n.myinfo.ServAddr))
-	n.serv, err = newServer(n)
+	n.serv2, err = newServer2(n)
 	if err != nil {
 		return err
 	}
 
-	n.client = newClient(n)
+	// n.client = newClient(n)
 
 	servctx, servcancel := context.WithCancel(ctx)
 	defer servcancel()
-	go n.serv.Start(servctx)
+	go n.serv2.Start(servctx)
 
-	clientctx, clientcancel := context.WithCancel(ctx)
-	defer clientcancel()
-	go n.client.Start(clientctx)
+	// msgmgrctx, msgmgrcancel := context.WithCancel(ctx)
+	// defer msgmgrcancel()
+	// go n.mgrJasvisMsg.start(msgmgrctx)
+	// clientctx, clientcancel := context.WithCancel(ctx)
+	// defer clientcancel()
+	// go n.client.Start(clientctx)
 
 	for {
 		select {
@@ -307,13 +315,13 @@ func (n *jarvisNode) Start(ctx context.Context) (err error) {
 	// n.waitEnd()
 }
 
-func (n *jarvisNode) hasNodeWithAddr(addr string) bool {
-	if addr == n.myinfo.Addr {
-		return true
-	}
+// func (n *jarvisNode) hasNodeWithAddr(addr string) bool {
+// 	if addr == n.myinfo.Addr {
+// 		return true
+// 	}
 
-	return n.mgrNodeInfo.hasNodeInfo(addr)
-}
+// 	return n.mgrNodeInfo.hasNodeInfo(addr)
+// }
 
 // // onAddNode
 // func (n *jarvisNode) onAddNode(bi *BaseInfo) {
@@ -341,13 +349,13 @@ func (n *jarvisNode) onNodeConnectMe(bi *BaseInfo) {
 		return
 	}
 
-	n.mgrNodeInfo.addNodeInfo(bi)
-	n.mgrNodeInfo.chg2ConnectMe(bi.Addr)
+	// n.mgrNodeInfo.addNodeInfo(bi)
+	// n.mgrNodeInfo.chg2ConnectMe(bi.Addr)
 
-	_, connNode := n.mgrNodeInfo.getNodeConnectState(bi.Addr)
-	if !connNode {
-		n.client.pushNewConnect(bi)
-	}
+	// _, connNode := n.mgrNodeInfo.getNodeConnectState(bi.Addr)
+	// if !connNode {
+	// 	n.client.pushNewConnect(bi)
+	// }
 }
 
 // onIConnectNode
@@ -356,10 +364,10 @@ func (n *jarvisNode) onIConnectNode(bi *BaseInfo) {
 		return
 	}
 
-	n.mgrNodeInfo.addNodeInfo(bi)
-	n.mgrNodeInfo.chg2ConnectNode(bi.Addr)
+	// n.mgrNodeInfo.addNodeInfo(bi)
+	// n.mgrNodeInfo.chg2ConnectNode(bi.Addr)
 
-	n.serv.broadcastNode(bi)
+	// n.serv.broadcastNode(bi)
 }
 
 // onGetNewNode
@@ -368,57 +376,57 @@ func (n *jarvisNode) onGetNewNode(bi *BaseInfo) {
 		return
 	}
 
-	n.mgrNodeInfo.addNodeInfo(bi)
-	_, connNode := n.mgrNodeInfo.getNodeConnectState(bi.Addr)
-	if !connNode {
-		n.client.pushNewConnect(bi)
-	}
+	// n.mgrNodeInfo.addNodeInfo(bi)
+	// _, connNode := n.mgrNodeInfo.getNodeConnectState(bi.Addr)
+	// if !connNode {
+	// 	n.client.pushNewConnect(bi)
+	// }
 }
 
 // requestCtrl
 func (n *jarvisNode) requestCtrl(ctx context.Context, addr string, ctrltype string, command []byte) error {
-	ctrlid := n.mgrNodeInfo.getCtrlID(addr)
-	if ctrlid < 0 {
-		return ErrCoreDBNoAddr
-	}
-
-	buf := append([]byte(addr), command...)
-
-	r, s, err := n.coredb.privKey.Sign(buf)
-	if err != nil {
-		return ErrSign
-	}
-
-	// pk := jarviscrypto.NewPublicKey()
-	// pk.FromBytes(n.coredb.privKey.ToPublicBytes())
-	// if !pk.Verify(buf, r, s) {
-	// 	return ErrPublicKeyVerify
+	// ctrlid := n.mgrNodeInfo.getCtrlID(addr)
+	// if ctrlid < 0 {
+	// 	return ErrCoreDBNoAddr
 	// }
 
-	ci := &pb.CtrlInfo{
-		Ctrlid:      ctrlid,
-		DestAddr:    addr,
-		SrcAddr:     n.myinfo.Addr,
-		CtrlType:    ctrltype,
-		Command:     command,
-		ForwordNums: 0,
-		SignR:       r.Bytes(),
-		SignS:       s.Bytes(),
-		PubKey:      n.coredb.privKey.ToPublicBytes(),
-	}
+	// buf := append([]byte(addr), command...)
 
-	connMe, connNode := n.mgrNodeInfo.getNodeConnectState(addr)
-	if connMe {
-		if n.serv.sendCtrl(ci) == nil {
-			return nil
-		}
-	}
+	// r, s, err := n.coredb.privKey.Sign(buf)
+	// if err != nil {
+	// 	return ErrSign
+	// }
 
-	if connNode {
-		if n.client.sendCtrl(ctx, ci) == nil {
-			return nil
-		}
-	}
+	// // pk := jarviscrypto.NewPublicKey()
+	// // pk.FromBytes(n.coredb.privKey.ToPublicBytes())
+	// // if !pk.Verify(buf, r, s) {
+	// // 	return ErrPublicKeyVerify
+	// // }
+
+	// ci := &pb.CtrlInfo{
+	// 	Ctrlid:      ctrlid,
+	// 	DestAddr:    addr,
+	// 	SrcAddr:     n.myinfo.Addr,
+	// 	CtrlType:    ctrltype,
+	// 	Command:     command,
+	// 	ForwordNums: 0,
+	// 	SignR:       r.Bytes(),
+	// 	SignS:       s.Bytes(),
+	// 	PubKey:      n.coredb.privKey.ToPublicBytes(),
+	// }
+
+	// connMe, connNode := n.mgrNodeInfo.getNodeConnectState(addr)
+	// if connMe {
+	// 	if n.serv.sendCtrl(ci) == nil {
+	// 		return nil
+	// 	}
+	// }
+
+	// if connNode {
+	// 	if n.client.sendCtrl(ctx, ci) == nil {
+	// 		return nil
+	// 	}
+	// }
 
 	return nil
 }

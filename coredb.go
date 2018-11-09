@@ -71,6 +71,7 @@ type CoreDB struct {
 	privKey      *jarviscrypto.PrivateKey
 	addr         string
 	lstTrustNode []string
+	mapNodes     map[string]*coredbpb.NodeInfo
 }
 
 func newCoreDB() (*CoreDB, error) {
@@ -222,6 +223,17 @@ func (db *CoreDB) foreachNodeEx(oneach func(string, *coredbpb.NodeInfo)) error {
 
 		bi = rnis.EndIndex
 	}
+
+	return nil
+}
+
+func (db *CoreDB) loadAllNodes() error {
+	db.foreachNodeEx(func(key string, val *coredbpb.NodeInfo) {
+		val.ConnectMe = false
+		val.ConnectNode = false
+
+		db.mapNodes[val.Addr] = val
+	})
 
 	return nil
 }
