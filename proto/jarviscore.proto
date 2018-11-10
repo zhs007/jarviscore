@@ -24,6 +24,14 @@ enum MSGTYPE {
     NODE_INFO = 8;
     // reply connect
     REPLY_CONNECT = 9;
+    // local connect other
+    LOCAL_CONNECT_OTHER = 10;
+    // local connect root
+    LOCAL_CONNECT_ROOT = 11;
+    // reply connect root
+    REPLY_CONNECT_ROOT = 12;
+    // local connect root
+    CONNECT_ROOT = 13;                
 }
 
 message NodeBaseInfo {

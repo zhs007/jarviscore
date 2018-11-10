@@ -5,6 +5,9 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/zhs007/jarviscore/base"
+	"go.uber.org/zap"
+
 	"github.com/zhs007/jarviscore/crypto"
 	pb "github.com/zhs007/jarviscore/proto"
 )
@@ -13,12 +16,21 @@ import (
 //		sign(destAddr + curTime + data + srcAddr)
 //		for mul-language, all become string merge data
 func buildSignBuf(msg *pb.JarvisMsg) []byte {
-	if msg.MsgType == pb.MSGTYPE_CONNECT_NODE || msg.MsgType == pb.MSGTYPE_NODE_INFO || msg.MsgType == pb.MSGTYPE_REPLY_CONNECT {
+	if msg.MsgType == pb.MSGTYPE_CONNECT_NODE ||
+		msg.MsgType == pb.MSGTYPE_NODE_INFO ||
+		msg.MsgType == pb.MSGTYPE_REPLY_CONNECT ||
+		msg.MsgType == pb.MSGTYPE_LOCAL_CONNECT_OTHER ||
+		msg.MsgType == pb.MSGTYPE_LOCAL_CONNECT_ROOT ||
+		msg.MsgType == pb.MSGTYPE_CONNECT_ROOT ||
+		msg.MsgType == pb.MSGTYPE_REPLY_CONNECT_ROOT {
+
 		ni := msg.GetNodeInfo()
 		if ni != nil {
 			return []byte(fmt.Sprintf("%v%v%v%v%v%v", msg.DestAddr, msg.CurTime, ni.ServAddr, ni.Addr, ni.Name, msg.SrcAddr))
 		}
 	}
+
+	jarvisbase.Debug("buildSignBuf", zap.Error(ErrInvalidMsgType))
 
 	return nil
 }
@@ -108,6 +120,74 @@ func BuildReplyConn(msgid int64, srcAddr string, destAddr string, ni *pb.NodeBas
 		MyAddr:   srcAddr,
 		DestAddr: destAddr,
 		MsgType:  pb.MSGTYPE_REPLY_CONNECT,
+		Data: &pb.JarvisMsg_NodeInfo{
+			NodeInfo: ni,
+		},
+	}
+
+	return msg
+}
+
+// BuildReplyConnRoot - build jarvismsg with REPLY_CONNECT_ROOT
+func BuildReplyConnRoot(msgid int64, srcAddr string, destAddr string, ni *pb.NodeBaseInfo) *pb.JarvisMsg {
+	msg := &pb.JarvisMsg{
+		MsgID:    msgid,
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_REPLY_CONNECT_ROOT,
+		Data: &pb.JarvisMsg_NodeInfo{
+			NodeInfo: ni,
+		},
+	}
+
+	return msg
+}
+
+// BuildLocalConnectOther - build jarvismsg with LOCAL_CONNECT_OTHER
+func BuildLocalConnectOther(msgid int64, srcAddr string, destAddr string, ni *pb.NodeBaseInfo) *pb.JarvisMsg {
+	msg := &pb.JarvisMsg{
+		MsgID:    msgid,
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_LOCAL_CONNECT_OTHER,
+		Data: &pb.JarvisMsg_NodeInfo{
+			NodeInfo: ni,
+		},
+	}
+
+	return msg
+}
+
+// BuildLocalConnectRoot - build jarvismsg with LOCAL_CONNECT_ROOT
+func BuildLocalConnectRoot(msgid int64, srcAddr string, destAddr string, ni *pb.NodeBaseInfo) *pb.JarvisMsg {
+	msg := &pb.JarvisMsg{
+		MsgID:    msgid,
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_LOCAL_CONNECT_ROOT,
+		Data: &pb.JarvisMsg_NodeInfo{
+			NodeInfo: ni,
+		},
+	}
+
+	return msg
+}
+
+// BuildConnectRoot - build jarvismsg with CONNECT_ROOT
+func BuildConnectRoot(msgid int64, srcAddr string, destAddr string, ni *pb.NodeBaseInfo) *pb.JarvisMsg {
+	msg := &pb.JarvisMsg{
+		MsgID:    msgid,
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_CONNECT_ROOT,
 		Data: &pb.JarvisMsg_NodeInfo{
 			NodeInfo: ni,
 		},

@@ -227,7 +227,6 @@ func (n *jarvisNode) Stop() error {
 
 // Start -
 func (n *jarvisNode) Start(ctx context.Context) (err error) {
-
 	coredbctx, coredbcancel := context.WithCancel(ctx)
 	defer coredbcancel()
 	go n.coredb.ankaDB.Start(coredbctx)
@@ -245,6 +244,9 @@ func (n *jarvisNode) Start(ctx context.Context) (err error) {
 	servctx, servcancel := context.WithCancel(ctx)
 	defer servcancel()
 	go n.serv2.Start(servctx)
+
+	n.connectRoot()
+	// n.connectAllNodes()
 
 	for {
 		select {
@@ -383,11 +385,26 @@ func (n *jarvisNode) SendCtrl(ctx context.Context, addr string, ctrltype string,
 
 // OnMsg - proc JarvisMsg
 func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer) error {
+	jarvisbase.Debug("jarvisNode.OnMsg", jarvisbase.JSON("msg", msg))
+
 	// is timeout
 	if IsTimeOut(msg) {
 		jarvisbase.Debug("jarvisNode.OnMsg", zap.Error(ErrJarvisMsgTimeOut))
 
 		return nil
+	}
+
+	if msg.MsgType == pb.MSGTYPE_LOCAL_CONNECT_OTHER ||
+		msg.MsgType == pb.MSGTYPE_LOCAL_CONNECT_ROOT {
+		// verify msg
+		err := VerifyJarvisMsg(msg)
+		if err != nil {
+			jarvisbase.Debug("jarvisNode.OnMsg", zap.Error(err))
+
+			return nil
+		}
+
+		return n.onMsgLocalConnect(ctx, msg)
 	}
 
 	// if is not my msg, broadcast msg
@@ -406,9 +423,36 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 			return n.onMsgNodeInfo(ctx, msg)
 		} else if msg.MsgType == pb.MSGTYPE_CONNECT_NODE {
 			return n.onMsgConnectNode(ctx, msg, stream)
+		} else if msg.MsgType == pb.MSGTYPE_CONNECT_ROOT {
+			return n.onMsgConnectRoot(ctx, msg, stream)
 		} else if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT {
 			return n.onMsgReplyConnect(ctx, msg)
+		} else if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT_ROOT {
+			return n.onMsgReplyConnectRoot(ctx, msg)
 		}
+	}
+
+	return nil
+}
+
+// onMsgLocalConnect
+func (n *jarvisNode) onMsgLocalConnect(ctx context.Context, msg *pb.JarvisMsg) error {
+	if msg.DestAddr == "" {
+		return n.mgrClient2.connectRoot(ctx, config.RootServAddr)
+	}
+
+	// ni := msg.GetNodeInfo()
+	cn := n.coredb.getNode(msg.DestAddr)
+	if cn == nil {
+		return nil
+	} else if !cn.ConnectNode {
+		mni := &pb.NodeBaseInfo{
+			ServAddr: cn.ServAddr,
+			Addr:     cn.Addr,
+			Name:     cn.Name,
+		}
+
+		return n.mgrClient2.connectNode(ctx, mni)
 	}
 
 	return nil
@@ -422,6 +466,42 @@ func (n *jarvisNode) onMsgNodeInfo(ctx context.Context, msg *pb.JarvisMsg) error
 		err := n.coredb.insNode(ni)
 		if err != nil {
 			jarvisbase.Debug("jarvisNode.onMsgNodeInfo:insNode", zap.Error(err))
+
+			return err
+		}
+
+		return n.mgrClient2.connectNode(ctx, ni)
+	} else if !cn.ConnectNode {
+		return n.mgrClient2.connectNode(ctx, ni)
+	}
+
+	return nil
+}
+
+// onMsgConnectRoot
+func (n *jarvisNode) onMsgConnectRoot(ctx context.Context, msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer) error {
+	if stream == nil {
+		jarvisbase.Debug("jarvisNode.onMsgConnectRoot", zap.Error(ErrStreamNil))
+
+		return ErrStreamNil
+	}
+
+	ni := msg.GetNodeInfo()
+
+	mni := &pb.NodeBaseInfo{
+		ServAddr: n.myinfo.ServAddr,
+		Addr:     n.myinfo.Addr,
+		Name:     n.myinfo.Name,
+	}
+	sendmsg := BuildReplyConnRoot(0, n.myinfo.Addr, ni.Addr, mni)
+	SignJarvisMsg(n.coredb.privKey, sendmsg)
+	stream.Send(sendmsg)
+
+	cn := n.coredb.getNode(ni.Addr)
+	if cn == nil {
+		err := n.coredb.insNode(ni)
+		if err != nil {
+			jarvisbase.Debug("jarvisNode.onMsgConnectRoot:insNode", zap.Error(err))
 
 			return err
 		}
@@ -450,6 +530,7 @@ func (n *jarvisNode) onMsgConnectNode(ctx context.Context, msg *pb.JarvisMsg, st
 		Name:     n.myinfo.Name,
 	}
 	sendmsg := BuildReplyConn(0, n.myinfo.Addr, ni.Addr, mni)
+	SignJarvisMsg(n.coredb.privKey, sendmsg)
 	stream.Send(sendmsg)
 
 	cn := n.coredb.getNode(ni.Addr)
@@ -486,7 +567,61 @@ func (n *jarvisNode) onMsgReplyConnect(ctx context.Context, msg *pb.JarvisMsg) e
 	return nil
 }
 
+// onMsgReplyConnectRoot
+func (n *jarvisNode) onMsgReplyConnectRoot(ctx context.Context, msg *pb.JarvisMsg) error {
+	ni := msg.GetNodeInfo()
+	cn := n.coredb.getNode(ni.Addr)
+	if cn == nil {
+		err := n.coredb.insNode(ni)
+		if err != nil {
+			jarvisbase.Debug("jarvisNode.onMsgConnectNode:insNode", zap.Error(err))
+
+			return err
+		}
+
+		cn = n.coredb.getNode(ni.Addr)
+	}
+
+	cn.ConnectNode = true
+
+	n.coredb.updNodeBaseInfo(ni)
+
+	return nil
+}
+
 // GetMyInfo - get my nodeinfo
 func (n *jarvisNode) GetMyInfo() *BaseInfo {
 	return &n.myinfo
+}
+
+// connectAllNodes - connect all nodes
+func (n *jarvisNode) connectAllNodes() error {
+	nbi := &pb.NodeBaseInfo{
+		ServAddr: n.myinfo.ServAddr,
+		Addr:     n.myinfo.Addr,
+		Name:     n.myinfo.Name,
+	}
+
+	for _, node := range n.coredb.mapNodes {
+		msg := BuildLocalConnectOther(0, n.myinfo.Addr, node.Addr, nbi)
+		SignJarvisMsg(n.coredb.privKey, msg)
+		n.mgrJasvisMsg.sendMsg(msg, nil)
+	}
+
+	return nil
+}
+
+// connectRoot - connect root
+func (n *jarvisNode) connectRoot() error {
+	nbi := &pb.NodeBaseInfo{
+		ServAddr: n.myinfo.ServAddr,
+		Addr:     n.myinfo.Addr,
+		Name:     n.myinfo.Name,
+	}
+
+	msg := BuildLocalConnectRoot(0, n.myinfo.Addr, "", nbi)
+	SignJarvisMsg(n.coredb.privKey, msg)
+	n.mgrJasvisMsg.sendMsg(msg, nil)
+
+	return nil
 }

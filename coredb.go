@@ -84,7 +84,8 @@ func newCoreDB() (*CoreDB, error) {
 	}
 
 	return &CoreDB{
-		ankaDB: ankaDB,
+		ankaDB:   ankaDB,
+		mapNodes: make(map[string]*coredbpb.NodeInfo),
 	}, nil
 }
 

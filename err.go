@@ -39,4 +39,8 @@ var (
 	ErrCoreDBHasNotNode = errors.New("coredb has not node")
 	// ErrStreamNil - stream nil
 	ErrStreamNil = errors.New("stream nil")
+	// ErrInvalidMsgType - invalid msgtype
+	ErrInvalidMsgType = errors.New("invalid msgtype")
+	// ErrServAddrIsMe - servaddr is me
+	ErrServAddrIsMe = errors.New("servaddr is me")
 )
