@@ -20,34 +20,27 @@ type JarvisNode interface {
 	SendCtrl(ctx context.Context, addr string, ctrltype string, command string) error
 
 	// OnMsg - proc JarvisMsg
-	OnMsg(ctx context.Context, msg *pb.JarvisMsg) error
+	OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer) error
+
+	// GetMyInfo - get my nodeinfo
+	GetMyInfo() *BaseInfo
 }
 
 // jarvisNode -
 type jarvisNode struct {
-	myinfo BaseInfo
-	// mgrNodeInfo *nodeInfoMgr
-	// mgrNodeCtrl *nodeCtrlMgr
-	// servstate    int
-	// clientstate  int
-	// nodechan     chan int
-	coredb *CoreDB
-	// mgrCtrlMsg   *ctrlMsgMgr
+	myinfo       BaseInfo
+	coredb       *CoreDB
 	mgrJasvisMsg *jarvisMsgMgr
 	mgrClient2   *jarvisClient2
 	serv2        *jarvisServer2
 }
 
 const (
-	nodeinfoCacheSize = 32
-	// tokenLen                = 32
-	randomMax int64 = 0x7fffffffffffffff
-	// letterBytes             = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	// letterBytesLen  = int64(len(letterBytes))
-	stateNormal = 0
-	stateStart  = 1
-	stateEnd    = 2
-	// coredbMyPrivKey = "myprivkey"
+	nodeinfoCacheSize       = 32
+	randomMax         int64 = 0x7fffffffffffffff
+	stateNormal             = 0
+	stateStart              = 1
+	stateEnd                = 2
 )
 
 // NewNode -
@@ -59,14 +52,9 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 		return nil
 	}
 
-	// db.Get([]byte(coredbMyPrivKey))
-
 	node := &jarvisNode{
 		myinfo: baseinfo,
-		// signalchan:  make(chan os.Signal, 1),
-		// mgrNodeCtrl: newNodeCtrlMgr(),
 		coredb: db,
-		// mgrCtrlMsg: newCtrlMsgMgr(),
 	}
 
 	err = node.coredb.loadPrivateKeyEx()
@@ -78,36 +66,16 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 
 	node.coredb.loadAllNodes()
 
-	// node.mgrNodeInfo = newNodeInfoMgr(node)
-	// node.mgrNodeInfo.loadFromDB()
-
-	// node.myinfo = baseinfo
 	node.myinfo.Addr = node.coredb.privKey.ToAddress()
+	node.myinfo.Name = config.BaseNodeInfo.NodeName
+	node.myinfo.BindAddr = config.BaseNodeInfo.BindAddr
+	node.myinfo.ServAddr = config.BaseNodeInfo.ServAddr
 
 	// mgrJasvisMsg
 	node.mgrJasvisMsg = newJarvisMsgMgr(node)
 
 	// mgrClient2
 	node.mgrClient2 = newClient2(node)
-
-	// signal.Notify(node.signalchan)
-	// signal.Notify(node.signalchan, os.Interrupt, os.Kill, syscall.SIGSTOP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGTSTP)
-
-	// var token string
-	// var prikey *privatekey
-
-	// prikey, err = loadPrivateKeyFile()
-	// if err != nil {
-	// 	token = node.generatorToken()
-
-	// 	log.Info("generatorToken", zap.String("Token", token))
-
-	// 	prikey = &privatekey{Token: token}
-	// 	savePrivateKeyFile(prikey)
-	// }
-
-	// token = prikey.Token
-	// node.setMyInfo(baseinfo.ServAddr, baseinfo.BindAddr, baseinfo.Name, token)
 
 	return node
 }
@@ -215,13 +183,6 @@ func (n *jarvisNode) Stop() error {
 		n.serv2.Stop()
 	}
 
-	// if n.client != nil {
-	// 	n.client.Stop()
-	// }
-
-	// n.mgrpeeraddr.savePeerAddrFile()
-	// n.mgrNodeCtrl.save()
-
 	return nil
 }
 
@@ -269,12 +230,7 @@ func (n *jarvisNode) Start(ctx context.Context) (err error) {
 
 	coredbctx, coredbcancel := context.WithCancel(ctx)
 	defer coredbcancel()
-
 	go n.coredb.ankaDB.Start(coredbctx)
-	// n.mgrpeeraddr, err = newPeerAddrMgr(config.DefPeerAddr)
-	// if err != nil {
-	// 	return err
-	// }
 
 	msgmgrctx, msgmgrcancel := context.WithCancel(ctx)
 	defer msgmgrcancel()
@@ -286,33 +242,17 @@ func (n *jarvisNode) Start(ctx context.Context) (err error) {
 		return err
 	}
 
-	// n.client = newClient(n)
-
 	servctx, servcancel := context.WithCancel(ctx)
 	defer servcancel()
 	go n.serv2.Start(servctx)
-
-	// msgmgrctx, msgmgrcancel := context.WithCancel(ctx)
-	// defer msgmgrcancel()
-	// go n.mgrJasvisMsg.start(msgmgrctx)
-	// clientctx, clientcancel := context.WithCancel(ctx)
-	// defer clientcancel()
-	// go n.client.Start(clientctx)
 
 	for {
 		select {
 		case <-ctx.Done():
 			n.Stop()
 			return nil
-			// case signal := <-n.signalchan:
-			// 	jarvisbase.Info("StopWithSignal", zap.String("signal", signal.String()))
-
-			// 	n.Stop()
-			// 	return nil
 		}
 	}
-
-	// n.waitEnd()
 }
 
 // func (n *jarvisNode) hasNodeWithAddr(addr string) bool {
@@ -442,12 +382,111 @@ func (n *jarvisNode) SendCtrl(ctx context.Context, addr string, ctrltype string,
 }
 
 // OnMsg - proc JarvisMsg
-func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg) error {
+func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer) error {
+	// is timeout
+	if IsTimeOut(msg) {
+		jarvisbase.Debug("jarvisNode.OnMsg", zap.Error(ErrJarvisMsgTimeOut))
+
+		return nil
+	}
+
+	// if is not my msg, broadcast msg
 	if n.coredb.addr != msg.DestAddr {
 		n.mgrClient2.broadCastMsg(ctx, msg)
 	} else {
+		// verify msg
+		err := VerifyJarvisMsg(msg)
+		if err != nil {
+			jarvisbase.Debug("jarvisNode.OnMsg", zap.Error(err))
 
+			return nil
+		}
+
+		if msg.MsgType == pb.MSGTYPE_NODE_INFO {
+			return n.onMsgNodeInfo(ctx, msg)
+		} else if msg.MsgType == pb.MSGTYPE_CONNECT_NODE {
+			return n.onMsgConnectNode(ctx, msg, stream)
+		} else if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT {
+			return n.onMsgReplyConnect(ctx, msg)
+		}
 	}
 
 	return nil
+}
+
+// onMsgNodeInfo
+func (n *jarvisNode) onMsgNodeInfo(ctx context.Context, msg *pb.JarvisMsg) error {
+	ni := msg.GetNodeInfo()
+	cn := n.coredb.getNode(ni.Addr)
+	if cn == nil {
+		err := n.coredb.insNode(ni)
+		if err != nil {
+			jarvisbase.Debug("jarvisNode.onMsgNodeInfo:insNode", zap.Error(err))
+
+			return err
+		}
+
+		return n.mgrClient2.connectNode(ctx, ni)
+	} else if !cn.ConnectNode {
+		return n.mgrClient2.connectNode(ctx, ni)
+	}
+
+	return nil
+}
+
+// onMsgConnectNode
+func (n *jarvisNode) onMsgConnectNode(ctx context.Context, msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer) error {
+	if stream == nil {
+		jarvisbase.Debug("jarvisNode.onMsgConnectNode", zap.Error(ErrStreamNil))
+
+		return ErrStreamNil
+	}
+
+	ni := msg.GetNodeInfo()
+
+	mni := &pb.NodeBaseInfo{
+		ServAddr: n.myinfo.ServAddr,
+		Addr:     n.myinfo.Addr,
+		Name:     n.myinfo.Name,
+	}
+	sendmsg := BuildReplyConn(0, n.myinfo.Addr, ni.Addr, mni)
+	stream.Send(sendmsg)
+
+	cn := n.coredb.getNode(ni.Addr)
+	if cn == nil {
+		err := n.coredb.insNode(ni)
+		if err != nil {
+			jarvisbase.Debug("jarvisNode.onMsgConnectNode:insNode", zap.Error(err))
+
+			return err
+		}
+
+		return n.mgrClient2.connectNode(ctx, ni)
+	} else if !cn.ConnectNode {
+		return n.mgrClient2.connectNode(ctx, ni)
+	}
+
+	return nil
+}
+
+// onMsgReplyConnect
+func (n *jarvisNode) onMsgReplyConnect(ctx context.Context, msg *pb.JarvisMsg) error {
+	ni := msg.GetNodeInfo()
+	cn := n.coredb.getNode(ni.Addr)
+	if cn == nil {
+		jarvisbase.Debug("jarvisNode.onMsgReplyConnect", zap.Error(ErrCoreDBHasNotNode))
+
+		return ErrCoreDBHasNotNode
+	}
+
+	cn.ConnectNode = true
+
+	n.coredb.updNodeBaseInfo(ni)
+
+	return nil
+}
+
+// GetMyInfo - get my nodeinfo
+func (n *jarvisNode) GetMyInfo() *BaseInfo {
+	return &n.myinfo
 }

@@ -33,4 +33,10 @@ var (
 	ErrPublicKeyAddr = errors.New("public key and address do not match")
 	// ErrPublicKeyVerify - public key verify err
 	ErrPublicKeyVerify = errors.New("public key verify err")
+	// ErrJarvisMsgTimeOut - JarvisMsg timeout
+	ErrJarvisMsgTimeOut = errors.New("JarvisMsg timeout")
+	// ErrCoreDBHasNotNode - coredb has not node
+	ErrCoreDBHasNotNode = errors.New("coredb has not node")
+	// ErrStreamNil - stream nil
+	ErrStreamNil = errors.New("stream nil")
 )

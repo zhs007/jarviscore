@@ -4,8 +4,8 @@ package jarviscorepb;
 
 // jarvis msg type
 enum MSGTYPE {
-    // join jarvis network
-    JOIN = 0;
+    // connect jarvis node
+    CONNECT_NODE = 0;
     // request a node's child nodes
     REQUEST_NODES = 1;
     // forward message
@@ -20,6 +20,10 @@ enum MSGTYPE {
     RM_TRUST_NODE = 6;
     // reply msg
     REPLY = 7;
+    // node info
+    NODE_INFO = 8;
+    // reply connect
+    REPLY_CONNECT = 9;
 }
 
 message NodeBaseInfo {
@@ -28,11 +32,11 @@ message NodeBaseInfo {
     string name = 3;
 }
 
-message JoinInfo {
-    string servAddr = 1;
-    string addr = 2;
-    string name = 3;
-}
+// message ConnectInfo {
+//     string servAddr = 1;
+//     string addr = 2;
+//     string name = 3;
+// }
 
 message ReplyJoin {
     string addr = 1;
@@ -68,7 +72,7 @@ message JarvisMsg {
         NodeBaseInfo nodeInfo = 100;
         CtrlInfo ctrlInfo = 101;
         CtrlResult ctrlResult = 102;
-        JoinInfo joinInfo = 103;
+        // ConnectInfo connInfo = 103;
     }
 }
 

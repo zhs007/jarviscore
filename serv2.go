@@ -56,7 +56,7 @@ func (s *jarvisServer2) Stop() {
 
 // ProcMsg implements jarviscorepb.JarvisCoreServ
 func (s *jarvisServer2) ProcMsg(in *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer) error {
-	s.node.mgrJasvisMsg.sendMsg(in)
+	s.node.mgrJasvisMsg.sendMsg(in, stream)
 
 	return nil
 }

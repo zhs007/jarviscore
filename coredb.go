@@ -12,6 +12,7 @@ import (
 	"github.com/zhs007/jarviscore/coredb"
 	"github.com/zhs007/jarviscore/coredb/proto"
 	"github.com/zhs007/jarviscore/crypto"
+	pb "github.com/zhs007/jarviscore/proto"
 )
 
 const (
@@ -264,14 +265,19 @@ func (db *CoreDB) loadAllNodes() error {
 // 	return nil
 // }
 
-func (db *CoreDB) saveNodeEx(cni *coredbpb.NodeInfo) error {
-	// ni := &coredbpb.NodeInfo{
-	// 	ServAddr:      cni.baseinfo.ServAddr,
-	// 	Addr:          cni.baseinfo.Addr,
-	// 	Name:          cni.baseinfo.Name,
-	// 	ConnectNums:   int32(cni.connectNums),
-	// 	ConnectedNums: int32(cni.connectedNums),
-	// }
+func (db *CoreDB) insNode(ni *pb.NodeBaseInfo) error {
+	cni := &coredbpb.NodeInfo{
+		ServAddr:      ni.ServAddr,
+		Addr:          ni.Addr,
+		Name:          ni.Name,
+		ConnectNums:   0,
+		ConnectedNums: 0,
+		CtrlID:        0,
+		LstClientAddr: nil,
+		AddTime:       time.Now().Unix(),
+		ConnectMe:     false,
+		ConnectNode:   false,
+	}
 
 	params := make(map[string]interface{})
 
@@ -285,7 +291,35 @@ func (db *CoreDB) saveNodeEx(cni *coredbpb.NodeInfo) error {
 		return err
 	}
 
-	jarvisbase.Info("saveNode", jarvisbase.JSON("result", result))
+	jarvisbase.Info("insNode", jarvisbase.JSON("result", result))
+
+	db.mapNodes[cni.Addr] = cni
+
+	return nil
+}
+
+func (db *CoreDB) updNodeBaseInfo(ni *pb.NodeBaseInfo) error {
+	cni, ok := db.mapNodes[ni.Addr]
+	if !ok {
+		return ErrCoreDBHasNotNode
+	}
+
+	cni.ServAddr = ni.ServAddr
+	cni.Name = ni.Name
+
+	params := make(map[string]interface{})
+
+	err := ankadb.MakeParamsFromMsg(params, "nodeInfo", cni)
+	if err != nil {
+		return err
+	}
+
+	result, err := db.ankaDB.LocalQuery(context.Background(), queryUpdNodeInfo, params)
+	if err != nil {
+		return err
+	}
+
+	jarvisbase.Info("updNodeBaseInfo", jarvisbase.JSON("result", result))
 
 	return nil
 }
@@ -389,4 +423,21 @@ func (db *CoreDB) GetNodes(nums int) (string, error) {
 		zap.String("result", string(s)))
 
 	return string(s), nil
+}
+
+// has node
+func (db *CoreDB) hasNode(addr string) bool {
+	_, ok := db.mapNodes[addr]
+
+	return ok
+}
+
+// get node
+func (db *CoreDB) getNode(addr string) *coredbpb.NodeInfo {
+	n, ok := db.mapNodes[addr]
+	if ok {
+		return n
+	}
+
+	return nil
 }

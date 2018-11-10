@@ -8,12 +8,13 @@ import (
 )
 
 type jarvisMsgTask struct {
-	msg *pb.JarvisMsg
-	mgr *jarvisMsgMgr
+	msg    *pb.JarvisMsg
+	stream pb.JarvisCoreServ_ProcMsgServer
+	mgr    *jarvisMsgMgr
 }
 
 func (task *jarvisMsgTask) Run(ctx context.Context) error {
-	return task.mgr.node.OnMsg(ctx, task.msg)
+	return task.mgr.node.OnMsg(ctx, task.msg, task.stream)
 }
 
 // jarvisMsgMgr - jarvis msg mgr
@@ -35,9 +36,11 @@ func newJarvisMsgMgr(node JarvisNode) *jarvisMsgMgr {
 }
 
 // sendMsg - send a ctrl msg
-func (mgr *jarvisMsgMgr) sendMsg(msg *pb.JarvisMsg) {
+func (mgr *jarvisMsgMgr) sendMsg(msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer) {
 	task := &jarvisMsgTask{
-		msg: msg,
+		msg:    msg,
+		stream: stream,
+		mgr:    mgr,
 	}
 
 	mgr.pool.SendTask(task)

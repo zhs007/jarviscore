@@ -3,8 +3,6 @@ package jarviscore
 import (
 	"sync"
 
-	"go.uber.org/zap"
-
 	"github.com/zhs007/jarviscore/base"
 	"github.com/zhs007/jarviscore/coredb/proto"
 )
@@ -93,15 +91,15 @@ func (mgr *nodeInfoMgr) _saveToDB(addr string) {
 	// mgr.RLock()
 	// defer mgr.RUnlock()
 
-	cni, ok := mgr.mapNodeInfo[addr]
-	if !ok {
-		return
-	}
+	// cni, ok := mgr.mapNodeInfo[addr]
+	// if !ok {
+	// 	return
+	// }
 
-	err := mgr.node.coredb.saveNodeEx(cni)
-	if err != nil {
-		jarvisbase.Error("nodeInfoMgr:saveToDB:saveNode", zap.Error(err))
-	}
+	// err := mgr.node.coredb.saveNodeEx(cni)
+	// if err != nil {
+	// 	jarvisbase.Error("nodeInfoMgr:saveToDB:saveNode", zap.Error(err))
+	// }
 
 	// ni := &pb.NodeInfo{
 	// 	Name:     cni.baseinfo.Name,
