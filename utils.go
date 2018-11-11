@@ -16,17 +16,26 @@ import (
 //		sign(destAddr + curTime + data + srcAddr)
 //		for mul-language, all become string merge data
 func buildSignBuf(msg *pb.JarvisMsg) []byte {
-	if msg.MsgType == pb.MSGTYPE_CONNECT_NODE ||
-		msg.MsgType == pb.MSGTYPE_NODE_INFO ||
-		msg.MsgType == pb.MSGTYPE_REPLY_CONNECT ||
-		msg.MsgType == pb.MSGTYPE_LOCAL_CONNECT_OTHER ||
-		msg.MsgType == pb.MSGTYPE_LOCAL_CONNECT_ROOT ||
-		msg.MsgType == pb.MSGTYPE_CONNECT_ROOT ||
-		msg.MsgType == pb.MSGTYPE_REPLY_CONNECT_ROOT {
+	if msg.MsgType == pb.MSGTYPE_LOCAL_CONNECT_OTHER ||
+		msg.MsgType == pb.MSGTYPE_CONNECT_NODE {
+
+		ci := msg.GetConnInfo()
+		if ci != nil {
+			return []byte(fmt.Sprintf("%v%v%v%v%v%v%v",
+				msg.DestAddr, msg.CurTime,
+				ci.ServAddr,
+				ci.MyInfo.ServAddr, ci.MyInfo.Addr, ci.MyInfo.Name,
+				msg.SrcAddr))
+		}
+	} else if msg.MsgType == pb.MSGTYPE_NODE_INFO ||
+		msg.MsgType == pb.MSGTYPE_REPLY_CONNECT {
 
 		ni := msg.GetNodeInfo()
 		if ni != nil {
-			return []byte(fmt.Sprintf("%v%v%v%v%v%v", msg.DestAddr, msg.CurTime, ni.ServAddr, ni.Addr, ni.Name, msg.SrcAddr))
+			return []byte(fmt.Sprintf("%v%v%v%v%v%v",
+				msg.DestAddr, msg.CurTime,
+				ni.ServAddr, ni.Addr, ni.Name,
+				msg.SrcAddr))
 		}
 	}
 
@@ -95,7 +104,7 @@ func IsTimeOut(msg *pb.JarvisMsg) bool {
 }
 
 // BuildConnNode - build jarvismsg with CONNECT_NODE
-func BuildConnNode(msgid int64, srcAddr string, destAddr string, ni *pb.NodeBaseInfo) *pb.JarvisMsg {
+func BuildConnNode(msgid int64, srcAddr string, destAddr string, servaddr string, ni *pb.NodeBaseInfo) *pb.JarvisMsg {
 	msg := &pb.JarvisMsg{
 		MsgID:    msgid,
 		CurTime:  time.Now().Unix(),
@@ -103,8 +112,11 @@ func BuildConnNode(msgid int64, srcAddr string, destAddr string, ni *pb.NodeBase
 		MyAddr:   srcAddr,
 		DestAddr: destAddr,
 		MsgType:  pb.MSGTYPE_CONNECT_NODE,
-		Data: &pb.JarvisMsg_NodeInfo{
-			NodeInfo: ni,
+		Data: &pb.JarvisMsg_ConnInfo{
+			ConnInfo: &pb.ConnectInfo{
+				ServAddr: servaddr,
+				MyInfo:   ni,
+			},
 		},
 	}
 
@@ -128,25 +140,8 @@ func BuildReplyConn(msgid int64, srcAddr string, destAddr string, ni *pb.NodeBas
 	return msg
 }
 
-// BuildReplyConnRoot - build jarvismsg with REPLY_CONNECT_ROOT
-func BuildReplyConnRoot(msgid int64, srcAddr string, destAddr string, ni *pb.NodeBaseInfo) *pb.JarvisMsg {
-	msg := &pb.JarvisMsg{
-		MsgID:    msgid,
-		CurTime:  time.Now().Unix(),
-		SrcAddr:  srcAddr,
-		MyAddr:   srcAddr,
-		DestAddr: destAddr,
-		MsgType:  pb.MSGTYPE_REPLY_CONNECT_ROOT,
-		Data: &pb.JarvisMsg_NodeInfo{
-			NodeInfo: ni,
-		},
-	}
-
-	return msg
-}
-
 // BuildLocalConnectOther - build jarvismsg with LOCAL_CONNECT_OTHER
-func BuildLocalConnectOther(msgid int64, srcAddr string, destAddr string, ni *pb.NodeBaseInfo) *pb.JarvisMsg {
+func BuildLocalConnectOther(msgid int64, srcAddr string, destAddr string, servaddr string, ni *pb.NodeBaseInfo) *pb.JarvisMsg {
 	msg := &pb.JarvisMsg{
 		MsgID:    msgid,
 		CurTime:  time.Now().Unix(),
@@ -154,42 +149,11 @@ func BuildLocalConnectOther(msgid int64, srcAddr string, destAddr string, ni *pb
 		MyAddr:   srcAddr,
 		DestAddr: destAddr,
 		MsgType:  pb.MSGTYPE_LOCAL_CONNECT_OTHER,
-		Data: &pb.JarvisMsg_NodeInfo{
-			NodeInfo: ni,
-		},
-	}
-
-	return msg
-}
-
-// BuildLocalConnectRoot - build jarvismsg with LOCAL_CONNECT_ROOT
-func BuildLocalConnectRoot(msgid int64, srcAddr string, destAddr string, ni *pb.NodeBaseInfo) *pb.JarvisMsg {
-	msg := &pb.JarvisMsg{
-		MsgID:    msgid,
-		CurTime:  time.Now().Unix(),
-		SrcAddr:  srcAddr,
-		MyAddr:   srcAddr,
-		DestAddr: destAddr,
-		MsgType:  pb.MSGTYPE_LOCAL_CONNECT_ROOT,
-		Data: &pb.JarvisMsg_NodeInfo{
-			NodeInfo: ni,
-		},
-	}
-
-	return msg
-}
-
-// BuildConnectRoot - build jarvismsg with CONNECT_ROOT
-func BuildConnectRoot(msgid int64, srcAddr string, destAddr string, ni *pb.NodeBaseInfo) *pb.JarvisMsg {
-	msg := &pb.JarvisMsg{
-		MsgID:    msgid,
-		CurTime:  time.Now().Unix(),
-		SrcAddr:  srcAddr,
-		MyAddr:   srcAddr,
-		DestAddr: destAddr,
-		MsgType:  pb.MSGTYPE_CONNECT_ROOT,
-		Data: &pb.JarvisMsg_NodeInfo{
-			NodeInfo: ni,
+		Data: &pb.JarvisMsg_ConnInfo{
+			ConnInfo: &pb.ConnectInfo{
+				ServAddr: servaddr,
+				MyInfo:   ni,
+			},
 		},
 	}
 

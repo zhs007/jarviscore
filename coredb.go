@@ -70,7 +70,6 @@ const queryTrustNode = `mutation TrustNode($addr: ID!) {
 type CoreDB struct {
 	ankaDB       *ankadb.AnkaDB
 	privKey      *jarviscrypto.PrivateKey
-	addr         string
 	lstTrustNode []string
 	mapNodes     map[string]*coredbpb.NodeInfo
 }
@@ -128,10 +127,10 @@ func (db *CoreDB) loadPrivateKeyEx() error {
 		return db.savePrivateKey()
 	}
 
-	db.addr = db.privKey.ToAddress()
+	myaddr := db.privKey.ToAddress()
 
 	jarvisbase.Info("loadPrivateKeyEx:OK",
-		zap.String("privkey", db.addr))
+		zap.String("privkey", myaddr))
 
 	if len(config.LstTrustNode) > 0 {
 		for i := range config.LstTrustNode {
@@ -433,11 +432,22 @@ func (db *CoreDB) hasNode(addr string) bool {
 	return ok
 }
 
-// get node
+// getNode - get node with addr
 func (db *CoreDB) getNode(addr string) *coredbpb.NodeInfo {
 	n, ok := db.mapNodes[addr]
 	if ok {
 		return n
+	}
+
+	return nil
+}
+
+// findNodeWithServAddr - get node
+func (db *CoreDB) findNodeWithServAddr(servaddr string) *coredbpb.NodeInfo {
+	for _, v := range db.mapNodes {
+		if v.ServAddr == servaddr {
+			return v
+		}
 	}
 
 	return nil

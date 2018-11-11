@@ -4,40 +4,42 @@ package jarviscorepb;
 
 // jarvis msg type
 enum MSGTYPE {
+    // null type
+    NULL_TYPE = 0;
     // connect jarvis node
-    CONNECT_NODE = 0;
+    CONNECT_NODE = 1;
     // request a node's child nodes
-    REQUEST_NODES = 1;
+    REQUEST_NODES = 2;
     // forward message
-    FORWARD_MSG = 2;
+    FORWARD_MSG = 3;
     // request a ctrl msg
-    REQUEST_CTRL = 3;
+    REQUEST_CTRL = 4;
     // reply a ctrl result
-    REPLY_CTRL_RESULT = 4;
+    REPLY_CTRL_RESULT = 5;
     // trusted node request you trust a other node
-    TRUST_NODE = 5;
+    TRUST_NODE = 6;
     // trusted node request you remove a trusted node
-    RM_TRUST_NODE = 6;
+    RM_TRUST_NODE = 7;
     // reply msg
-    REPLY = 7;
+    REPLY = 8;
     // node info
-    NODE_INFO = 8;
+    NODE_INFO = 9;
     // reply connect
-    REPLY_CONNECT = 9;
+    REPLY_CONNECT = 10;
     // local connect other
-    LOCAL_CONNECT_OTHER = 10;
-    // local connect root
-    LOCAL_CONNECT_ROOT = 11;
-    // reply connect root
-    REPLY_CONNECT_ROOT = 12;
-    // local connect root
-    CONNECT_ROOT = 13;                
+    LOCAL_CONNECT_OTHER = 11;
 }
 
 message NodeBaseInfo {
     string servAddr = 1;
     string addr = 2;
     string name = 3;
+}
+
+// ConnectInfo - used in LOCAL_CONNECT_OTHER, CONNECT_NODE
+message ConnectInfo {
+    string servAddr = 1;
+    NodeBaseInfo myInfo = 2;
 }
 
 // message ConnectInfo {
@@ -80,7 +82,7 @@ message JarvisMsg {
         NodeBaseInfo nodeInfo = 100;
         CtrlInfo ctrlInfo = 101;
         CtrlResult ctrlResult = 102;
-        // ConnectInfo connInfo = 103;
+        ConnectInfo connInfo = 103;
     }
 }
 
