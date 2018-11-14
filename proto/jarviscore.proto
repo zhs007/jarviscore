@@ -30,6 +30,16 @@ enum MSGTYPE {
     LOCAL_CONNECT_OTHER = 11;
 }
 
+// REPLYTYPE - reply type
+enum REPLYTYPE {
+    // reply ok
+    OK = 0;
+    // forward
+    FORWARD = 1;
+    // timeout
+    TIMEOUT = 2;
+}
+
 message NodeBaseInfo {
     string servAddr = 1;
     string addr = 2;
@@ -82,6 +92,7 @@ message JarvisMsg {
     string myAddr = 7;
     string destAddr = 8;
     MSGTYPE msgType = 9;
+    REPLYTYPE replyType = 10;
 
     oneof data {
         NodeBaseInfo nodeInfo = 100;

@@ -53,6 +53,21 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 
 			return append(str[:], buf[:]...), nil
 		}
+	} else if msg.MsgType == pb.MSGTYPE_REPLY {
+		str := []byte(fmt.Sprintf("%v%v%v", msg.DestAddr, msg.CurTime, msg.SrcAddr))
+
+		return str, nil
+	} else if msg.MsgType == pb.MSGTYPE_REPLY_CTRL_RESULT {
+		cr := msg.GetCtrlResult()
+		if cr != nil {
+			str := []byte(fmt.Sprintf("%v%v%v", msg.DestAddr, msg.CurTime, msg.SrcAddr))
+			buf, err := proto.Marshal(cr)
+			if err != nil {
+				return nil, err
+			}
+
+			return append(str[:], buf[:]...), nil
+		}
 	}
 
 	// jarvisbase.Debug("buildSignBuf", zap.Error(ErrInvalidMsgType))
@@ -205,7 +220,7 @@ func BuildLocalConnectOther(privkey *jarviscrypto.PrivateKey, msgid int64, srcAd
 
 // BuildRequestCtrl - build jarvismsg with REQUEST_CTRL
 func BuildRequestCtrl(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string,
-	destAddr string, servaddr string, ci *pb.CtrlInfo) (*pb.JarvisMsg, error) {
+	destAddr string, ci *pb.CtrlInfo) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
 		MsgID:    msgid,
@@ -216,6 +231,55 @@ func BuildRequestCtrl(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr str
 		MsgType:  pb.MSGTYPE_LOCAL_CONNECT_OTHER,
 		Data: &pb.JarvisMsg_CtrlInfo{
 			CtrlInfo: ci,
+		},
+	}
+
+	err := SignJarvisMsg(privkey, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg, nil
+}
+
+// BuildReply - build jarvismsg with REPLY
+func BuildReply(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string,
+	destAddr string, rt pb.REPLYTYPE) (*pb.JarvisMsg, error) {
+
+	msg := &pb.JarvisMsg{
+		MsgID:     msgid,
+		CurTime:   time.Now().Unix(),
+		SrcAddr:   srcAddr,
+		MyAddr:    srcAddr,
+		DestAddr:  destAddr,
+		MsgType:   pb.MSGTYPE_REPLY,
+		ReplyType: rt,
+	}
+
+	err := SignJarvisMsg(privkey, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg, nil
+}
+
+// BuildCtrlResult - build jarvismsg with REPLY_CTRL_RESULT
+func BuildCtrlResult(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string,
+	destAddr string, ctrlid int64, result string) (*pb.JarvisMsg, error) {
+
+	msg := &pb.JarvisMsg{
+		MsgID:    msgid,
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_REPLY_CTRL_RESULT,
+		Data: &pb.JarvisMsg_CtrlResult{
+			CtrlResult: &pb.CtrlResult{
+				CtrlID:     ctrlid,
+				CtrlResult: result,
+			},
 		},
 	}
 

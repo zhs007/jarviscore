@@ -185,7 +185,14 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 			return n.onMsgNodeInfo(ctx, msg)
 		} else if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT {
 			return n.onMsgReplyConnect(ctx, msg)
+		} else if msg.MsgType == pb.MSGTYPE_REQUEST_CTRL {
+			return n.onMsgRequestCtrl(ctx, msg)
+		} else if msg.MsgType == pb.MSGTYPE_REPLY {
+			return n.onMsgReply(ctx, msg)
+		} else if msg.MsgType == pb.MSGTYPE_REPLY_CTRL_RESULT {
+			return n.onMsgCtrlResult(ctx, msg)
 		}
+
 	}
 
 	return nil
@@ -359,5 +366,56 @@ func (n *jarvisNode) connectNode(servaddr string) error {
 	// SignJarvisMsg(n.coredb.privKey, msg)
 	n.mgrJasvisMsg.sendMsg(msg, nil, nil)
 
+	return nil
+}
+
+// onMsgRequestCtrl
+func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg) error {
+	sendmsg, err := BuildReply(n.coredb.privKey, 0, n.myinfo.Addr, msg.SrcAddr, pb.REPLYTYPE_OK)
+	if err != nil {
+		jarvisbase.Debug("jarvisNode.onMsgRequestCtrl:BuildReply", zap.Error(err))
+
+		return err
+	}
+
+	err = n.mgrClient2.sendMsg(ctx, sendmsg)
+	if err != nil {
+		jarvisbase.Debug("jarvisNode.onMsgRequestCtrl:sendMsg", zap.Error(err))
+
+		return err
+	}
+
+	ci := msg.GetCtrlInfo()
+	ret, err := mgrCtrl.Run(ci)
+	if err != nil {
+		sendmsg2, err := BuildCtrlResult(n.coredb.privKey, 0, n.myinfo.Addr, msg.SrcAddr, ci.CtrlID, err.Error())
+		err = n.mgrClient2.sendMsg(ctx, sendmsg2)
+		if err != nil {
+			jarvisbase.Debug("jarvisNode.onMsgRequestCtrl:sendMsg", zap.Error(err))
+
+			return err
+		}
+
+		return nil
+	}
+
+	sendmsg2, err := BuildCtrlResult(n.coredb.privKey, 0, n.myinfo.Addr, msg.SrcAddr, ci.CtrlID, string(ret))
+	err = n.mgrClient2.sendMsg(ctx, sendmsg2)
+	if err != nil {
+		jarvisbase.Debug("jarvisNode.onMsgRequestCtrl:sendMsg", zap.Error(err))
+
+		return err
+	}
+
+	return nil
+}
+
+// onMsgReply
+func (n *jarvisNode) onMsgReply(ctx context.Context, msg *pb.JarvisMsg) error {
+	return nil
+}
+
+// onMsgCtrlResult
+func (n *jarvisNode) onMsgCtrlResult(ctx context.Context, msg *pb.JarvisMsg) error {
 	return nil
 }
