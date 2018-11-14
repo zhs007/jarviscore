@@ -1,5 +1,5 @@
 syntax = "proto3";
-
+import "google/protobuf/any.proto";
 package jarviscorepb;
 
 // jarvis msg type
@@ -42,22 +42,26 @@ message ConnectInfo {
     NodeBaseInfo myInfo = 2;
 }
 
-// message ConnectInfo {
-//     string servAddr = 1;
-//     string addr = 2;
-//     string name = 3;
-// }
-
 message ReplyJoin {
     string addr = 1;
     string name = 2;
 }
 
+// CtrlScriptData - used in CtrlInfo.dat
+message CtrlScriptData {
+    bytes file = 1;
+    string destPath = 2;
+}
+
+// CtrlInfo - 
 message CtrlInfo {
     int64 ctrlID = 1;
     string ctrlType = 2;
     string command = 3;
     repeated string params = 4;
+    string description = 5;
+
+    google.protobuf.Any dat = 1000;
 }
 
 message CtrlResult {
