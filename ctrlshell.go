@@ -2,6 +2,13 @@ package jarviscore
 
 import (
 	"os/exec"
+
+	pb "github.com/zhs007/jarviscore/proto"
+)
+
+const (
+	// CtrlTypeShell - shell ctrltype
+	CtrlTypeShell = "shell"
 )
 
 // CtrlShell -
@@ -9,7 +16,7 @@ type CtrlShell struct {
 }
 
 // Run -
-func (ctrl *CtrlShell) Run(command []byte) ([]byte, error) {
+func (ctrl *CtrlShell) Run(ci *pb.CtrlInfo) ([]byte, error) {
 	cmd := exec.Command("whoami")
 	whoami, err := cmd.Output()
 	if err != nil {

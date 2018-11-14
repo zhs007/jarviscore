@@ -48,62 +48,6 @@ func (c *jarvisClient2) broadCastMsg(ctx context.Context, msg *pb.JarvisMsg) err
 	return nil
 }
 
-// func (c *jarvisClient2) connectNode(ctx context.Context, ni *pb.NodeBaseInfo) error {
-// 	if ni.ServAddr == c.node.myinfo.ServAddr {
-// 		jarvisbase.Debug("jarvisClient2.connectNode", zap.Error(ErrServAddrIsMe))
-
-// 		return ErrServAddrIsMe
-// 	}
-
-// 	conn, err := mgrconn.getConn(ni.ServAddr)
-// 	if err != nil {
-// 		jarvisbase.Debug("jarvisClient2.connectNode", zap.Error(err))
-
-// 		return err
-// 	}
-
-// 	curctx, cancel := context.WithCancel(ctx)
-// 	defer cancel()
-
-// 	ci := clientInfo2{
-// 		conn:   conn,
-// 		client: pb.NewJarvisCoreServClient(conn),
-// 	}
-
-// 	nbi := &pb.NodeBaseInfo{
-// 		ServAddr: c.node.GetMyInfo().ServAddr,
-// 		Addr:     c.node.GetMyInfo().Addr,
-// 		Name:     c.node.GetMyInfo().Name,
-// 	}
-
-// 	msg := BuildConnNode(0, c.node.GetCoreDB().addr, ni.Addr, nbi)
-// 	SignJarvisMsg(c.node.coredb.privKey, msg)
-
-// 	stream, err1 := ci.client.ProcMsg(curctx, msg)
-// 	if err1 != nil {
-// 		jarvisbase.Debug("jarvisClient2.connectNode:ProcMsg", zap.Error(err1))
-
-// 		mgrconn.delConn(ni.ServAddr)
-
-// 		return err1
-// 	}
-
-// 	for {
-// 		msg, err := stream.Recv()
-// 		if err == io.EOF {
-// 			break
-// 		}
-
-// 		if err != nil {
-// 			jarvisbase.Debug("jarvisClient2.connectNode:stream", zap.Error(err))
-// 		} else {
-// 			c.node.mgrJasvisMsg.sendMsg(msg, nil)
-// 		}
-// 	}
-
-// 	return nil
-// }
-
 func (c *jarvisClient2) connectNode(ctx context.Context, servaddr string) error {
 	if servaddr == c.node.myinfo.ServAddr {
 		jarvisbase.Debug("jarvisClient2.connectNode", zap.Error(ErrServAddrIsMe))
@@ -132,10 +76,15 @@ func (c *jarvisClient2) connectNode(ctx context.Context, servaddr string) error 
 		Name:     c.node.GetMyInfo().Name,
 	}
 
-	msg := BuildConnNode(0, c.node.GetMyInfo().Addr, "", servaddr, nbi)
+	msg, err := BuildConnNode(c.node.coredb.privKey, 0, c.node.GetMyInfo().Addr, "", servaddr, nbi)
+	if err != nil {
+		jarvisbase.Debug("jarvisClient2.connectNode:BuildConnNode", zap.Error(err))
+
+		return err
+	}
 	// jarvisbase.Debug("jarvisClient2.connectNode:ProcMsg", jarvisbase.JSON("msg", msg))
 
-	SignJarvisMsg(c.node.coredb.privKey, msg)
+	// SignJarvisMsg(c.node.coredb.privKey, msg)
 
 	// jarvisbase.Debug("jarvisClient2.connectNode:ProcMsg", jarvisbase.JSON("msg", msg))
 

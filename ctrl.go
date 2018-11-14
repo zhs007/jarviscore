@@ -1,6 +1,8 @@
 package jarviscore
 
+import pb "github.com/zhs007/jarviscore/proto"
+
 // Ctrl -
 type Ctrl interface {
-	Run(command []byte) (result []byte, err error)
+	Run(ci *pb.CtrlInfo) (result []byte, err error)
 }

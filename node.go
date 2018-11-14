@@ -240,11 +240,21 @@ func (n *jarvisNode) onMsgConnectNode(ctx context.Context, msg *pb.JarvisMsg, st
 		Addr:     n.myinfo.Addr,
 		Name:     n.myinfo.Name,
 	}
-	sendmsg := BuildReplyConn(0, n.myinfo.Addr, ci.MyInfo.Addr, mni)
-	SignJarvisMsg(n.coredb.privKey, sendmsg)
+
+	sendmsg, err := BuildReplyConn(n.coredb.privKey, 0, n.myinfo.Addr, ci.MyInfo.Addr, mni)
+	if err != nil {
+		jarvisbase.Debug("jarvisNode.onMsgConnectNode:BuildReplyConn", zap.Error(err))
+
+		return err
+	}
+	// SignJarvisMsg(n.coredb.privKey, sendmsg)
 	// jarvisbase.Debug("jarvisNode.onMsgConnectNode:sendmsg", jarvisbase.JSON("msg", sendmsg))
-	err := stream.Send(sendmsg)
-	jarvisbase.Debug("jarvisNode.onMsgConnectNode:sendmsg", zap.Error(err))
+	err = stream.Send(sendmsg)
+	if err != nil {
+		jarvisbase.Debug("jarvisNode.onMsgConnectNode:sendmsg", zap.Error(err))
+
+		return err
+	}
 
 	cn := n.coredb.getNode(ci.MyInfo.Addr)
 	if cn == nil {
@@ -259,12 +269,24 @@ func (n *jarvisNode) onMsgConnectNode(ctx context.Context, msg *pb.JarvisMsg, st
 
 		cn.ConnectMe = true
 
-		msg := BuildLocalConnectOther(0, n.myinfo.Addr, ci.MyInfo.Addr, ci.MyInfo.ServAddr, ci.MyInfo)
-		SignJarvisMsg(n.coredb.privKey, msg)
+		msg, err := BuildLocalConnectOther(n.coredb.privKey, 0, n.myinfo.Addr, ci.MyInfo.Addr,
+			ci.MyInfo.ServAddr, ci.MyInfo)
+		if err != nil {
+			jarvisbase.Debug("jarvisNode.onMsgConnectNode:BuildLocalConnectOther", zap.Error(err))
+
+			return err
+		}
+		// SignJarvisMsg(n.coredb.privKey, msg)
 		n.mgrJasvisMsg.sendMsg(msg, nil, nil)
 	} else if !cn.ConnectNode {
-		msg := BuildLocalConnectOther(0, n.myinfo.Addr, ci.MyInfo.Addr, ci.MyInfo.ServAddr, ci.MyInfo)
-		SignJarvisMsg(n.coredb.privKey, msg)
+		msg, err := BuildLocalConnectOther(n.coredb.privKey, 0, n.myinfo.Addr, ci.MyInfo.Addr,
+			ci.MyInfo.ServAddr, ci.MyInfo)
+		if err != nil {
+			jarvisbase.Debug("jarvisNode.onMsgConnectNode:BuildLocalConnectOther", zap.Error(err))
+
+			return err
+		}
+		// SignJarvisMsg(n.coredb.privKey, msg)
 		n.mgrJasvisMsg.sendMsg(msg, nil, nil)
 	}
 
@@ -327,8 +349,14 @@ func (n *jarvisNode) connectNode(servaddr string) error {
 		Name:     n.myinfo.Name,
 	}
 
-	msg := BuildLocalConnectOther(0, n.myinfo.Addr, "", servaddr, nbi)
-	SignJarvisMsg(n.coredb.privKey, msg)
+	msg, err := BuildLocalConnectOther(n.coredb.privKey, 0, n.myinfo.Addr, "", servaddr, nbi)
+	if err != nil {
+		jarvisbase.Debug("jarvisNode.connectNode:BuildLocalConnectOther", zap.Error(err))
+
+		return err
+	}
+
+	// SignJarvisMsg(n.coredb.privKey, msg)
 	n.mgrJasvisMsg.sendMsg(msg, nil, nil)
 
 	return nil

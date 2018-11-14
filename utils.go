@@ -5,48 +5,67 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/zhs007/jarviscore/base"
-	"go.uber.org/zap"
+	"github.com/golang/protobuf/proto"
 
 	"github.com/zhs007/jarviscore/crypto"
 	pb "github.com/zhs007/jarviscore/proto"
 )
 
 // buildSignBuf - build sign buf
-//		sign(destAddr + curTime + data + srcAddr)
+//		sign(destAddr + curTime + srcAddr + data)
 //		for mul-language, all become string merge data
-func buildSignBuf(msg *pb.JarvisMsg) []byte {
+func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 	if msg.MsgType == pb.MSGTYPE_LOCAL_CONNECT_OTHER ||
 		msg.MsgType == pb.MSGTYPE_CONNECT_NODE {
 
 		ci := msg.GetConnInfo()
 		if ci != nil {
-			return []byte(fmt.Sprintf("%v%v%v%v%v%v%v",
-				msg.DestAddr, msg.CurTime,
-				ci.ServAddr,
-				ci.MyInfo.ServAddr, ci.MyInfo.Addr, ci.MyInfo.Name,
-				msg.SrcAddr))
+			str := []byte(fmt.Sprintf("%v%v%v", msg.DestAddr, msg.CurTime, msg.SrcAddr))
+			buf, err := proto.Marshal(ci)
+			if err != nil {
+				return nil, err
+			}
+
+			return append(str[:], buf[:]...), nil
 		}
 	} else if msg.MsgType == pb.MSGTYPE_NODE_INFO ||
 		msg.MsgType == pb.MSGTYPE_REPLY_CONNECT {
 
 		ni := msg.GetNodeInfo()
 		if ni != nil {
-			return []byte(fmt.Sprintf("%v%v%v%v%v%v",
-				msg.DestAddr, msg.CurTime,
-				ni.ServAddr, ni.Addr, ni.Name,
-				msg.SrcAddr))
+			str := []byte(fmt.Sprintf("%v%v%v", msg.DestAddr, msg.CurTime, msg.SrcAddr))
+			buf, err := proto.Marshal(ni)
+			if err != nil {
+				return nil, err
+			}
+
+			return append(str[:], buf[:]...), nil
+		}
+	} else if msg.MsgType == pb.MSGTYPE_REQUEST_CTRL {
+
+		ci := msg.GetCtrlInfo()
+		if ci != nil {
+			str := []byte(fmt.Sprintf("%v%v%v", msg.DestAddr, msg.CurTime, msg.SrcAddr))
+			buf, err := proto.Marshal(ci)
+			if err != nil {
+				return nil, err
+			}
+
+			return append(str[:], buf[:]...), nil
 		}
 	}
 
-	jarvisbase.Debug("buildSignBuf", zap.Error(ErrInvalidMsgType))
+	// jarvisbase.Debug("buildSignBuf", zap.Error(ErrInvalidMsgType))
 
-	return nil
+	return nil, ErrInvalidMsgType
 }
 
 // SignJarvisMsg - sign JarvisMsg
 func SignJarvisMsg(privkey *jarviscrypto.PrivateKey, msg *pb.JarvisMsg) error {
-	buf := buildSignBuf(msg)
+	buf, err := buildSignBuf(msg)
+	if err != nil {
+		return err
+	}
 
 	r, s, err := privkey.Sign(buf)
 	if err != nil {
@@ -69,7 +88,10 @@ func VerifyJarvisMsg(msg *pb.JarvisMsg) error {
 		return ErrPublicKeyAddr
 	}
 
-	buf := buildSignBuf(msg)
+	buf, err := buildSignBuf(msg)
+	if err != nil {
+		return err
+	}
 
 	s := new(big.Int)
 	r := new(big.Int)
@@ -104,7 +126,9 @@ func IsTimeOut(msg *pb.JarvisMsg) bool {
 }
 
 // BuildConnNode - build jarvismsg with CONNECT_NODE
-func BuildConnNode(msgid int64, srcAddr string, destAddr string, servaddr string, ni *pb.NodeBaseInfo) *pb.JarvisMsg {
+func BuildConnNode(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string, destAddr string,
+	servaddr string, ni *pb.NodeBaseInfo) (*pb.JarvisMsg, error) {
+
 	msg := &pb.JarvisMsg{
 		MsgID:    msgid,
 		CurTime:  time.Now().Unix(),
@@ -120,11 +144,18 @@ func BuildConnNode(msgid int64, srcAddr string, destAddr string, servaddr string
 		},
 	}
 
-	return msg
+	err := SignJarvisMsg(privkey, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg, nil
 }
 
 // BuildReplyConn - build jarvismsg with REPLY_CONNECT
-func BuildReplyConn(msgid int64, srcAddr string, destAddr string, ni *pb.NodeBaseInfo) *pb.JarvisMsg {
+func BuildReplyConn(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string, destAddr string,
+	ni *pb.NodeBaseInfo) (*pb.JarvisMsg, error) {
+
 	msg := &pb.JarvisMsg{
 		MsgID:    msgid,
 		CurTime:  time.Now().Unix(),
@@ -137,11 +168,18 @@ func BuildReplyConn(msgid int64, srcAddr string, destAddr string, ni *pb.NodeBas
 		},
 	}
 
-	return msg
+	err := SignJarvisMsg(privkey, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg, nil
 }
 
 // BuildLocalConnectOther - build jarvismsg with LOCAL_CONNECT_OTHER
-func BuildLocalConnectOther(msgid int64, srcAddr string, destAddr string, servaddr string, ni *pb.NodeBaseInfo) *pb.JarvisMsg {
+func BuildLocalConnectOther(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string,
+	destAddr string, servaddr string, ni *pb.NodeBaseInfo) (*pb.JarvisMsg, error) {
+
 	msg := &pb.JarvisMsg{
 		MsgID:    msgid,
 		CurTime:  time.Now().Unix(),
@@ -157,5 +195,34 @@ func BuildLocalConnectOther(msgid int64, srcAddr string, destAddr string, servad
 		},
 	}
 
-	return msg
+	err := SignJarvisMsg(privkey, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg, nil
+}
+
+// BuildRequestCtrl - build jarvismsg with REQUEST_CTRL
+func BuildRequestCtrl(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string,
+	destAddr string, servaddr string, ci *pb.CtrlInfo) (*pb.JarvisMsg, error) {
+
+	msg := &pb.JarvisMsg{
+		MsgID:    msgid,
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_LOCAL_CONNECT_OTHER,
+		Data: &pb.JarvisMsg_CtrlInfo{
+			CtrlInfo: ci,
+		},
+	}
+
+	err := SignJarvisMsg(privkey, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg, nil
 }

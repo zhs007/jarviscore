@@ -11,5 +11,6 @@ func init() {
 	mgrconn = &connMgr{mapConn: make(map[string]*grpc.ClientConn)}
 
 	mgrCtrl = &ctrlMgr{mapCtrl: make(map[string](Ctrl))}
-	mgrCtrl.Reg("shell", &CtrlShell{})
+	mgrCtrl.Reg(CtrlTypeShell, &CtrlShell{})
+	mgrCtrl.Reg(CtrlTypeScriptFile, &CtrlScriptFile{})
 }

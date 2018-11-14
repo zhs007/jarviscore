@@ -2,6 +2,8 @@ package jarviscore
 
 import (
 	"sync"
+
+	pb "github.com/zhs007/jarviscore/proto"
 )
 
 // ctrlMgr -
@@ -17,12 +19,12 @@ func (mgr *ctrlMgr) Reg(ctrltype string, ctrl Ctrl) {
 	mgrCtrl.mapCtrl[ctrltype] = ctrl
 }
 
-func (mgr *ctrlMgr) Run(ctrltype string, command []byte) ([]byte, error) {
+func (mgr *ctrlMgr) Run(ci *pb.CtrlInfo) ([]byte, error) {
 	mgr.RLock()
 	defer mgr.RUnlock()
 
-	if c, ok := mgr.mapCtrl[ctrltype]; ok {
-		return c.Run(command)
+	if c, ok := mgr.mapCtrl[ci.CtrlType]; ok {
+		return c.Run(ci)
 	}
 
 	return nil, ErrNoCtrlCmd

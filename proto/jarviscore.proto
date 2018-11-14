@@ -51,6 +51,7 @@ message ReplyJoin {
 message CtrlScriptData {
     bytes file = 1;
     string destPath = 2;
+    string filename = 3;
 }
 
 // CtrlInfo - 
