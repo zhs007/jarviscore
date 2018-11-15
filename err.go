@@ -43,4 +43,6 @@ var (
 	ErrInvalidMsgType = errors.New("invalid msgtype")
 	// ErrServAddrIsMe - servaddr is me
 	ErrServAddrIsMe = errors.New("servaddr is me")
+	// ErrInvalidEvent - invalid event
+	ErrInvalidEvent = errors.New("invalid event")
 )

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/zhs007/jarviscore/base"
+	"github.com/zhs007/jarviscore/coredb/proto"
 	pb "github.com/zhs007/jarviscore/proto"
 	"go.uber.org/zap"
 )
@@ -36,6 +37,7 @@ type jarvisNode struct {
 	mgrJasvisMsg *jarvisMsgMgr
 	mgrClient2   *jarvisClient2
 	serv2        *jarvisServer2
+	mgrEvent     *eventMgr
 }
 
 const (
@@ -56,9 +58,13 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 	}
 
 	node := &jarvisNode{
-		myinfo: baseinfo,
-		coredb: db,
+		myinfo:   baseinfo,
+		coredb:   db,
+		mgrEvent: newEventMgr(),
 	}
+
+	// event
+	node.mgrEvent.regEventFunc(EventOnNodeConnected, onNodeConnected)
 
 	err = node.coredb.loadPrivateKeyEx()
 	if err != nil {
@@ -293,7 +299,8 @@ func (n *jarvisNode) onMsgConnectNode(ctx context.Context, msg *pb.JarvisMsg, st
 
 		cn = n.coredb.getNode(ci.MyInfo.Addr)
 
-		cn.ConnectMe = true
+		// cn.ConnectMe = true
+		n.mgrEvent.onNodeEvent(EventOnNodeConnected, cn)
 
 		msg, err := BuildLocalConnectOther(n.coredb.privKey, 0, n.myinfo.Addr, ci.MyInfo.Addr,
 			ci.MyInfo.ServAddr, ci.MyInfo)
@@ -464,6 +471,13 @@ func (n *jarvisNode) AddCtrl2List(addr string, ci *pb.CtrlInfo) error {
 
 	// SignJarvisMsg(n.coredb.privKey, msg)
 	n.mgrJasvisMsg.sendMsg(msg, nil, nil)
+
+	return nil
+}
+
+// onNodeConnected - func event
+func onNodeConnected(node *coredbpb.NodeInfo) error {
+	node.ConnectMe = true
 
 	return nil
 }
