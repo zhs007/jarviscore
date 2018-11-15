@@ -28,6 +28,8 @@ enum MSGTYPE {
     REPLY_CONNECT = 10;
     // local connect other
     LOCAL_CONNECT_OTHER = 11;
+    // local sendmsg
+    LOCAL_SENDMSG = 12;
 }
 
 // REPLYTYPE - reply type
@@ -81,7 +83,7 @@ message CtrlResult {
 }
 
 // JarvisMsg - jarvis base msg
-//      sign(destAddr + curTime + data + srcAddr)
+//      sign(msgID + msgType + destAddr + curTime + srcAddr + data)
 message JarvisMsg {
     int64 msgID = 1;
     int64 curTime = 2;
@@ -99,6 +101,7 @@ message JarvisMsg {
         CtrlInfo ctrlInfo = 101;
         CtrlResult ctrlResult = 102;
         ConnectInfo connInfo = 103;
+        JarvisMsg msg = 104;
     }
 }
 

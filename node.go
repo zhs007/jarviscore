@@ -19,6 +19,9 @@ type JarvisNode interface {
 	// SendCtrl - send ctrl to jarvisnode with addr
 	SendCtrl(ctx context.Context, addr string, ci *pb.CtrlInfo) error
 
+	// AddCtrl2List - add ctrl msg to tasklist
+	AddCtrl2List(addr string, ci *pb.CtrlInfo) error
+
 	// OnMsg - proc JarvisMsg
 	OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer) error
 
@@ -128,6 +131,20 @@ func (n *jarvisNode) GetCoreDB() *CoreDB {
 
 // SendCtrl - send ctrl to jarvisnode with addr
 func (n *jarvisNode) SendCtrl(ctx context.Context, addr string, ci *pb.CtrlInfo) error {
+	msg, err := BuildRequestCtrl(n.coredb.privKey, 0, n.myinfo.Addr, addr, ci)
+	if err != nil {
+		jarvisbase.Debug("jarvisNode.SendCtrl", zap.Error(err))
+
+		return err
+	}
+
+	err = n.mgrClient2.sendMsg(ctx, msg)
+	if err != nil {
+		jarvisbase.Debug("jarvisNode.SendCtrl:sendMsg", zap.Error(err))
+
+		return err
+	}
+
 	return nil
 	// return n.requestCtrl(ctx, addr, ctrltype, []byte(command))
 }
@@ -191,6 +208,8 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 			return n.onMsgReply(ctx, msg)
 		} else if msg.MsgType == pb.MSGTYPE_REPLY_CTRL_RESULT {
 			return n.onMsgCtrlResult(ctx, msg)
+		} else if msg.MsgType == pb.MSGTYPE_LOCAL_SENDMSG {
+			return n.onMsgLocalSendMsg(ctx, msg)
 		}
 
 	}
@@ -417,5 +436,34 @@ func (n *jarvisNode) onMsgReply(ctx context.Context, msg *pb.JarvisMsg) error {
 
 // onMsgCtrlResult
 func (n *jarvisNode) onMsgCtrlResult(ctx context.Context, msg *pb.JarvisMsg) error {
+	return nil
+}
+
+// onMsgLocalSendMsg
+func (n *jarvisNode) onMsgLocalSendMsg(ctx context.Context, msg *pb.JarvisMsg) error {
+	sendmsg := msg.GetMsg()
+
+	err := n.mgrClient2.sendMsg(ctx, sendmsg)
+	if err != nil {
+		jarvisbase.Debug("jarvisNode.onMsgLocalSendMsg:sendMsg", zap.Error(err))
+
+		return err
+	}
+
+	return nil
+}
+
+// AddCtrl2List - add ctrl msg to tasklist
+func (n *jarvisNode) AddCtrl2List(addr string, ci *pb.CtrlInfo) error {
+	msg, err := BuildRequestCtrl(n.coredb.privKey, 0, n.myinfo.Addr, addr, ci)
+	if err != nil {
+		jarvisbase.Debug("jarvisNode.AddCtrl2List", zap.Error(err))
+
+		return err
+	}
+
+	// SignJarvisMsg(n.coredb.privKey, msg)
+	n.mgrJasvisMsg.sendMsg(msg, nil, nil)
+
 	return nil
 }

@@ -12,7 +12,7 @@ import (
 )
 
 // buildSignBuf - build sign buf
-//		sign(destAddr + curTime + srcAddr + data)
+//		sign(msgID + msgType + destAddr + curTime + srcAddr + data)
 //		for mul-language, all become string merge data
 func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 	if msg.MsgType == pb.MSGTYPE_LOCAL_CONNECT_OTHER ||
@@ -20,7 +20,7 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 
 		ci := msg.GetConnInfo()
 		if ci != nil {
-			str := []byte(fmt.Sprintf("%v%v%v", msg.DestAddr, msg.CurTime, msg.SrcAddr))
+			str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
 			buf, err := proto.Marshal(ci)
 			if err != nil {
 				return nil, err
@@ -33,7 +33,7 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 
 		ni := msg.GetNodeInfo()
 		if ni != nil {
-			str := []byte(fmt.Sprintf("%v%v%v", msg.DestAddr, msg.CurTime, msg.SrcAddr))
+			str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
 			buf, err := proto.Marshal(ni)
 			if err != nil {
 				return nil, err
@@ -45,7 +45,7 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 
 		ci := msg.GetCtrlInfo()
 		if ci != nil {
-			str := []byte(fmt.Sprintf("%v%v%v", msg.DestAddr, msg.CurTime, msg.SrcAddr))
+			str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
 			buf, err := proto.Marshal(ci)
 			if err != nil {
 				return nil, err
@@ -54,13 +54,24 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 			return append(str[:], buf[:]...), nil
 		}
 	} else if msg.MsgType == pb.MSGTYPE_REPLY {
-		str := []byte(fmt.Sprintf("%v%v%v", msg.DestAddr, msg.CurTime, msg.SrcAddr))
+		str := []byte(fmt.Sprintf("%v%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr, msg.ReplyType))
 
 		return str, nil
 	} else if msg.MsgType == pb.MSGTYPE_REPLY_CTRL_RESULT {
 		cr := msg.GetCtrlResult()
 		if cr != nil {
-			str := []byte(fmt.Sprintf("%v%v%v", msg.DestAddr, msg.CurTime, msg.SrcAddr))
+			str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
+			buf, err := proto.Marshal(cr)
+			if err != nil {
+				return nil, err
+			}
+
+			return append(str[:], buf[:]...), nil
+		}
+	} else if msg.MsgType == pb.MSGTYPE_LOCAL_SENDMSG {
+		cr := msg.GetMsg()
+		if cr != nil {
+			str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
 			buf, err := proto.Marshal(cr)
 			if err != nil {
 				return nil, err
@@ -280,6 +291,30 @@ func BuildCtrlResult(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr stri
 				CtrlID:     ctrlid,
 				CtrlResult: result,
 			},
+		},
+	}
+
+	err := SignJarvisMsg(privkey, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg, nil
+}
+
+// BuildLocalSendMsg - build jarvismsg with LOCAL_SENDMSG
+func BuildLocalSendMsg(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string,
+	destAddr string, sendmsg *pb.JarvisMsg) (*pb.JarvisMsg, error) {
+
+	msg := &pb.JarvisMsg{
+		MsgID:    msgid,
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_LOCAL_SENDMSG,
+		Data: &pb.JarvisMsg_Msg{
+			Msg: sendmsg,
 		},
 	}
 
