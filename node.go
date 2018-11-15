@@ -29,8 +29,13 @@ type JarvisNode interface {
 	// GetMyInfo - get my nodeinfo
 	GetMyInfo() *BaseInfo
 
-	// RegEventFunc - reg event handle
-	RegEventFunc(event string, eventfunc FuncNodeEvent) error
+	// RegNodeEventFunc - reg event handle
+	RegNodeEventFunc(event string, eventfunc FuncNodeEvent) error
+	// RegMsgEventFunc - reg event handle
+	RegMsgEventFunc(event string, eventfunc FuncMsgEvent) error
+
+	// IsConnected - is connected this node
+	IsConnected(addr string) bool
 }
 
 // jarvisNode -
@@ -67,8 +72,8 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 
 	// event
 	node.mgrEvent = newEventMgr(node)
-	node.mgrEvent.regEventFunc(EventOnNodeConnected, onNodeConnected)
-	node.mgrEvent.regEventFunc(EventOnIConnectNode, onIConnectNode)
+	node.mgrEvent.regNodeEventFunc(EventOnNodeConnected, onNodeConnected)
+	node.mgrEvent.regNodeEventFunc(EventOnIConnectNode, onIConnectNode)
 
 	err = node.coredb.loadPrivateKeyEx()
 	if err != nil {
@@ -418,6 +423,8 @@ func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg) er
 		return err
 	}
 
+	n.mgrEvent.onMsgEvent(ctx, EventOnCtrl, msg)
+
 	ci := msg.GetCtrlInfo()
 	ret, err := mgrCtrl.Run(ci)
 	if err != nil {
@@ -450,6 +457,8 @@ func (n *jarvisNode) onMsgReply(ctx context.Context, msg *pb.JarvisMsg) error {
 
 // onMsgCtrlResult
 func (n *jarvisNode) onMsgCtrlResult(ctx context.Context, msg *pb.JarvisMsg) error {
+	n.mgrEvent.onMsgEvent(ctx, EventOnCtrlResult, msg)
+
 	return nil
 }
 
@@ -498,7 +507,17 @@ func onIConnectNode(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.N
 	return nil
 }
 
-// RegEventFunc - reg event handle
-func (n *jarvisNode) RegEventFunc(event string, eventfunc FuncNodeEvent) error {
-	return n.mgrEvent.regEventFunc(event, eventfunc)
+// RegNodeEventFunc - reg event handle
+func (n *jarvisNode) RegNodeEventFunc(event string, eventfunc FuncNodeEvent) error {
+	return n.mgrEvent.regNodeEventFunc(event, eventfunc)
+}
+
+// RegMsgEventFunc - reg event handle
+func (n *jarvisNode) RegMsgEventFunc(event string, eventfunc FuncMsgEvent) error {
+	return n.mgrEvent.regMsgEventFunc(event, eventfunc)
+}
+
+// IsConnected - is connected this node
+func (n *jarvisNode) IsConnected(addr string) bool {
+	return n.mgrClient2.isConnected(addr)
 }

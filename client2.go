@@ -29,6 +29,11 @@ func newClient2(node *jarvisNode) *jarvisClient2 {
 	}
 }
 
+func (c *jarvisClient2) isConnected(addr string) bool {
+	_, ok := c.mapClient[addr]
+	return ok
+}
+
 func (c *jarvisClient2) sendMsg(ctx context.Context, msg *pb.JarvisMsg) error {
 	ci2, ok := c.mapClient[msg.DestAddr]
 	if !ok {

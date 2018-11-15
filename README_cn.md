@@ -9,6 +9,11 @@ jarviscore是Jarvis网络节点内核的golang实现。
 
 ### 版本更新
 
+0.6
+- 签名校验规则简化
+- 增加event通知接口
+- 增加script file类型的message
+
 0.5
 - 网络协议重构，彻底抛弃前面的网络层实现
 - msg处理采用goroutine pool方式
