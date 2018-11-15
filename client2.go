@@ -35,12 +35,16 @@ func (c *jarvisClient2) sendMsg(ctx context.Context, msg *pb.JarvisMsg) error {
 		return c.broadCastMsg(ctx, msg)
 	}
 
+	jarvisbase.Debug("jarvisClient2.sendMsg", jarvisbase.JSON("msg", msg))
+
 	ci2.client.ProcMsg(ctx, msg)
 
 	return nil
 }
 
 func (c *jarvisClient2) broadCastMsg(ctx context.Context, msg *pb.JarvisMsg) error {
+	jarvisbase.Debug("jarvisClient2.broadCastMsg", jarvisbase.JSON("msg", msg))
+
 	for _, v := range c.mapClient {
 		v.client.ProcMsg(ctx, msg)
 	}
@@ -65,7 +69,7 @@ func (c *jarvisClient2) connectNode(ctx context.Context, servaddr string) error 
 	curctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	ci := clientInfo2{
+	ci := &clientInfo2{
 		conn:   conn,
 		client: pb.NewJarvisCoreServClient(conn),
 	}
@@ -107,8 +111,16 @@ func (c *jarvisClient2) connectNode(ctx context.Context, servaddr string) error 
 
 		if err != nil {
 			jarvisbase.Debug("jarvisClient2.connectNode:stream", zap.Error(err))
+
+			break
 		} else {
 			jarvisbase.Debug("jarvisClient2.connectNode:stream", jarvisbase.JSON("msg", msg))
+
+			if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT {
+				ni := msg.GetNodeInfo()
+
+				c.mapClient[ni.Addr] = ci
+			}
 
 			c.node.mgrJasvisMsg.sendMsg(msg, nil, nil)
 		}

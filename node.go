@@ -28,6 +28,9 @@ type JarvisNode interface {
 
 	// GetMyInfo - get my nodeinfo
 	GetMyInfo() *BaseInfo
+
+	// RegEventFunc - reg event handle
+	RegEventFunc(event string, eventfunc FuncNodeEvent) error
 }
 
 // jarvisNode -
@@ -58,13 +61,14 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 	}
 
 	node := &jarvisNode{
-		myinfo:   baseinfo,
-		coredb:   db,
-		mgrEvent: newEventMgr(),
+		myinfo: baseinfo,
+		coredb: db,
 	}
 
 	// event
+	node.mgrEvent = newEventMgr(node)
 	node.mgrEvent.regEventFunc(EventOnNodeConnected, onNodeConnected)
+	node.mgrEvent.regEventFunc(EventOnIConnectNode, onIConnectNode)
 
 	err = node.coredb.loadPrivateKeyEx()
 	if err != nil {
@@ -150,6 +154,8 @@ func (n *jarvisNode) SendCtrl(ctx context.Context, addr string, ci *pb.CtrlInfo)
 
 		return err
 	}
+
+	jarvisbase.Debug("jarvisNode.SendCtrl", jarvisbase.JSON("msg", msg))
 
 	return nil
 	// return n.requestCtrl(ctx, addr, ctrltype, []byte(command))
@@ -300,7 +306,7 @@ func (n *jarvisNode) onMsgConnectNode(ctx context.Context, msg *pb.JarvisMsg, st
 		cn = n.coredb.getNode(ci.MyInfo.Addr)
 
 		// cn.ConnectMe = true
-		n.mgrEvent.onNodeEvent(EventOnNodeConnected, cn)
+		n.mgrEvent.onNodeEvent(ctx, EventOnNodeConnected, cn)
 
 		msg, err := BuildLocalConnectOther(n.coredb.privKey, 0, n.myinfo.Addr, ci.MyInfo.Addr,
 			ci.MyInfo.ServAddr, ci.MyInfo)
@@ -343,7 +349,8 @@ func (n *jarvisNode) onMsgReplyConnect(ctx context.Context, msg *pb.JarvisMsg) e
 		cn = n.coredb.getNode(ni.Addr)
 	}
 
-	cn.ConnectNode = true
+	// cn.ConnectNode = true
+	n.mgrEvent.onNodeEvent(ctx, EventOnIConnectNode, cn)
 
 	n.coredb.updNodeBaseInfo(ni)
 
@@ -476,8 +483,22 @@ func (n *jarvisNode) AddCtrl2List(addr string, ci *pb.CtrlInfo) error {
 }
 
 // onNodeConnected - func event
-func onNodeConnected(node *coredbpb.NodeInfo) error {
+func onNodeConnected(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 	node.ConnectMe = true
 
 	return nil
+}
+
+// onIConnectNode - func event
+func onIConnectNode(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
+	jarvisbase.Debug("onIConnectNode")
+
+	node.ConnectNode = true
+
+	return nil
+}
+
+// RegEventFunc - reg event handle
+func (n *jarvisNode) RegEventFunc(event string, eventfunc FuncNodeEvent) error {
+	return n.mgrEvent.regEventFunc(event, eventfunc)
 }

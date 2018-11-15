@@ -239,7 +239,7 @@ func BuildRequestCtrl(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr str
 		SrcAddr:  srcAddr,
 		MyAddr:   srcAddr,
 		DestAddr: destAddr,
-		MsgType:  pb.MSGTYPE_LOCAL_CONNECT_OTHER,
+		MsgType:  pb.MSGTYPE_REQUEST_CTRL,
 		Data: &pb.JarvisMsg_CtrlInfo{
 			CtrlInfo: ci,
 		},
