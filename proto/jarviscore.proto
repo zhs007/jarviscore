@@ -30,6 +30,8 @@ enum MSGTYPE {
     LOCAL_CONNECT_OTHER = 11;
     // local sendmsg
     LOCAL_SENDMSG = 12;
+    // local request nodes child
+    LOCAL_REQUEST_NODES = 13;    
 }
 
 // REPLYTYPE - reply type

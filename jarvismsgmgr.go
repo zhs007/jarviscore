@@ -56,5 +56,5 @@ func (mgr *jarvisMsgMgr) sendMsg(msg *pb.JarvisMsg, stream pb.JarvisCoreServ_Pro
 
 // start - start goroutine to proc ctrl msg
 func (mgr *jarvisMsgMgr) start(ctx context.Context) error {
-	return mgr.pool.Start(ctx, 128)
+	return mgr.pool.Start(ctx, 1)
 }

@@ -79,6 +79,14 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 
 			return append(str[:], buf[:]...), nil
 		}
+	} else if msg.MsgType == pb.MSGTYPE_LOCAL_REQUEST_NODES {
+		str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
+
+		return str, nil
+	} else if msg.MsgType == pb.MSGTYPE_REQUEST_NODES {
+		str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
+
+		return str, nil
 	}
 
 	// jarvisbase.Debug("buildSignBuf", zap.Error(ErrInvalidMsgType))
@@ -315,6 +323,72 @@ func BuildLocalSendMsg(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr st
 		MsgType:  pb.MSGTYPE_LOCAL_SENDMSG,
 		Data: &pb.JarvisMsg_Msg{
 			Msg: sendmsg,
+		},
+	}
+
+	err := SignJarvisMsg(privkey, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg, nil
+}
+
+// BuildLocalRequestNodes - build jarvismsg with LOCAL_REQUEST_NODES
+func BuildLocalRequestNodes(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string,
+	destAddr string) (*pb.JarvisMsg, error) {
+
+	msg := &pb.JarvisMsg{
+		MsgID:    msgid,
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_LOCAL_REQUEST_NODES,
+	}
+
+	err := SignJarvisMsg(privkey, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg, nil
+}
+
+// BuildRequestNodes - build jarvismsg with REQUEST_NODES
+func BuildRequestNodes(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string,
+	destAddr string) (*pb.JarvisMsg, error) {
+
+	msg := &pb.JarvisMsg{
+		MsgID:    msgid,
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_REQUEST_NODES,
+	}
+
+	err := SignJarvisMsg(privkey, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg, nil
+}
+
+// BuildNodeInfo - build jarvismsg with NODE_INFO
+func BuildNodeInfo(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string, destAddr string,
+	ni *pb.NodeBaseInfo) (*pb.JarvisMsg, error) {
+
+	msg := &pb.JarvisMsg{
+		MsgID:    msgid,
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_NODE_INFO,
+		Data: &pb.JarvisMsg_NodeInfo{
+			NodeInfo: ni,
 		},
 	}
 

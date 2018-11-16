@@ -71,7 +71,7 @@ func sendCtrl(ctx context.Context, jarvisnode jarviscore.JarvisNode, node *cored
 		return err
 	}
 
-	err = jarvisnode.SendCtrl(ctx, node.Addr, ci)
+	err = jarvisnode.RequestCtrl(ctx, node.Addr, ci)
 	if err != nil {
 		jarvisbase.Warn("BuildCtrlInfoForScriptFile", zap.Error(err))
 
