@@ -38,7 +38,7 @@ type Config struct {
 // const normalLogFilename = "output.log"
 // const errLogFilename = "error.log"
 
-var config Config
+// var config Config
 
 func getLogLevel(str string) zapcore.Level {
 	switch str {
@@ -54,8 +54,8 @@ func getLogLevel(str string) zapcore.Level {
 }
 
 // InitJarvisCore -
-func InitJarvisCore(cfg Config) {
-	config = cfg
+func InitJarvisCore(cfg *Config) {
+	// config = cfg
 
 	jarvisbase.InitLogger(getLogLevel(cfg.Log.LogLevel), cfg.Log.LogConsole, cfg.Log.LogPath)
 

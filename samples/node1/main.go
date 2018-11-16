@@ -29,13 +29,13 @@ func main() {
 	// 	LstTrustNode:   []string{"1JJaKpZGhYPuVHc1EKiiHZEswPAB5SybW5"},
 	// }
 
-	myinfo := jarviscore.BaseInfo{
-		Name:     cfg.BaseNodeInfo.NodeName,
-		BindAddr: cfg.BaseNodeInfo.BindAddr,
-		ServAddr: cfg.BaseNodeInfo.ServAddr,
-	}
+	// myinfo := jarviscore.BaseInfo{
+	// 	Name:     cfg.BaseNodeInfo.NodeName,
+	// 	BindAddr: cfg.BaseNodeInfo.BindAddr,
+	// 	ServAddr: cfg.BaseNodeInfo.ServAddr,
+	// }
 
-	jarviscore.InitJarvisCore(*cfg)
+	jarviscore.InitJarvisCore(cfg)
 	defer jarviscore.ReleaseJarvisCore()
 
 	// pubip := jarviscore.GetHTTPPulicIP()
@@ -46,7 +46,7 @@ func main() {
 	// ip1 := net.ParseIP("127.0.0.1:7788")
 	// log.Debug(ip1.String())
 
-	node := jarviscore.NewNode(myinfo)
+	node := jarviscore.NewNode(cfg)
 	node.RegNodeEventFunc(jarviscore.EventOnIConnectNode, onIConnectNode)
 	node.RegNodeEventFunc(jarviscore.EventOnNodeConnected, onNodeConnected)
 	node.RegMsgEventFunc(jarviscore.EventOnCtrl, onCtrl)

@@ -46,6 +46,7 @@ type jarvisNode struct {
 	mgrClient2   *jarvisClient2
 	serv2        *jarvisServer2
 	mgrEvent     *eventMgr
+	cfg          *Config
 }
 
 const (
@@ -57,8 +58,8 @@ const (
 )
 
 // NewNode -
-func NewNode(baseinfo BaseInfo) JarvisNode {
-	db, err := newCoreDB()
+func NewNode(cfg *Config) JarvisNode {
+	db, err := newCoreDB(cfg)
 	if err != nil {
 		jarvisbase.Error("NewNode:newCoreDB", zap.Error(err))
 
@@ -66,7 +67,11 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 	}
 
 	node := &jarvisNode{
-		myinfo: baseinfo,
+		myinfo: BaseInfo{
+			Name:     cfg.BaseNodeInfo.NodeName,
+			BindAddr: cfg.BaseNodeInfo.BindAddr,
+			ServAddr: cfg.BaseNodeInfo.ServAddr,
+		},
 		coredb: db,
 	}
 
@@ -85,9 +90,9 @@ func NewNode(baseinfo BaseInfo) JarvisNode {
 	node.coredb.loadAllNodes()
 
 	node.myinfo.Addr = node.coredb.privKey.ToAddress()
-	node.myinfo.Name = config.BaseNodeInfo.NodeName
-	node.myinfo.BindAddr = config.BaseNodeInfo.BindAddr
-	node.myinfo.ServAddr = config.BaseNodeInfo.ServAddr
+	node.myinfo.Name = cfg.BaseNodeInfo.NodeName
+	node.myinfo.BindAddr = cfg.BaseNodeInfo.BindAddr
+	node.myinfo.ServAddr = cfg.BaseNodeInfo.ServAddr
 
 	// mgrJasvisMsg
 	node.mgrJasvisMsg = newJarvisMsgMgr(node)
@@ -127,7 +132,7 @@ func (n *jarvisNode) Start(ctx context.Context) (err error) {
 	defer servcancel()
 	go n.serv2.Start(servctx)
 
-	n.connectNode(config.RootServAddr)
+	n.connectNode(n.cfg.RootServAddr)
 	n.connectAllNodes()
 
 	for {

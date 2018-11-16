@@ -74,8 +74,8 @@ type CoreDB struct {
 	mapNodes     map[string]*coredbpb.NodeInfo
 }
 
-func newCoreDB() (*CoreDB, error) {
-	ankaDB, err := coredb.NewCoreDB(config.AnkaDB.DBPath, config.AnkaDB.HTTPServ, config.AnkaDB.Engine)
+func newCoreDB(cfg *Config) (*CoreDB, error) {
+	ankaDB, err := coredb.NewCoreDB(cfg.AnkaDB.DBPath, cfg.AnkaDB.HTTPServ, cfg.AnkaDB.Engine)
 	if err != nil {
 		jarvisbase.Error("newCoreDB:NewAnkaLDB", zap.Error(err))
 
@@ -132,13 +132,13 @@ func (db *CoreDB) loadPrivateKeyEx() error {
 	jarvisbase.Info("loadPrivateKeyEx:OK",
 		zap.String("privkey", myaddr))
 
-	if len(config.LstTrustNode) > 0 {
-		for i := range config.LstTrustNode {
-			if !db.IsTrustNode(config.LstTrustNode[i]) {
-				db.TrustNode(config.LstTrustNode[i])
-			}
-		}
-	}
+	// if len(config.LstTrustNode) > 0 {
+	// 	for i := range config.LstTrustNode {
+	// 		if !db.IsTrustNode(config.LstTrustNode[i]) {
+	// 			db.TrustNode(config.LstTrustNode[i])
+	// 		}
+	// 	}
+	// }
 
 	return nil
 }
