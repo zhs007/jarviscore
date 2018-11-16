@@ -16,6 +16,10 @@ type Config struct {
 	RootServAddr string
 	LstTrustNode []string
 
+	// TimeRequestChild - RequestChild time
+	//					- default 30s
+	TimeRequestChild int64
+
 	AnkaDB struct {
 		DBPath   string
 		HTTPServ string
@@ -74,6 +78,14 @@ func ReleaseJarvisCore() error {
 	return nil
 }
 
+func checkConfig(cfg *Config) error {
+	if cfg.TimeRequestChild <= 0 {
+		cfg.TimeRequestChild = 30
+	}
+
+	return nil
+}
+
 // func getRealPath(filename string) string {
 // 	return path.Join(config.RunPath, filename)
 // }
@@ -91,12 +103,17 @@ func LoadConfig(filename string) (*Config, error) {
 		return nil, err1
 	}
 
-	cfg := Config{}
+	cfg := &Config{}
 
-	err2 := yaml.Unmarshal(fd, &cfg)
+	err2 := yaml.Unmarshal(fd, cfg)
 	if err2 != nil {
 		return nil, err2
 	}
 
-	return &cfg, nil
+	err = checkConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
 }
