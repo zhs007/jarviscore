@@ -49,7 +49,7 @@ const queryNodeInfos = `query NodeInfos($snapshotID: Int64!, $beginIndex: Int!, 
 	nodeInfos(snapshotID: $snapshotID, beginIndex: $beginIndex, nums: $nums) {
 		snapshotID, endIndex, maxIndex, 
 		nodes {
-			addr, servAddr, name, connectNums, connectedNums, ctrlID, lstClientAddr, addTime, connectMe, connectNode
+			addr, servAddr, name, connectNums, connectedNums, ctrlID, lstClientAddr, addTime
 		}
 	}
 }`
@@ -194,20 +194,26 @@ func (db *CoreDB) _foreachNode(oneach func(string, *coredbpb.NodeInfo), snapshot
 	params["snapshotID"] = snapshotID
 	params["beginIndex"] = beginIndex
 	params["nums"] = nums
-	params["createTime"] = time.Now().Unix()
+	// params["createTime"] = time.Now().Unix()
 
 	result, err := db.ankaDB.LocalQuery(context.Background(), queryNodeInfos, params)
-	rnis := &coredbpb.NodeInfoList{}
-	err = ankadb.MakeMsgFromResult(result, rnis)
+
+	jarvisbase.Debug("CoreDB._foreachNode", jarvisbase.JSON("result", result))
+
+	rnis := &coredb.ResultNodeInfos{}
+	err = ankadb.MakeObjFromResult(result, rnis)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, v := range rnis.Nodes {
+	lst := coredb.ResultNodeInfos2NodeInfoList(rnis)
+	jarvisbase.Debug("CoreDB._foreachNode", jarvisbase.JSON("lst", lst))
+
+	for _, v := range lst.Nodes {
 		oneach(v.Addr, v)
 	}
 
-	return rnis, nil
+	return lst, nil
 }
 
 func (db *CoreDB) foreachNodeEx(oneach func(string, *coredbpb.NodeInfo)) error {
@@ -229,12 +235,22 @@ func (db *CoreDB) foreachNodeEx(oneach func(string, *coredbpb.NodeInfo)) error {
 }
 
 func (db *CoreDB) loadAllNodes() error {
-	db.foreachNodeEx(func(key string, val *coredbpb.NodeInfo) {
+	curnodes := 0
+
+	err := db.foreachNodeEx(func(key string, val *coredbpb.NodeInfo) {
 		val.ConnectMe = false
 		val.ConnectNode = false
 
 		db.mapNodes[val.Addr] = val
+		curnodes++
 	})
+	if err != nil {
+		jarvisbase.Debug("CoreDB.loadAllNodes", zap.Error(err))
+
+		return err
+	}
+
+	jarvisbase.Info("CoreDB.loadAllNodes", zap.Int("nodes", curnodes))
 
 	return nil
 }

@@ -42,6 +42,8 @@ enum REPLYTYPE {
     FORWARD = 1;
     // timeout
     TIMEOUT = 2;
+    // is me
+    ISME = 3;    
 }
 
 message NodeBaseInfo {
