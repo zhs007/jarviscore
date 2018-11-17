@@ -258,10 +258,22 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 func (n *jarvisNode) onMsgLocalConnect(ctx context.Context, msg *pb.JarvisMsg) error {
 	ci := msg.GetConnInfo()
 
+	// if is me, return
+	if ci.ServAddr == n.myinfo.ServAddr {
+		return nil
+	}
+
 	cn := n.coredb.findNodeWithServAddr(ci.ServAddr)
 	if cn == nil {
 		return n.mgrClient2.connectNode(ctx, ci.ServAddr)
-	} else if !cn.ConnectNode {
+	}
+
+	// if is me, return
+	if cn.Addr == n.myinfo.Addr {
+		return nil
+	}
+
+	if !cn.ConnectNode {
 		return n.mgrClient2.connectNode(ctx, cn.ServAddr)
 	}
 
