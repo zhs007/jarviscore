@@ -75,7 +75,31 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, msg *pb.JarvisMsg) error {
 
 	jarvisbase.Debug("jarvisClient2._sendMsg", jarvisbase.JSON("msg", msg))
 
-	ci2.client.ProcMsg(ctx, msg)
+	stream, err := ci2.client.ProcMsg(ctx, msg)
+	if err != nil {
+		jarvisbase.Debug("jarvisClient2._sendMsg:ProcMsg", zap.Error(err))
+
+		return err
+	}
+
+	for {
+		msg, err := stream.Recv()
+		if err == io.EOF {
+			jarvisbase.Debug("jarvisClient2._sendMsg:stream eof")
+
+			break
+		}
+
+		if err != nil {
+			jarvisbase.Debug("jarvisClient2._sendMsg:stream", zap.Error(err))
+
+			break
+		} else {
+			jarvisbase.Debug("jarvisClient2._sendMsg:stream", jarvisbase.JSON("msg", msg))
+
+			c.node.mgrJasvisMsg.sendMsg(msg, nil, nil)
+		}
+	}
 
 	return nil
 }
@@ -84,7 +108,32 @@ func (c *jarvisClient2) _broadCastMsg(ctx context.Context, msg *pb.JarvisMsg) er
 	jarvisbase.Debug("jarvisClient2._broadCastMsg", jarvisbase.JSON("msg", msg))
 
 	for _, v := range c.mapClient {
-		v.client.ProcMsg(ctx, msg)
+		// v.client.ProcMsg(ctx, msg)
+		stream, err := v.client.ProcMsg(ctx, msg)
+		if err != nil {
+			jarvisbase.Debug("jarvisClient2._broadCastMsg:ProcMsg", zap.Error(err))
+
+			continue
+		}
+
+		for {
+			msg, err := stream.Recv()
+			if err == io.EOF {
+				jarvisbase.Debug("jarvisClient2._broadCastMsg:stream eof")
+
+				break
+			}
+
+			if err != nil {
+				jarvisbase.Debug("jarvisClient2._broadCastMsg:stream", zap.Error(err))
+
+				break
+			} else {
+				jarvisbase.Debug("jarvisClient2._broadCastMsg:stream", jarvisbase.JSON("msg", msg))
+
+				c.node.mgrJasvisMsg.sendMsg(msg, nil, nil)
+			}
+		}
 	}
 
 	return nil
