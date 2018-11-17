@@ -45,4 +45,6 @@ var (
 	ErrServAddrIsMe = errors.New("servaddr is me")
 	// ErrInvalidEvent - invalid event
 	ErrInvalidEvent = errors.New("invalid event")
+	// ErrInvalidServAddr - invalid servaddr
+	ErrInvalidServAddr = errors.New("invalid servaddr")
 )

@@ -3,6 +3,7 @@ package jarviscore
 import (
 	"context"
 	"io"
+	"net"
 
 	"go.uber.org/zap"
 
@@ -58,11 +59,24 @@ func (c *jarvisClient2) broadCastMsg(ctx context.Context, msg *pb.JarvisMsg) err
 }
 
 func (c *jarvisClient2) connectNode(ctx context.Context, servaddr string) error {
-	if servaddr == c.node.myinfo.ServAddr {
+	_, _, err := net.SplitHostPort(servaddr)
+	if err != nil {
+		jarvisbase.Debug("jarvisClient2.connectNode:checkServAddr", zap.Error(err))
+
+		return err
+	}
+
+	if IsMyServAddr(servaddr, c.node.myinfo.BindAddr) {
 		jarvisbase.Debug("jarvisClient2.connectNode", zap.Error(ErrServAddrIsMe))
 
 		return ErrServAddrIsMe
 	}
+
+	// if servaddr == c.node.myinfo.ServAddr {
+	// 	jarvisbase.Debug("jarvisClient2.connectNode", zap.Error(ErrServAddrIsMe))
+
+	// 	return ErrServAddrIsMe
+	// }
 
 	conn, err := mgrconn.getConn(servaddr)
 	if err != nil {

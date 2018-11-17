@@ -48,6 +48,25 @@ func getGRPCClientIP(ctx context.Context) string {
 	return addSlice[0]
 }
 
+// IsMyServAddr - check destaddr is same addr for me
+func IsMyServAddr(destaddr string, srcaddr string) bool {
+	dh, dp, err := net.SplitHostPort(destaddr)
+	if err != nil {
+		return false
+	}
+
+	sh, sp, err := net.SplitHostPort(srcaddr)
+	if err != nil {
+		return false
+	}
+
+	if dp == sp && (dh == sh || dh == "127.0.0.1") {
+		return true
+	}
+
+	return false
+}
+
 // // GetDNSPulicIP -
 // func GetDNSPulicIP() string {
 // 	conn, err := net.Dial("udp", "8.8.8.8:53")
