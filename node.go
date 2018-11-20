@@ -37,6 +37,9 @@ type JarvisNode interface {
 
 	// IsConnected - is connected this node
 	IsConnected(addr string) bool
+
+	// FindNodeWithName - find node with name
+	FindNodeWithName(name string) *coredbpb.NodeInfo
 }
 
 // jarvisNode -
@@ -638,6 +641,20 @@ func (n *jarvisNode) onMsgRequestNodes(ctx context.Context, msg *pb.JarvisMsg, s
 			jarvisbase.Debug("jarvisNode.onMsgRequestNodes:sendmsg", zap.Error(err))
 
 			return err
+		}
+	}
+
+	return nil
+}
+
+// FindNodeWithName - find node with name
+func (n *jarvisNode) FindNodeWithName(name string) *coredbpb.NodeInfo {
+	n.coredb.Lock()
+	defer n.coredb.Unlock()
+
+	for _, v := range n.coredb.mapNodes {
+		if v.Name == name {
+			return v
 		}
 	}
 

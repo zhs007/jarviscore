@@ -3,6 +3,7 @@ package jarviscore
 import (
 	"context"
 	"encoding/json"
+	"sync"
 	"time"
 
 	"go.uber.org/zap"
@@ -68,6 +69,8 @@ const queryTrustNode = `mutation TrustNode($addr: ID!) {
 
 // CoreDB - jarvisnode core database
 type CoreDB struct {
+	sync.RWMutex
+
 	ankaDB       *ankadb.AnkaDB
 	privKey      *jarviscrypto.PrivateKey
 	lstTrustNode []string
