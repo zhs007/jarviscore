@@ -1,4 +1,4 @@
-rootservaddr: 'telebot.heyjarvis.ai:7789'
+rootservaddr: '127.0.0.1:7788'
 lsttrustnode: ['1JJaKpZGhYPuVHc1EKiiHZEswPAB5SybW5']
 ankadb:
   dbpath: './dat'

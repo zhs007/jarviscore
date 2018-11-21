@@ -66,7 +66,7 @@
     "leveldb/table",
     "leveldb/util"
   ]
-  revision = "a4119e27a65dc634683dd798846ce8ee09620ae9"
+  revision = "f9080354173f192dfc8821931eacf9cfd6819253"
 
 [[projects]]
   name = "github.com/zhs007/ankadb"
@@ -108,7 +108,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ripemd160"]
-  revision = "4d3f4d9ffa16a13f451c3b2999e9c49e9750bf06"
+  revision = "3d3f9f413869b949e48070b5bc593aa22cc2b8f2"
 
 [[projects]]
   branch = "master"
@@ -122,13 +122,13 @@
     "internal/timeseries",
     "trace"
   ]
-  revision = "c10e9556a7bc0e7c942242b606f0acf024ad5d6a"
+  revision = "adae6a3d119ae4890b46832a2e88a95adc62b8e7"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "9b800f95dbbc54abff0acf7ee32d88ba4e328c89"
+  revision = "ec83556a53fe16b65c452a104ea9d1e86a671852"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -155,7 +155,7 @@
   branch = "master"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
-  revision = "c830210a61dfaa790e1920f8d0470fc27bc2efbe"
+  revision = "b5d43981345bdb2c233eb4bf3277847b48c6fdc6"
 
 [[projects]]
   name = "google.golang.org/grpc"
@@ -199,6 +199,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2eb6e78b036670b9bd71d22f4390ac9a0f74e27f08e2204a96906880dbe29ff0"
+  inputs-digest = "fa58f9f47a0b1c3054ee516a38fdf2e449f2dcfdda3f75c8b56eee60c9cadc58"
   solver-name = "gps-cdcl"
   solver-version = 1

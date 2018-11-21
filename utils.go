@@ -54,7 +54,7 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 			return append(str[:], buf[:]...), nil
 		}
 	} else if msg.MsgType == pb.MSGTYPE_REPLY {
-		str := []byte(fmt.Sprintf("%v%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr, msg.ReplyType))
+		str := []byte(fmt.Sprintf("%v%v%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr, msg.ReplyType, msg.Err))
 
 		return str, nil
 	} else if msg.MsgType == pb.MSGTYPE_REPLY_CTRL_RESULT {
@@ -87,6 +87,17 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 		str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
 
 		return str, nil
+	} else if msg.MsgType == pb.MSGTYPE_TRANSFER_FILE {
+		f := msg.GetFile()
+		if f != nil {
+			str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
+			buf, err := proto.Marshal(f)
+			if err != nil {
+				return nil, err
+			}
+
+			return append(str[:], buf[:]...), nil
+		}
 	}
 
 	// jarvisbase.Debug("buildSignBuf", zap.Error(ErrInvalidMsgType))
@@ -263,7 +274,7 @@ func BuildRequestCtrl(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr str
 
 // BuildReply - build jarvismsg with REPLY
 func BuildReply(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string,
-	destAddr string, rt pb.REPLYTYPE) (*pb.JarvisMsg, error) {
+	destAddr string, rt pb.REPLYTYPE, strErr string) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
 		MsgID:     msgid,
@@ -273,6 +284,7 @@ func BuildReply(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string,
 		DestAddr:  destAddr,
 		MsgType:   pb.MSGTYPE_REPLY,
 		ReplyType: rt,
+		Err:       strErr,
 	}
 
 	err := SignJarvisMsg(privkey, msg)
@@ -389,6 +401,30 @@ func BuildNodeInfo(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string
 		MsgType:  pb.MSGTYPE_NODE_INFO,
 		Data: &pb.JarvisMsg_NodeInfo{
 			NodeInfo: ni,
+		},
+	}
+
+	err := SignJarvisMsg(privkey, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg, nil
+}
+
+// BuildFileData - build jarvismsg with TRANSFER_FILE
+func BuildFileData(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string, destAddr string,
+	fd *pb.FileData) (*pb.JarvisMsg, error) {
+
+	msg := &pb.JarvisMsg{
+		MsgID:    msgid,
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_TRANSFER_FILE,
+		Data: &pb.JarvisMsg_File{
+			File: fd,
 		},
 	}
 

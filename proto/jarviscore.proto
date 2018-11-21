@@ -31,7 +31,9 @@ enum MSGTYPE {
     // local sendmsg
     LOCAL_SENDMSG = 12;
     // local request nodes child
-    LOCAL_REQUEST_NODES = 13;    
+    LOCAL_REQUEST_NODES = 13;
+    // transfer file
+    TRANSFER_FILE = 14;
 }
 
 // REPLYTYPE - reply type
@@ -43,7 +45,9 @@ enum REPLYTYPE {
     // timeout
     TIMEOUT = 2;
     // is me
-    ISME = 3;    
+    ISME = 3;
+    // error
+    ERROR = 4;
 }
 
 message NodeBaseInfo {
@@ -61,6 +65,12 @@ message ConnectInfo {
 message ReplyJoin {
     string addr = 1;
     string name = 2;
+}
+
+// FileData - file data
+message FileData {
+    bytes file = 1;
+    string filename = 2;
 }
 
 // CtrlScriptData - used in CtrlInfo.dat
@@ -99,6 +109,7 @@ message JarvisMsg {
     string destAddr = 8;
     MSGTYPE msgType = 9;
     REPLYTYPE replyType = 10;
+    string err = 11;
 
     oneof data {
         NodeBaseInfo nodeInfo = 100;
@@ -106,6 +117,7 @@ message JarvisMsg {
         CtrlResult ctrlResult = 102;
         ConnectInfo connInfo = 103;
         JarvisMsg msg = 104;
+        FileData file = 105;
     }
 }
 
