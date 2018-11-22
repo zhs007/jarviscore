@@ -67,6 +67,8 @@ const (
 
 // NewNode -
 func NewNode(cfg *Config) JarvisNode {
+	jarvisbase.Info("jarviscore version is 0.6.11.")
+
 	db, err := newCoreDB(cfg)
 	if err != nil {
 		jarvisbase.Error("NewNode:newCoreDB", zap.Error(err))
