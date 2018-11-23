@@ -44,6 +44,9 @@ type JarvisNode interface {
 
 	// FindNodeWithName - find node with name
 	FindNodeWithName(name string) *coredbpb.NodeInfo
+
+	// SetNodeTypeInfo - set node type and version
+	SetNodeTypeInfo(nodetype string, nodetypeversion string)
 }
 
 // jarvisNode -
@@ -78,9 +81,10 @@ func NewNode(cfg *Config) JarvisNode {
 
 	node := &jarvisNode{
 		myinfo: BaseInfo{
-			Name:     cfg.BaseNodeInfo.NodeName,
-			BindAddr: cfg.BaseNodeInfo.BindAddr,
-			ServAddr: cfg.BaseNodeInfo.ServAddr,
+			Name:        cfg.BaseNodeInfo.NodeName,
+			BindAddr:    cfg.BaseNodeInfo.BindAddr,
+			ServAddr:    cfg.BaseNodeInfo.ServAddr,
+			CoreVersion: VERSION,
 		},
 		coredb: db,
 		cfg:    cfg,
@@ -329,9 +333,12 @@ func (n *jarvisNode) onMsgConnectNode(ctx context.Context, msg *pb.JarvisMsg, st
 	ci := msg.GetConnInfo()
 
 	mni := &pb.NodeBaseInfo{
-		ServAddr: n.myinfo.ServAddr,
-		Addr:     n.myinfo.Addr,
-		Name:     n.myinfo.Name,
+		ServAddr:        n.myinfo.ServAddr,
+		Addr:            n.myinfo.Addr,
+		Name:            n.myinfo.Name,
+		NodeTypeVersion: n.myinfo.NodeTypeVersion,
+		NodeType:        n.myinfo.NodeType,
+		CoreVersion:     n.myinfo.CoreVersion,
 	}
 
 	sendmsg, err := BuildReplyConn(n.coredb.privKey, 0, n.myinfo.Addr, ci.MyInfo.Addr, mni)
@@ -439,9 +446,12 @@ func (n *jarvisNode) connectAllNodes() error {
 // connectNode - connect node
 func (n *jarvisNode) connectNode(servaddr string) error {
 	nbi := &pb.NodeBaseInfo{
-		ServAddr: n.myinfo.ServAddr,
-		Addr:     n.myinfo.Addr,
-		Name:     n.myinfo.Name,
+		ServAddr:        n.myinfo.ServAddr,
+		Addr:            n.myinfo.Addr,
+		Name:            n.myinfo.Name,
+		NodeTypeVersion: n.myinfo.NodeTypeVersion,
+		NodeType:        n.myinfo.NodeType,
+		CoreVersion:     n.myinfo.CoreVersion,
 	}
 
 	msg, err := BuildLocalConnectOther(n.coredb.privKey, 0, n.myinfo.Addr, "", servaddr, nbi)
@@ -786,4 +796,10 @@ func (n *jarvisNode) onMsgTransferFile(ctx context.Context, msg *pb.JarvisMsg,
 	// }
 
 	return nil
+}
+
+// SetNodeTypeInfo - set node type and version
+func (n *jarvisNode) SetNodeTypeInfo(nodetype string, nodetypeversion string) {
+	n.myinfo.NodeType = nodetype
+	n.myinfo.NodeTypeVersion = nodetypeversion
 }

@@ -286,16 +286,19 @@ func (db *CoreDB) loadAllNodes() error {
 
 func (db *CoreDB) insNode(ni *pb.NodeBaseInfo) error {
 	cni := &coredbpb.NodeInfo{
-		ServAddr:      ni.ServAddr,
-		Addr:          ni.Addr,
-		Name:          ni.Name,
-		ConnectNums:   0,
-		ConnectedNums: 0,
-		CtrlID:        0,
-		LstClientAddr: nil,
-		AddTime:       time.Now().Unix(),
-		ConnectMe:     false,
-		ConnectNode:   false,
+		ServAddr:        ni.ServAddr,
+		Addr:            ni.Addr,
+		Name:            ni.Name,
+		ConnectNums:     0,
+		ConnectedNums:   0,
+		CtrlID:          0,
+		LstClientAddr:   nil,
+		AddTime:         time.Now().Unix(),
+		ConnectMe:       false,
+		ConnectNode:     false,
+		NodeTypeVersion: ni.NodeTypeVersion,
+		NodeType:        ni.NodeType,
+		CoreVersion:     ni.CoreVersion,
 	}
 
 	params := make(map[string]interface{})

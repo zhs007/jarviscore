@@ -169,9 +169,12 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string) error
 	}
 
 	nbi := &pb.NodeBaseInfo{
-		ServAddr: c.node.GetMyInfo().ServAddr,
-		Addr:     c.node.GetMyInfo().Addr,
-		Name:     c.node.GetMyInfo().Name,
+		ServAddr:        c.node.GetMyInfo().ServAddr,
+		Addr:            c.node.GetMyInfo().Addr,
+		Name:            c.node.GetMyInfo().Name,
+		NodeType:        c.node.GetMyInfo().NodeType,
+		NodeTypeVersion: c.node.GetMyInfo().NodeTypeVersion,
+		CoreVersion:     c.node.GetMyInfo().CoreVersion,
 	}
 
 	msg, err := BuildConnNode(c.node.coredb.privKey, 0, c.node.GetMyInfo().Addr, "", servaddr, nbi)

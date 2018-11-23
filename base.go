@@ -9,6 +9,9 @@ import (
 	"google.golang.org/grpc/peer"
 )
 
+// VERSION - jarviscore version
+const VERSION = "0.6.12"
+
 func loadFile(filename string) ([]byte, error) {
 	file, err := os.Open(filename)
 	if err != nil {

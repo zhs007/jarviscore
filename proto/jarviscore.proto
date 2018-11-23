@@ -51,9 +51,18 @@ enum REPLYTYPE {
 }
 
 message NodeBaseInfo {
+    // node server address
     string servAddr = 1;
+    // node address
     string addr = 2;
+    // node name
     string name = 3;
+    // nodetype version
+    string nodeTypeVersion = 4;
+    // node type
+    string nodeType = 5;
+    // jarviscore version
+    string coreVersion = 6;
 }
 
 // ConnectInfo - used in LOCAL_CONNECT_OTHER, CONNECT_NODE

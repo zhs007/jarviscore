@@ -26,6 +26,12 @@ message NodeInfo {
     int64 addTime = 8;
     bool connectMe = 9;
     bool connectNode = 10;
+    // nodetype version
+    string nodeTypeVersion = 11;
+    // node type
+    string nodeType = 12;
+    // jarviscore version
+    string coreVersion = 13;    
 }
 
 // node info list
