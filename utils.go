@@ -435,3 +435,18 @@ func BuildFileData(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string
 
 	return msg, nil
 }
+
+// IsValidNodeName - check node name
+func IsValidNodeName(nodename string) bool {
+	for i, v := range nodename {
+		if i == 0 && (v >= '0' && v <= '9') {
+			return false
+		}
+
+		if !((v >= '0' && v <= '9') || (v >= 'a' && v <= 'z') || (v >= 'A' && v <= 'Z')) {
+			return false
+		}
+	}
+
+	return true
+}

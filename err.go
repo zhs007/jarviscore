@@ -47,4 +47,6 @@ var (
 	ErrInvalidEvent = errors.New("invalid event")
 	// ErrInvalidServAddr - invalid servaddr
 	ErrInvalidServAddr = errors.New("invalid servaddr")
+	// ErrInvalidNodeName - invalid nodename
+	ErrInvalidNodeName = errors.New("invalid nodename")
 )
