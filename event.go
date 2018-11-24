@@ -17,6 +17,8 @@ var (
 	EventOnCtrl = "onctrl"
 	// EventOnCtrlResult - EventOnCtrlResult
 	EventOnCtrlResult = "ctrlresult"
+	// EventOnReplyRequestFile - EventOnCtrlResult
+	EventOnReplyRequestFile = "replyrequestfile"
 )
 
 // FuncNodeEvent - func event
@@ -49,7 +51,8 @@ func (mgr *eventMgr) checkNodeEvent(event string) bool {
 
 func (mgr *eventMgr) checkMsgEvent(event string) bool {
 	return event == EventOnCtrl ||
-		event == EventOnCtrlResult
+		event == EventOnCtrlResult ||
+		event == EventOnReplyRequestFile
 }
 
 func (mgr *eventMgr) regNodeEventFunc(event string, eventfunc FuncNodeEvent) error {

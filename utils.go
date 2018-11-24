@@ -87,11 +87,24 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 		str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
 
 		return str, nil
-	} else if msg.MsgType == pb.MSGTYPE_TRANSFER_FILE {
+	} else if msg.MsgType == pb.MSGTYPE_TRANSFER_FILE ||
+		msg.MsgType == pb.MSGTYPE_REPLY_REQUEST_FILE {
+
 		f := msg.GetFile()
 		if f != nil {
 			str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
 			buf, err := proto.Marshal(f)
+			if err != nil {
+				return nil, err
+			}
+
+			return append(str[:], buf[:]...), nil
+		}
+	} else if msg.MsgType == pb.MSGTYPE_REQUEST_FILE {
+		rf := msg.GetRequestFile()
+		if rf != nil {
+			str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
+			buf, err := proto.Marshal(rf)
 			if err != nil {
 				return nil, err
 			}
@@ -436,16 +449,72 @@ func BuildFileData(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string
 	return msg, nil
 }
 
+// BuildRequestFile - build jarvismsg with REQUEST_FILE
+func BuildRequestFile(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string, destAddr string,
+	rf *pb.RequestFile) (*pb.JarvisMsg, error) {
+
+	msg := &pb.JarvisMsg{
+		MsgID:    msgid,
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_REQUEST_FILE,
+		Data: &pb.JarvisMsg_RequestFile{
+			RequestFile: rf,
+		},
+	}
+
+	err := SignJarvisMsg(privkey, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg, nil
+}
+
+// BuildReplyRequestFile - build jarvismsg with REPLY_REQUEST_FILE
+func BuildReplyRequestFile(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string, destAddr string,
+	fd *pb.FileData) (*pb.JarvisMsg, error) {
+
+	msg := &pb.JarvisMsg{
+		MsgID:    msgid,
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_REPLY_REQUEST_FILE,
+		Data: &pb.JarvisMsg_File{
+			File: fd,
+		},
+	}
+
+	err := SignJarvisMsg(privkey, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg, nil
+}
+
 // IsValidNodeName - check node name
 func IsValidNodeName(nodename string) bool {
+	if len(nodename) == 0 {
+		return false
+	}
+
 	for i, v := range nodename {
-		if i == 0 && (v >= '0' && v <= '9') {
+		if i == 0 && ((v >= '0' && v <= '9') || v == '_') {
 			return false
 		}
 
-		if !((v >= '0' && v <= '9') || (v >= 'a' && v <= 'z') || (v >= 'A' && v <= 'Z')) {
+		if !((v >= '0' && v <= '9') || (v >= 'a' && v <= 'z') || (v >= 'A' && v <= 'Z') || v == '_') {
 			return false
 		}
+	}
+
+	if nodename[len(nodename)-1] == '_' {
+		return false
 	}
 
 	return true

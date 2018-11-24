@@ -2,6 +2,7 @@ package jarviscore
 
 import (
 	"context"
+	"io/ioutil"
 	"os"
 	"time"
 
@@ -24,6 +25,8 @@ type JarvisNode interface {
 	RequestCtrl(ctx context.Context, addr string, ci *pb.CtrlInfo) error
 	// SendFile - send filedata to jarvisnode with addr
 	SendFile(ctx context.Context, addr string, fd *pb.FileData) error
+	// RequestFile - request node send filedata to me
+	RequestFile(ctx context.Context, addr string, rf *pb.RequestFile) error
 
 	// AddCtrl2List - add ctrl msg to tasklist
 	AddCtrl2List(addr string, ci *pb.CtrlInfo) error
@@ -70,7 +73,7 @@ const (
 
 // NewNode -
 func NewNode(cfg *Config) JarvisNode {
-	jarvisbase.Info("jarviscore version is 0.6.11.")
+	jarvisbase.Info("jarviscore version is " + VERSION)
 
 	if !IsValidNodeName(cfg.BaseNodeInfo.NodeName) {
 		jarvisbase.Error("NewNode:IsValidNodeName", zap.Error(ErrInvalidNodeName))
@@ -267,6 +270,10 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 			return n.onMsgRequestNodes(ctx, msg, stream)
 		} else if msg.MsgType == pb.MSGTYPE_TRANSFER_FILE {
 			return n.onMsgTransferFile(ctx, msg, stream)
+		} else if msg.MsgType == pb.MSGTYPE_REQUEST_FILE {
+			return n.onMsgRequestFile(ctx, msg, stream)
+		} else if msg.MsgType == pb.MSGTYPE_REPLY_REQUEST_FILE {
+			return n.onMsgReplyRequestFile(ctx, msg)
 		}
 
 	}
@@ -808,4 +815,77 @@ func (n *jarvisNode) onMsgTransferFile(ctx context.Context, msg *pb.JarvisMsg,
 func (n *jarvisNode) SetNodeTypeInfo(nodetype string, nodetypeversion string) {
 	n.myinfo.NodeType = nodetype
 	n.myinfo.NodeTypeVersion = nodetypeversion
+}
+
+// onMsgRequestFile
+func (n *jarvisNode) onMsgRequestFile(ctx context.Context, msg *pb.JarvisMsg,
+	stream pb.JarvisCoreServ_ProcMsgServer) error {
+
+	jarvisbase.Debug("jarvisNode.onMsgRequestFile")
+
+	if stream == nil {
+		jarvisbase.Warn("jarvisNode.onMsgRequestFile", zap.Error(ErrStreamNil))
+
+		return ErrStreamNil
+	}
+
+	rf := msg.GetRequestFile()
+
+	buf, err := ioutil.ReadFile(rf.Filename)
+	if err != nil {
+		jarvisbase.Warn("jarvisNode.onMsgRequestFile:ReadFile", zap.Error(err))
+
+		return err
+	}
+
+	fd := &pb.FileData{
+		File:     buf,
+		Filename: rf.Filename,
+	}
+
+	sendmsg, err := BuildReplyRequestFile(n.coredb.privKey, 0, n.myinfo.Addr, msg.SrcAddr, fd)
+	if err != nil {
+		jarvisbase.Warn("jarvisNode.onMsgRequestFile:BuildReplyRequestFile", zap.Error(err))
+
+		return err
+	}
+
+	err = stream.Send(sendmsg)
+	if err != nil {
+		jarvisbase.Warn("jarvisNode.onMsgRequestFile:Send", zap.Error(err))
+
+		return err
+	}
+
+	return nil
+}
+
+// onMsgReplyRequestFile
+func (n *jarvisNode) onMsgReplyRequestFile(ctx context.Context, msg *pb.JarvisMsg) error {
+	jarvisbase.Debug("jarvisNode.onMsgReplyRequestFile")
+
+	n.mgrEvent.onMsgEvent(ctx, EventOnReplyRequestFile, msg)
+
+	return nil
+}
+
+// RequestFile - request node send filedata to me
+func (n *jarvisNode) RequestFile(ctx context.Context, addr string, rf *pb.RequestFile) error {
+	sendmsg, err := BuildRequestFile(n.coredb.privKey, 0, n.myinfo.Addr, addr, rf)
+	if err != nil {
+		jarvisbase.Debug("jarvisNode.RequestFile", zap.Error(err))
+
+		return err
+	}
+
+	msg, err := BuildLocalSendMsg(n.coredb.privKey, 0, n.myinfo.Addr, "", sendmsg)
+	if err != nil {
+		jarvisbase.Debug("jarvisNode.RequestFile:BuildLocalSendMsg", zap.Error(err))
+
+		return err
+	}
+
+	n.mgrJasvisMsg.sendMsg(msg, nil, nil)
+
+	return nil
 }
