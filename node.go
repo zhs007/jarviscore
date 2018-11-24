@@ -760,6 +760,8 @@ func (n *jarvisNode) onMsgTransferFile(ctx context.Context, msg *pb.JarvisMsg,
 		return err
 	}
 
+	defer f.Close()
+
 	f.Write(fd.File)
 	f.Close()
 
