@@ -27,8 +27,9 @@ func (task *clientTask) Run(ctx context.Context) error {
 }
 
 type clientInfo2 struct {
-	conn   *grpc.ClientConn
-	client pb.JarvisCoreServClient
+	conn     *grpc.ClientConn
+	client   pb.JarvisCoreServClient
+	servAddr string
 }
 
 // jarvisClient2 -
@@ -67,6 +68,32 @@ func (c *jarvisClient2) isConnected(addr string) bool {
 	return ok
 }
 
+func (c *jarvisClient2) getValidClientConn(addr string) (*clientInfo2, error) {
+	ci, ok := c.mapClient[addr]
+	if ok {
+		if mgrconn.isValidConn(ci.servAddr) {
+			return ci, nil
+		}
+	}
+
+	conn, err := mgrconn.getConn(ci.servAddr)
+	if err != nil {
+		jarvisbase.Debug("jarvisClient2.getValidClientConn", zap.Error(err))
+
+		return nil, err
+	}
+
+	nci := &clientInfo2{
+		conn:     conn,
+		client:   pb.NewJarvisCoreServClient(conn),
+		servAddr: ci.servAddr,
+	}
+
+	c.mapClient[addr] = nci
+
+	return nci, nil
+}
+
 func (c *jarvisClient2) _sendMsg(ctx context.Context, msg *pb.JarvisMsg) error {
 	ci2, ok := c.mapClient[msg.DestAddr]
 	if !ok {
@@ -74,6 +101,13 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, msg *pb.JarvisMsg) error {
 	}
 
 	jarvisbase.Debug("jarvisClient2._sendMsg", jarvisbase.JSON("msg", msg))
+
+	ci2, err := c.getValidClientConn(msg.DestAddr)
+	if err != nil {
+		jarvisbase.Debug("jarvisClient2._sendMsg:getValidClientConn", zap.Error(err))
+
+		return err
+	}
 
 	stream, err := ci2.client.ProcMsg(ctx, msg)
 	if err != nil {
@@ -164,8 +198,9 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string) error
 	defer cancel()
 
 	ci := &clientInfo2{
-		conn:   conn,
-		client: pb.NewJarvisCoreServClient(conn),
+		conn:     conn,
+		client:   pb.NewJarvisCoreServClient(conn),
+		servAddr: servaddr,
 	}
 
 	nbi := &pb.NodeBaseInfo{

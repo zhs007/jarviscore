@@ -3,6 +3,8 @@ package jarviscore
 import (
 	"sync"
 
+	"google.golang.org/grpc/connectivity"
+
 	"github.com/zhs007/jarviscore/base"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -15,12 +17,29 @@ type connMgr struct {
 	mapConn map[string]*grpc.ClientConn
 }
 
+func (mgr *connMgr) isValidConn(servaddr string) bool {
+	mgr.Lock()
+	defer mgr.Unlock()
+
+	if conn, ok := mgr.mapConn[servaddr]; ok {
+		cs := conn.GetState()
+		if !(cs == connectivity.Shutdown || cs == connectivity.TransientFailure) {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (mgr *connMgr) getConn(servaddr string) (*grpc.ClientConn, error) {
 	mgr.Lock()
 	defer mgr.Unlock()
 
 	if conn, ok := mgr.mapConn[servaddr]; ok {
-		return conn, nil
+		cs := conn.GetState()
+		if !(cs == connectivity.Shutdown || cs == connectivity.TransientFailure) {
+			return conn, nil
+		}
 	}
 
 	conn, err := grpc.Dial(servaddr, grpc.WithInsecure())
