@@ -1,6 +1,8 @@
 package jarviscore
 
 import (
+	"sync"
+
 	"github.com/zhs007/jarviscore/base"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -8,10 +10,15 @@ import (
 
 // connMgr -
 type connMgr struct {
+	sync.RWMutex
+
 	mapConn map[string]*grpc.ClientConn
 }
 
-func (mgr connMgr) getConn(servaddr string) (*grpc.ClientConn, error) {
+func (mgr *connMgr) getConn(servaddr string) (*grpc.ClientConn, error) {
+	mgr.Lock()
+	defer mgr.Unlock()
+
 	if conn, ok := mgr.mapConn[servaddr]; ok {
 		return conn, nil
 	}
@@ -28,7 +35,10 @@ func (mgr connMgr) getConn(servaddr string) (*grpc.ClientConn, error) {
 	return conn, nil
 }
 
-func (mgr connMgr) delConn(servaddr string) {
+func (mgr *connMgr) delConn(servaddr string) {
+	mgr.Lock()
+	defer mgr.Unlock()
+
 	_, ok := mgr.mapConn[servaddr]
 	if ok {
 		delete(mgr.mapConn, servaddr)
