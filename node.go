@@ -664,10 +664,10 @@ func (n *jarvisNode) onTimerRequestNodes() error {
 
 // onMsgRequestNodes
 func (n *jarvisNode) onMsgRequestNodes(ctx context.Context, msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer) error {
-	jarvisbase.Debug("jarvisNode.onMsgRequestNodes")
+	// jarvisbase.Debug("jarvisNode.onMsgRequestNodes")
 
 	if stream == nil {
-		jarvisbase.Debug("jarvisNode.onMsgRequestNodes", zap.Error(ErrStreamNil))
+		jarvisbase.Warn("jarvisNode.onMsgRequestNodes", zap.Error(ErrStreamNil))
 
 		return ErrStreamNil
 	}
@@ -679,18 +679,18 @@ func (n *jarvisNode) onMsgRequestNodes(ctx context.Context, msg *pb.JarvisMsg, s
 			Name:     v.Name,
 		}
 
-		jarvisbase.Debug("jarvisNode.onMsgRequestNodes", jarvisbase.JSON("node", mni))
+		// jarvisbase.Debug("jarvisNode.onMsgRequestNodes", jarvisbase.JSON("node", mni))
 
 		sendmsg, err := BuildNodeInfo(n.coredb.privKey, 0, n.myinfo.Addr, msg.SrcAddr, mni)
 		if err != nil {
-			jarvisbase.Debug("jarvisNode.onMsgRequestNodes:BuildNodeInfo", zap.Error(err))
+			jarvisbase.Warn("jarvisNode.onMsgRequestNodes:BuildNodeInfo", zap.Error(err))
 
 			return err
 		}
 
 		err = stream.Send(sendmsg)
 		if err != nil {
-			jarvisbase.Debug("jarvisNode.onMsgRequestNodes:sendmsg", zap.Error(err))
+			jarvisbase.Warn("jarvisNode.onMsgRequestNodes:sendmsg", zap.Error(err))
 
 			return err
 		}
