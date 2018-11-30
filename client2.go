@@ -35,18 +35,20 @@ type clientInfo2 struct {
 
 // jarvisClient2 -
 type jarvisClient2 struct {
-	sync.RWMutex
+	// sync.RWMutex
+	// sync.Map
 
 	pool      jarvisbase.RoutinePool
 	node      *jarvisNode
-	mapClient map[string]*clientInfo2
+	mapClient sync.Map
+	// mapClient map[string]*clientInfo2
 }
 
 func newClient2(node *jarvisNode) *jarvisClient2 {
 	return &jarvisClient2{
-		node:      node,
-		mapClient: make(map[string]*clientInfo2),
-		pool:      jarvisbase.NewRoutinePool(),
+		node: node,
+		// mapClient: make(map[string]*clientInfo2),
+		pool: jarvisbase.NewRoutinePool(),
 	}
 }
 
@@ -67,18 +69,28 @@ func (c *jarvisClient2) addTask(msg *pb.JarvisMsg, servaddr string) {
 }
 
 func (c *jarvisClient2) isConnected(addr string) bool {
-	c.Lock()
-	defer c.Unlock()
+	// c.Lock()
+	// defer c.Unlock()
 
-	_, ok := c.mapClient[addr]
+	_, ok := c.mapClient.Load(addr)
 	return ok
 }
 
-func (c *jarvisClient2) getValidClientConn(addr string) (*clientInfo2, error) {
-	c.Lock()
-	defer c.Unlock()
+func (c *jarvisClient2) _getValidClientConn(addr string) (*clientInfo2, error) {
+	// c.Lock()
+	// defer c.Unlock()
 
-	ci, ok := c.mapClient[addr]
+	mi, ok := c.mapClient.Load(addr)
+	if ok {
+		ci, ok := mi.(*clientInfo2)
+		if ok {
+			if mgrconn.isValidConn(ci.servAddr) {
+				return ci, nil
+			}
+		}
+	}
+
+	ci, ok := mi.(*clientInfo2)
 	if ok {
 		if mgrconn.isValidConn(ci.servAddr) {
 			return ci, nil
@@ -98,23 +110,24 @@ func (c *jarvisClient2) getValidClientConn(addr string) (*clientInfo2, error) {
 		servAddr: ci.servAddr,
 	}
 
-	c.mapClient[addr] = nci
+	c.mapClient.Store(addr, nci)
 
 	return nci, nil
 }
 
 func (c *jarvisClient2) _sendMsg(ctx context.Context, msg *pb.JarvisMsg) error {
-	c.Lock()
-	defer c.Unlock()
+	// c.Lock()
+	// defer c.Unlock()
 
-	ci2, ok := c.mapClient[msg.DestAddr]
+	_, ok := c.mapClient.Load(msg.DestAddr)
+	// c.Unlock()
 	if !ok {
 		return c._broadCastMsg(ctx, msg)
 	}
 
 	jarvisbase.Debug("jarvisClient2._sendMsg", jarvisbase.JSON("msg", msg))
 
-	ci2, err := c.getValidClientConn(msg.DestAddr)
+	ci2, err := c._getValidClientConn(msg.DestAddr)
 	if err != nil {
 		jarvisbase.Warn("jarvisClient2._sendMsg:getValidClientConn", zap.Error(err))
 
@@ -153,37 +166,69 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, msg *pb.JarvisMsg) error {
 func (c *jarvisClient2) _broadCastMsg(ctx context.Context, msg *pb.JarvisMsg) error {
 	jarvisbase.Debug("jarvisClient2._broadCastMsg", jarvisbase.JSON("msg", msg))
 
-	c.Lock()
-	defer c.Unlock()
+	// c.Lock()
+	// defer c.Unlock()
 
-	for _, v := range c.mapClient {
-		// v.client.ProcMsg(ctx, msg)
-		stream, err := v.client.ProcMsg(ctx, msg)
-		if err != nil {
-			jarvisbase.Warn("jarvisClient2._broadCastMsg:ProcMsg", zap.Error(err))
-
-			continue
-		}
-
-		for {
-			msg, err := stream.Recv()
-			if err == io.EOF {
-				jarvisbase.Debug("jarvisClient2._broadCastMsg:stream eof")
-
-				break
-			}
-
+	c.mapClient.Range(func(key, v interface{}) bool {
+		ci, ok := v.(*clientInfo2)
+		if ok {
+			stream, err := ci.client.ProcMsg(ctx, msg)
 			if err != nil {
-				jarvisbase.Warn("jarvisClient2._broadCastMsg:stream", zap.Error(err))
+				jarvisbase.Warn("jarvisClient2._broadCastMsg:ProcMsg", zap.Error(err))
 
-				break
-			} else {
-				jarvisbase.Debug("jarvisClient2._broadCastMsg:stream", jarvisbase.JSON("msg", msg))
+				return true
+			}
 
-				c.node.mgrJasvisMsg.sendMsg(msg, nil, nil)
+			for {
+				msg, err := stream.Recv()
+				if err == io.EOF {
+					jarvisbase.Debug("jarvisClient2._broadCastMsg:stream eof")
+
+					break
+				}
+
+				if err != nil {
+					jarvisbase.Warn("jarvisClient2._broadCastMsg:stream", zap.Error(err))
+
+					break
+				} else {
+					jarvisbase.Debug("jarvisClient2._broadCastMsg:stream", jarvisbase.JSON("msg", msg))
+
+					c.node.mgrJasvisMsg.sendMsg(msg, nil, nil)
+				}
 			}
 		}
-	}
+
+		return true
+	})
+	// for _, v := range c.mapClient {
+	// 	// v.client.ProcMsg(ctx, msg)
+	// 	stream, err := v.client.ProcMsg(ctx, msg)
+	// 	if err != nil {
+	// 		jarvisbase.Warn("jarvisClient2._broadCastMsg:ProcMsg", zap.Error(err))
+
+	// 		continue
+	// 	}
+
+	// 	for {
+	// 		msg, err := stream.Recv()
+	// 		if err == io.EOF {
+	// 			jarvisbase.Debug("jarvisClient2._broadCastMsg:stream eof")
+
+	// 			break
+	// 		}
+
+	// 		if err != nil {
+	// 			jarvisbase.Warn("jarvisClient2._broadCastMsg:stream", zap.Error(err))
+
+	// 			break
+	// 		} else {
+	// 			jarvisbase.Debug("jarvisClient2._broadCastMsg:stream", jarvisbase.JSON("msg", msg))
+
+	// 			c.node.mgrJasvisMsg.sendMsg(msg, nil, nil)
+	// 		}
+	// 	}
+	// }
 
 	return nil
 }
@@ -266,10 +311,13 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string) error
 			if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT {
 				ni := msg.GetNodeInfo()
 
-				c.Lock()
-				defer c.Unlock()
+				// c.Lock()
+				// defer c.Unlock()
 
-				c.mapClient[ni.Addr] = ci
+				// c.mapClient[ni.Addr] = ci
+				c.mapClient.Store(ni.Addr, ci)
+
+				// c.Unlock()
 			}
 
 			c.node.mgrJasvisMsg.sendMsg(msg, nil, nil)
