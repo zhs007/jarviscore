@@ -341,7 +341,7 @@ func (db *CoreDB) updNodeBaseInfo(ni *pb.NodeBaseInfo) error {
 		return err
 	}
 
-	jarvisbase.Info("updNodeBaseInfo", jarvisbase.JSON("result", result))
+	jarvisbase.Debug("updNodeBaseInfo", jarvisbase.JSON("result", result))
 
 	return nil
 }

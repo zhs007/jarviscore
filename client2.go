@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net"
+	"sync"
 
 	"go.uber.org/zap"
 
@@ -34,6 +35,8 @@ type clientInfo2 struct {
 
 // jarvisClient2 -
 type jarvisClient2 struct {
+	sync.RWMutex
+
 	pool      jarvisbase.RoutinePool
 	node      *jarvisNode
 	mapClient map[string]*clientInfo2
@@ -64,11 +67,17 @@ func (c *jarvisClient2) addTask(msg *pb.JarvisMsg, servaddr string) {
 }
 
 func (c *jarvisClient2) isConnected(addr string) bool {
+	c.Lock()
+	defer c.Unlock()
+
 	_, ok := c.mapClient[addr]
 	return ok
 }
 
 func (c *jarvisClient2) getValidClientConn(addr string) (*clientInfo2, error) {
+	c.Lock()
+	defer c.Unlock()
+
 	ci, ok := c.mapClient[addr]
 	if ok {
 		if mgrconn.isValidConn(ci.servAddr) {
@@ -95,6 +104,9 @@ func (c *jarvisClient2) getValidClientConn(addr string) (*clientInfo2, error) {
 }
 
 func (c *jarvisClient2) _sendMsg(ctx context.Context, msg *pb.JarvisMsg) error {
+	c.Lock()
+	defer c.Unlock()
+
 	ci2, ok := c.mapClient[msg.DestAddr]
 	if !ok {
 		return c._broadCastMsg(ctx, msg)
@@ -140,6 +152,9 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, msg *pb.JarvisMsg) error {
 
 func (c *jarvisClient2) _broadCastMsg(ctx context.Context, msg *pb.JarvisMsg) error {
 	jarvisbase.Debug("jarvisClient2._broadCastMsg", jarvisbase.JSON("msg", msg))
+
+	c.Lock()
+	defer c.Unlock()
 
 	for _, v := range c.mapClient {
 		// v.client.ProcMsg(ctx, msg)
@@ -245,6 +260,9 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string) error
 
 			if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT {
 				ni := msg.GetNodeInfo()
+
+				c.Lock()
+				defer c.Unlock()
 
 				c.mapClient[ni.Addr] = ci
 			}
