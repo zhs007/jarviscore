@@ -87,7 +87,7 @@ func (c *jarvisClient2) getValidClientConn(addr string) (*clientInfo2, error) {
 
 	conn, err := mgrconn.getConn(ci.servAddr)
 	if err != nil {
-		jarvisbase.Debug("jarvisClient2.getValidClientConn", zap.Error(err))
+		jarvisbase.Warn("jarvisClient2.getValidClientConn", zap.Error(err))
 
 		return nil, err
 	}
@@ -116,14 +116,14 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, msg *pb.JarvisMsg) error {
 
 	ci2, err := c.getValidClientConn(msg.DestAddr)
 	if err != nil {
-		jarvisbase.Debug("jarvisClient2._sendMsg:getValidClientConn", zap.Error(err))
+		jarvisbase.Warn("jarvisClient2._sendMsg:getValidClientConn", zap.Error(err))
 
 		return err
 	}
 
 	stream, err := ci2.client.ProcMsg(ctx, msg)
 	if err != nil {
-		jarvisbase.Debug("jarvisClient2._sendMsg:ProcMsg", zap.Error(err))
+		jarvisbase.Warn("jarvisClient2._sendMsg:ProcMsg", zap.Error(err))
 
 		return err
 	}
@@ -137,7 +137,7 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, msg *pb.JarvisMsg) error {
 		}
 
 		if err != nil {
-			jarvisbase.Debug("jarvisClient2._sendMsg:stream", zap.Error(err))
+			jarvisbase.Warn("jarvisClient2._sendMsg:stream", zap.Error(err))
 
 			break
 		} else {
@@ -160,7 +160,7 @@ func (c *jarvisClient2) _broadCastMsg(ctx context.Context, msg *pb.JarvisMsg) er
 		// v.client.ProcMsg(ctx, msg)
 		stream, err := v.client.ProcMsg(ctx, msg)
 		if err != nil {
-			jarvisbase.Debug("jarvisClient2._broadCastMsg:ProcMsg", zap.Error(err))
+			jarvisbase.Warn("jarvisClient2._broadCastMsg:ProcMsg", zap.Error(err))
 
 			continue
 		}
@@ -174,7 +174,7 @@ func (c *jarvisClient2) _broadCastMsg(ctx context.Context, msg *pb.JarvisMsg) er
 			}
 
 			if err != nil {
-				jarvisbase.Debug("jarvisClient2._broadCastMsg:stream", zap.Error(err))
+				jarvisbase.Warn("jarvisClient2._broadCastMsg:stream", zap.Error(err))
 
 				break
 			} else {
@@ -204,7 +204,7 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string) error
 
 	conn, err := mgrconn.getConn(servaddr)
 	if err != nil {
-		jarvisbase.Debug("jarvisClient2._connectNode", zap.Error(err))
+		jarvisbase.Warn("jarvisClient2._connectNode", zap.Error(err))
 
 		return err
 	}
@@ -229,14 +229,19 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string) error
 
 	msg, err := BuildConnNode(c.node.coredb.privKey, 0, c.node.GetMyInfo().Addr, "", servaddr, nbi)
 	if err != nil {
-		jarvisbase.Debug("jarvisClient2._connectNode:BuildConnNode", zap.Error(err))
+		jarvisbase.Warn("jarvisClient2._connectNode:BuildConnNode", zap.Error(err))
 
 		return err
 	}
 
 	stream, err1 := ci.client.ProcMsg(curctx, msg)
 	if err1 != nil {
-		jarvisbase.Debug("jarvisClient2._connectNode:ProcMsg", zap.Error(err1))
+		jarvisbase.Warn("jarvisClient2._connectNode:ProcMsg", zap.Error(err1))
+
+		err := conn.Close()
+		if err != nil {
+			jarvisbase.Warn("jarvisClient2._connectNode:Close", zap.Error(err1))
+		}
 
 		mgrconn.delConn(servaddr)
 
@@ -252,7 +257,7 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string) error
 		}
 
 		if err != nil {
-			jarvisbase.Debug("jarvisClient2._connectNode:stream", zap.Error(err))
+			jarvisbase.Warn("jarvisClient2._connectNode:stream", zap.Error(err))
 
 			break
 		} else {

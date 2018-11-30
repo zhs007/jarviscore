@@ -40,6 +40,14 @@ func (mgr *connMgr) getConn(servaddr string) (*grpc.ClientConn, error) {
 		if !(cs == connectivity.Shutdown || cs == connectivity.TransientFailure) {
 			return conn, nil
 		}
+
+		jarvisbase.Warn("connMgr.getConn:InvalidConn",
+			zap.Int("state", int(cs)))
+
+		err := conn.Close()
+		if err != nil {
+			jarvisbase.Warn("connMgr.getConn:Close", zap.Error(err))
+		}
 	}
 
 	conn, err := grpc.Dial(servaddr, grpc.WithInsecure())
