@@ -248,7 +248,7 @@ func (db *CoreDB) loadAllNodes() error {
 		curnodes++
 	})
 	if err != nil {
-		jarvisbase.Debug("CoreDB.loadAllNodes", zap.Error(err))
+		jarvisbase.Warn("CoreDB.loadAllNodes", zap.Error(err))
 
 		return err
 	}

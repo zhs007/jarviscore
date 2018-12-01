@@ -182,7 +182,7 @@ func (c *jarvisClient2) _broadCastMsg(ctx context.Context, msg *pb.JarvisMsg) er
 			for {
 				msg, err := stream.Recv()
 				if err == io.EOF {
-					jarvisbase.Debug("jarvisClient2._broadCastMsg:stream eof")
+					jarvisbase.Warn("jarvisClient2._broadCastMsg:stream eof")
 
 					break
 				}
@@ -236,13 +236,13 @@ func (c *jarvisClient2) _broadCastMsg(ctx context.Context, msg *pb.JarvisMsg) er
 func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string) error {
 	_, _, err := net.SplitHostPort(servaddr)
 	if err != nil {
-		jarvisbase.Debug("jarvisClient2._connectNode:checkServAddr", zap.Error(err))
+		jarvisbase.Warn("jarvisClient2._connectNode:checkServAddr", zap.Error(err))
 
 		return err
 	}
 
 	if IsMyServAddr(servaddr, c.node.myinfo.BindAddr) {
-		jarvisbase.Debug("jarvisClient2._connectNode", zap.Error(ErrServAddrIsMe))
+		jarvisbase.Warn("jarvisClient2._connectNode", zap.Error(ErrServAddrIsMe))
 
 		return ErrServAddrIsMe
 	}
@@ -296,7 +296,7 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string) error
 	for {
 		msg, err := stream.Recv()
 		if err == io.EOF {
-			jarvisbase.Debug("jarvisClient2._connectNode:stream eof")
+			jarvisbase.Warn("jarvisClient2._connectNode:stream eof")
 
 			break
 		}
