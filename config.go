@@ -20,6 +20,9 @@ type Config struct {
 	//					- default 30s
 	TimeRequestChild int64
 
+	// MaxMsgLength - default 4mb
+	MaxMsgLength int32
+
 	AnkaDB struct {
 		DBPath   string
 		HTTPServ string
@@ -81,6 +84,10 @@ func ReleaseJarvisCore() error {
 func checkConfig(cfg *Config) error {
 	if cfg.TimeRequestChild <= 0 {
 		cfg.TimeRequestChild = 30
+	}
+
+	if cfg.MaxMsgLength <= 0 {
+		cfg.MaxMsgLength = 4194304
 	}
 
 	return nil

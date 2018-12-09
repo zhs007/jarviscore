@@ -31,7 +31,18 @@ message NodeInfo {
     // node type
     string nodeType = 12;
     // jarviscore version
-    string coreVersion = 13;    
+    string coreVersion = 13;
+    // current message id
+    // I send message for this node, the msgid is curMsgID + 1
+    int64 curMsgID = 14; 
+    // last connect time
+    int64 lastConnectTime = 15;
+    // last connected time
+    int64 lastConnectedTime = 16;
+    // last connect me time
+    int64 lastConnectMeTime = 17;   
+    // groups
+    repeated string lstGroups = 18;
 }
 
 // node info list

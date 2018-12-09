@@ -38,6 +38,8 @@ enum MSGTYPE {
     REQUEST_FILE = 15;
     // reply request file
     REPLY_REQUEST_FILE = 16;
+    // multi message
+    MULTI_MSG = 17;    
 }
 
 // REPLYTYPE - reply type
@@ -114,6 +116,12 @@ message CtrlResult {
     string ctrlResult = 2;
 }
 
+message MultiMsgData {
+    int64 totalMsgLength = 1;
+    int32 curMsgIndex = 2;
+    bytes buf = 3;
+}
+
 // JarvisMsg - jarvis base msg
 //      sign(msgID + msgType + destAddr + curTime + srcAddr + data)
 message JarvisMsg {
@@ -137,6 +145,7 @@ message JarvisMsg {
         JarvisMsg msg = 104;
         FileData file = 105;
         RequestFile requestFile = 106;
+        MultiMsgData multiMsgData = 107;
     }
 }
 

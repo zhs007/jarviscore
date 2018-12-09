@@ -9,6 +9,10 @@ lsttrustnode: ['1JJaKpZGhYPuVHc1EKiiHZEswPAB5SybW5']
 #                  - default 30
 timerequestchild: 30
 
+# maxmsglength - max msg length
+#                  - default 4mb
+maxmsglength: 4194304
+
 # ankadb - ankadb config
 ankadb:
   # dbpath - dbpath
