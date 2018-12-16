@@ -55,27 +55,3 @@ func BuildCtrlInfoForScriptFile(ctrlid int64, filename string, filedata []byte,
 
 	return ci, nil
 }
-
-// // SendCtrlScriptFile -
-// func SendCtrlScriptFile(ctx context.Context, node JarvisNode, addr string,
-// 	ctrlid int64, filename string, filedata []byte, destpath string) error {
-
-// 	csd := &pb.CtrlScriptData{
-// 		File:     filedata,
-// 		DestPath: destpath,
-// 		Filename: filename,
-// 	}
-
-// 	dat, err := ptypes.MarshalAny(csd)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	ci := &pb.CtrlInfo{
-// 		CtrlID:   ctrlid,
-// 		CtrlType: CtrlTypeScriptFile,
-// 		Dat:      dat,
-// 	}
-
-// 	return node.SendCtrl(ctx, addr, ci)
-// }

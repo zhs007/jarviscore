@@ -3,7 +3,6 @@ package jarviscore
 import (
 	"context"
 	"io/ioutil"
-	"os"
 	"time"
 
 	"github.com/zhs007/jarviscore/base"
@@ -748,7 +747,7 @@ func (n *jarvisNode) onMsgTransferFile(ctx context.Context, msg *pb.JarvisMsg,
 
 	fd := msg.GetFile()
 
-	f, err := os.Create(fd.Filename)
+	err := StoreLocalFile(fd)
 	if err != nil {
 		err1 := n.replyStream(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
 		if err1 != nil {
@@ -760,10 +759,22 @@ func (n *jarvisNode) onMsgTransferFile(ctx context.Context, msg *pb.JarvisMsg,
 		return err
 	}
 
-	defer f.Close()
+	// f, err := os.Create(fd.Filename)
+	// if err != nil {
+	// 	err1 := n.replyStream(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
+	// 	if err1 != nil {
+	// 		jarvisbase.Warn("jarvisNode.onMsgTransferFile:replyStream err", zap.Error(err1))
 
-	f.Write(fd.File)
-	f.Close()
+	// 		return err1
+	// 	}
+
+	// 	return err
+	// }
+
+	// defer f.Close()
+
+	// f.Write(fd.File)
+	// f.Close()
 
 	err = n.replyStream(msg, stream, pb.REPLYTYPE_OK, "")
 	if err != nil {

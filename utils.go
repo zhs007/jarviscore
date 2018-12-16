@@ -3,10 +3,13 @@ package jarviscore
 import (
 	"fmt"
 	"math/big"
+	"os"
 	"time"
 
 	"github.com/golang/protobuf/proto"
+	"go.uber.org/zap"
 
+	"github.com/zhs007/jarviscore/base"
 	"github.com/zhs007/jarviscore/crypto"
 	pb "github.com/zhs007/jarviscore/proto"
 )
@@ -518,4 +521,21 @@ func IsValidNodeName(nodename string) bool {
 	}
 
 	return true
+}
+
+// StoreLocalFile - store filedata to local file systems
+func StoreLocalFile(file *pb.FileData) error {
+	f, err := os.Create(file.Filename)
+	if err != nil {
+		jarvisbase.Warn("StoreLocalFile:os.Create err", zap.Error(err))
+
+		return err
+	}
+
+	defer f.Close()
+
+	f.Write(file.File)
+	f.Close()
+
+	return nil
 }

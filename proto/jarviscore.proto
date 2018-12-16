@@ -86,6 +86,7 @@ message ReplyJoin {
 message FileData {
     bytes file = 1;
     string filename = 2;
+    string destPath = 3;
 }
 
 // RequestFile - request file
@@ -94,10 +95,18 @@ message RequestFile {
 }
 
 // CtrlScriptData - used in CtrlInfo.dat
+//                - scriptfile
 message CtrlScriptData {
     bytes file = 1;
     string destPath = 2;
     string filename = 3;
+}
+
+// CtrlScript2Data - used in CtrlInfo.dat
+//                 - scriptfile2
+message CtrlScript2Data {
+    FileData scriptFile = 1;
+    repeated FileData srcFiles = 2;
 }
 
 // CtrlInfo - 
