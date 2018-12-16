@@ -83,7 +83,7 @@ func ReleaseJarvisCore() error {
 
 func checkConfig(cfg *Config) error {
 	if cfg.TimeRequestChild <= 0 {
-		cfg.TimeRequestChild = 30
+		cfg.TimeRequestChild = 180
 	}
 
 	if cfg.MaxMsgLength <= 0 {

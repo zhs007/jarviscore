@@ -166,69 +166,38 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, msg *pb.JarvisMsg) error {
 func (c *jarvisClient2) _broadCastMsg(ctx context.Context, msg *pb.JarvisMsg) error {
 	jarvisbase.Debug("jarvisClient2._broadCastMsg", jarvisbase.JSON("msg", msg))
 
-	// c.Lock()
-	// defer c.Unlock()
-
-	c.mapClient.Range(func(key, v interface{}) bool {
-		ci, ok := v.(*clientInfo2)
-		if ok {
-			stream, err := ci.client.ProcMsg(ctx, msg)
-			if err != nil {
-				jarvisbase.Warn("jarvisClient2._broadCastMsg:ProcMsg", zap.Error(err))
-
-				return true
-			}
-
-			for {
-				msg, err := stream.Recv()
-				if err == io.EOF {
-					jarvisbase.Warn("jarvisClient2._broadCastMsg:stream eof")
-
-					break
-				}
-
-				if err != nil {
-					jarvisbase.Warn("jarvisClient2._broadCastMsg:stream", zap.Error(err))
-
-					break
-				} else {
-					jarvisbase.Debug("jarvisClient2._broadCastMsg:stream", jarvisbase.JSON("msg", msg))
-
-					c.node.mgrJasvisMsg.sendMsg(msg, nil, nil)
-				}
-			}
-		}
-
-		return true
-	})
-	// for _, v := range c.mapClient {
-	// 	// v.client.ProcMsg(ctx, msg)
-	// 	stream, err := v.client.ProcMsg(ctx, msg)
-	// 	if err != nil {
-	// 		jarvisbase.Warn("jarvisClient2._broadCastMsg:ProcMsg", zap.Error(err))
-
-	// 		continue
-	// 	}
-
-	// 	for {
-	// 		msg, err := stream.Recv()
-	// 		if err == io.EOF {
-	// 			jarvisbase.Debug("jarvisClient2._broadCastMsg:stream eof")
-
-	// 			break
-	// 		}
-
+	// c.mapClient.Range(func(key, v interface{}) bool {
+	// 	ci, ok := v.(*clientInfo2)
+	// 	if ok {
+	// 		stream, err := ci.client.ProcMsg(ctx, msg)
 	// 		if err != nil {
-	// 			jarvisbase.Warn("jarvisClient2._broadCastMsg:stream", zap.Error(err))
+	// 			jarvisbase.Warn("jarvisClient2._broadCastMsg:ProcMsg", zap.Error(err))
 
-	// 			break
-	// 		} else {
-	// 			jarvisbase.Debug("jarvisClient2._broadCastMsg:stream", jarvisbase.JSON("msg", msg))
+	// 			return true
+	// 		}
 
-	// 			c.node.mgrJasvisMsg.sendMsg(msg, nil, nil)
+	// 		for {
+	// 			msg, err := stream.Recv()
+	// 			if err == io.EOF {
+	// 				jarvisbase.Debug("jarvisClient2._broadCastMsg:stream eof")
+
+	// 				break
+	// 			}
+
+	// 			if err != nil {
+	// 				jarvisbase.Warn("jarvisClient2._broadCastMsg:stream", zap.Error(err))
+
+	// 				break
+	// 			} else {
+	// 				jarvisbase.Debug("jarvisClient2._broadCastMsg:stream", jarvisbase.JSON("msg", msg))
+
+	// 				c.node.mgrJasvisMsg.sendMsg(msg, nil, nil)
+	// 			}
 	// 		}
 	// 	}
-	// }
+
+	// 	return true
+	// })
 
 	return nil
 }
@@ -296,7 +265,7 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string) error
 	for {
 		msg, err := stream.Recv()
 		if err == io.EOF {
-			jarvisbase.Warn("jarvisClient2._connectNode:stream eof")
+			jarvisbase.Debug("jarvisClient2._connectNode:stream eof")
 
 			break
 		}

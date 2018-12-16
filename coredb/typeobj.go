@@ -69,6 +69,15 @@ var typeNodeInfo = graphql.NewObject(
 			"connectNode": &graphql.Field{
 				Type: graphql.Boolean,
 			},
+			"nodeTypeVersion": &graphql.Field{
+				Type: graphql.String,
+			},
+			"nodeType": &graphql.Field{
+				Type: graphql.String,
+			},
+			"coreVersion": &graphql.Field{
+				Type: graphql.String,
+			},
 		},
 	},
 )

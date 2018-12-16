@@ -41,6 +41,15 @@ var inputTypeNodeInfo = graphql.NewInputObject(
 			"connectNode": &graphql.InputObjectFieldConfig{
 				Type: graphql.Boolean,
 			},
+			"nodeTypeVersion": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"nodeType": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"coreVersion": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
 		},
 	},
 )

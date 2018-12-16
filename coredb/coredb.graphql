@@ -18,6 +18,9 @@ type NodeInfo {
     addTime: Int64
     connectMe: boolean
     connectNode: boolean
+    nodeTypeVersion: String
+    nodeType: String
+    coreVersion: String
 }
 
 type NodeInfoList {
