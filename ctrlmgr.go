@@ -16,7 +16,7 @@ func (mgr *ctrlMgr) Reg(ctrltype string, ctrl Ctrl) {
 	mgr.Lock()
 	defer mgr.Unlock()
 
-	mgrCtrl.mapCtrl[ctrltype] = ctrl
+	mgr.mapCtrl[ctrltype] = ctrl
 }
 
 func (mgr *ctrlMgr) Run(ci *pb.CtrlInfo) ([]byte, error) {

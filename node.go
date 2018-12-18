@@ -49,6 +49,9 @@ type JarvisNode interface {
 
 	// SetNodeTypeInfo - set node type and version
 	SetNodeTypeInfo(nodetype string, nodetypeversion string)
+
+	// RegCtrl - register a ctrl
+	RegCtrl(ctrltype string, ctrl Ctrl) error
 }
 
 // jarvisNode -
@@ -60,6 +63,7 @@ type jarvisNode struct {
 	serv2        *jarvisServer2
 	mgrEvent     *eventMgr
 	cfg          *Config
+	mgrCtrl      *ctrlMgr
 }
 
 const (
@@ -96,7 +100,14 @@ func NewNode(cfg *Config) JarvisNode {
 		},
 		coredb: db,
 		cfg:    cfg,
+		mgrCtrl: &ctrlMgr{
+			mapCtrl: make(map[string](Ctrl)),
+		},
 	}
+
+	node.mgrCtrl.Reg(CtrlTypeShell, &CtrlShell{})
+	node.mgrCtrl.Reg(CtrlTypeScriptFile, &CtrlScriptFile{})
+	node.mgrCtrl.Reg(CtrlTypeScriptFile2, &CtrlScriptFile2{})
 
 	// event
 	node.mgrEvent = newEventMgr(node)
@@ -493,7 +504,7 @@ func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg) er
 	n.mgrEvent.onMsgEvent(ctx, EventOnCtrl, msg)
 
 	ci := msg.GetCtrlInfo()
-	ret, err := mgrCtrl.Run(ci)
+	ret, err := n.mgrCtrl.Run(ci)
 	if err != nil {
 		sendmsg2, err := BuildCtrlResult(n.coredb.privKey, 0, n.myinfo.Addr, msg.SrcAddr, ci.CtrlID, err.Error())
 		if err != nil {
@@ -899,6 +910,13 @@ func (n *jarvisNode) RequestFile(ctx context.Context, addr string, rf *pb.Reques
 	}
 
 	n.mgrJasvisMsg.sendMsg(msg, nil, nil)
+
+	return nil
+}
+
+// RegCtrl - register a ctrl
+func (n *jarvisNode) RegCtrl(ctrltype string, ctrl Ctrl) error {
+	n.mgrCtrl.Reg(ctrltype, ctrl)
 
 	return nil
 }
