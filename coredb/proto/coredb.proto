@@ -43,6 +43,8 @@ message NodeInfo {
     int64 lastConnectMeTime = 17;   
     // groups
     repeated string lstGroups = 18;
+    // deprecated
+    bool deprecated = 19;
 }
 
 // node info list

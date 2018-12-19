@@ -7,8 +7,6 @@ var (
 	ErrLoadFileReadSize = errors.New("loadfile invalid file read size")
 	// ErrNotConnectNode - not connect node
 	ErrNotConnectNode = errors.New("not connect node")
-	// ErrNoPrivateKey - no private key
-	ErrNoPrivateKey = errors.New("no private key")
 	// ErrNoCtrlCmd - no ctrl cmd
 	ErrNoCtrlCmd = errors.New("no ctrl cmd")
 	// ErrCoreDBNoAddr - coredb no addr
@@ -35,8 +33,6 @@ var (
 	ErrPublicKeyVerify = errors.New("public key verify err")
 	// ErrJarvisMsgTimeOut - JarvisMsg timeout
 	ErrJarvisMsgTimeOut = errors.New("JarvisMsg timeout")
-	// ErrCoreDBHasNotNode - coredb has not node
-	ErrCoreDBHasNotNode = errors.New("coredb has not node")
 	// ErrStreamNil - stream nil
 	ErrStreamNil = errors.New("stream nil")
 	// ErrInvalidMsgType - invalid msgtype

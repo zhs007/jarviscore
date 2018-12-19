@@ -241,7 +241,7 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string) error
 		CoreVersion:     c.node.GetMyInfo().CoreVersion,
 	}
 
-	msg, err := BuildConnNode(c.node.coredb.privKey, 0, c.node.GetMyInfo().Addr, "", servaddr, nbi)
+	msg, err := BuildConnNode(c.node.coredb.GetPrivateKey(), 0, c.node.GetMyInfo().Addr, "", servaddr, nbi)
 	if err != nil {
 		jarvisbase.Warn("jarvisClient2._connectNode:BuildConnNode", zap.Error(err))
 
