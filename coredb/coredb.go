@@ -3,6 +3,7 @@ package coredb
 import (
 	"context"
 	"encoding/json"
+	"path"
 	"sync"
 	"time"
 
@@ -78,12 +79,32 @@ type CoreDB struct {
 
 // NewCoreDB -
 func NewCoreDB(dbpath string, httpAddr string, engine string) (*CoreDB, error) {
-	ankaDB, err := newdb(dbpath, httpAddr, engine)
-	if err != nil {
-		jarvisbase.Error("newCoreDB:NewAnkaLDB", zap.Error(err))
+	cfg := ankadb.NewConfig()
+
+	cfg.AddrHTTP = httpAddr
+	cfg.PathDBRoot = dbpath
+	cfg.ListDB = append(cfg.ListDB, ankadb.DBConfig{
+		Name:   "coredb",
+		Engine: engine,
+		PathDB: path.Join(dbpath, "coredb"),
+	})
+
+	ankaDB, err := ankadb.NewAnkaDB(cfg, newDBLogic())
+	if ankaDB == nil {
+		jarvisbase.Error("newdb", zap.Error(err))
 
 		return nil, err
 	}
+
+	jarvisbase.Info("newdb", zap.String("dbpath", dbpath),
+		zap.String("httpAddr", httpAddr), zap.String("engine", engine))
+
+	// ankaDB, err := newdb(dbpath, httpAddr, engine)
+	// if err != nil {
+	// 	jarvisbase.Error("newCoreDB:NewAnkaLDB", zap.Error(err))
+
+	// 	return nil, err
+	// }
 
 	return &CoreDB{
 		ankaDB:   ankaDB,
@@ -510,4 +531,9 @@ func (db *CoreDB) FindMapNode(name string) *coredbpb.NodeInfo {
 	}
 
 	return nil
+}
+
+// Close - close database
+func (db *CoreDB) Close() {
+	db.ankaDB.MgrDB.GetDB("coredb").Close()
 }

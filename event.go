@@ -13,12 +13,15 @@ var (
 	// EventOnIConnectNode - onIConnectNode
 	EventOnIConnectNode = "connectnode"
 
-	// EventOnCtrl - EventOnCtrl
+	// EventOnCtrl - OnCtrl
 	EventOnCtrl = "onctrl"
-	// EventOnCtrlResult - EventOnCtrlResult
+	// EventOnCtrlResult - OnCtrlResult
 	EventOnCtrlResult = "ctrlresult"
-	// EventOnReplyRequestFile - EventOnCtrlResult
+	// EventOnReplyRequestFile - OnReplyRequestFile
 	EventOnReplyRequestFile = "replyrequestfile"
+
+	// EventOnPrivateKey - OnPrivateKey
+	EventOnPrivateKey = "privatekey"
 )
 
 // FuncNodeEvent - func event
@@ -27,18 +30,23 @@ type FuncNodeEvent func(ctx context.Context, jarvisnode JarvisNode, node *coredb
 // FuncMsgEvent - func event
 type FuncMsgEvent func(ctx context.Context, jarvisnode JarvisNode, msg *pb.JarvisMsg) error
 
+// FuncStateEvent - func event
+type FuncStateEvent func(ctx context.Context, jarvisnode JarvisNode) error
+
 // eventMgr event manager
 type eventMgr struct {
-	mapNodeEvent map[string]([]FuncNodeEvent)
-	mapMsgEvent  map[string]([]FuncMsgEvent)
-	node         JarvisNode
+	mapNodeEvent  map[string]([]FuncNodeEvent)
+	mapMsgEvent   map[string]([]FuncMsgEvent)
+	mapStateEvent map[string]([]FuncStateEvent)
+	node          JarvisNode
 }
 
 func newEventMgr(node JarvisNode) *eventMgr {
 	mgr := &eventMgr{
-		mapNodeEvent: make(map[string]([]FuncNodeEvent)),
-		mapMsgEvent:  make(map[string]([]FuncMsgEvent)),
-		node:         node,
+		mapNodeEvent:  make(map[string]([]FuncNodeEvent)),
+		mapMsgEvent:   make(map[string]([]FuncMsgEvent)),
+		mapStateEvent: make(map[string]([]FuncStateEvent)),
+		node:          node,
 	}
 
 	return mgr
@@ -53,6 +61,10 @@ func (mgr *eventMgr) checkMsgEvent(event string) bool {
 	return event == EventOnCtrl ||
 		event == EventOnCtrlResult ||
 		event == EventOnReplyRequestFile
+}
+
+func (mgr *eventMgr) checkStateEvent(event string) bool {
+	return event == EventOnPrivateKey
 }
 
 func (mgr *eventMgr) regNodeEventFunc(event string, eventfunc FuncNodeEvent) error {
@@ -71,6 +83,16 @@ func (mgr *eventMgr) regMsgEventFunc(event string, eventfunc FuncMsgEvent) error
 	}
 
 	mgr.mapMsgEvent[event] = append(mgr.mapMsgEvent[event], eventfunc)
+
+	return nil
+}
+
+func (mgr *eventMgr) regStateEventFunc(event string, eventfunc FuncStateEvent) error {
+	if !mgr.checkStateEvent(event) {
+		return ErrInvalidEvent
+	}
+
+	mgr.mapStateEvent[event] = append(mgr.mapStateEvent[event], eventfunc)
 
 	return nil
 }
@@ -96,6 +118,19 @@ func (mgr *eventMgr) onMsgEvent(ctx context.Context, event string, msg *pb.Jarvi
 
 	for i := range lst {
 		lst[i](ctx, mgr.node, msg)
+	}
+
+	return nil
+}
+
+func (mgr *eventMgr) onStateEvent(ctx context.Context, event string) error {
+	lst, ok := mgr.mapStateEvent[event]
+	if !ok {
+		return nil
+	}
+
+	for i := range lst {
+		lst[i](ctx, mgr.node)
 	}
 
 	return nil

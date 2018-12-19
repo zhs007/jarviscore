@@ -2,39 +2,36 @@ package coredb
 
 import (
 	"context"
-	"path"
 
 	"github.com/graphql-go/graphql"
-	"go.uber.org/zap"
 
 	"github.com/zhs007/ankadb"
-	"github.com/zhs007/jarviscore/base"
 )
 
-// newdb - new db logic
-func newdb(dbpath string, httpAddr string, engine string) (*ankadb.AnkaDB, error) {
-	cfg := ankadb.NewConfig()
+// // newdb - new db logic
+// func newdb(dbpath string, httpAddr string, engine string) (*ankadb.AnkaDB, error) {
+// 	cfg := ankadb.NewConfig()
 
-	cfg.AddrHTTP = httpAddr
-	cfg.PathDBRoot = dbpath
-	cfg.ListDB = append(cfg.ListDB, ankadb.DBConfig{
-		Name:   "coredb",
-		Engine: engine,
-		PathDB: path.Join(dbpath, "coredb"),
-	})
+// 	cfg.AddrHTTP = httpAddr
+// 	cfg.PathDBRoot = dbpath
+// 	cfg.ListDB = append(cfg.ListDB, ankadb.DBConfig{
+// 		Name:   "coredb",
+// 		Engine: engine,
+// 		PathDB: path.Join(dbpath, "coredb"),
+// 	})
 
-	ankaDB, err := ankadb.NewAnkaDB(cfg, newDBLogic())
-	if ankaDB == nil {
-		jarvisbase.Error("newdb", zap.Error(err))
+// 	ankaDB, err := ankadb.NewAnkaDB(cfg, newDBLogic())
+// 	if ankaDB == nil {
+// 		jarvisbase.Error("newdb", zap.Error(err))
 
-		return nil, err
-	}
+// 		return nil, err
+// 	}
 
-	jarvisbase.Info("newdb", zap.String("dbpath", dbpath),
-		zap.String("httpAddr", httpAddr), zap.String("engine", engine))
+// 	jarvisbase.Info("newdb", zap.String("dbpath", dbpath),
+// 		zap.String("httpAddr", httpAddr), zap.String("engine", engine))
 
-	return ankaDB, err
-}
+// 	return ankaDB, err
+// }
 
 // dblogic -
 type dblogic struct {
