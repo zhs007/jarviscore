@@ -58,13 +58,16 @@ func TestCheckNodeCtrl(t *testing.T) {
 				t.Fatalf("TestCheckNodeCtrl node addr fail")
 			}
 
-			err := sendCtrl(ctx, jarvisnode, node)
-			if err != nil {
-				t.Fatalf("TestCheckNodeCtrl sendctrl err %v", err)
+			if ctrlp == 0 {
+				err := sendCtrl(ctx, jarvisnode, node)
+				if err != nil {
+					t.Fatalf("TestCheckNodeCtrl sendctrl err %v", err)
+				}
+
+				ctrlp++
 			}
 
 			cp++
-			ctrlp++
 
 			return nil
 		})
