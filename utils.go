@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/zhs007/jarviscore/base"
+	"github.com/zhs007/jarviscore/coredb/proto"
 	"github.com/zhs007/jarviscore/crypto"
 	pb "github.com/zhs007/jarviscore/proto"
 )
@@ -538,4 +539,16 @@ func StoreLocalFile(file *pb.FileData) error {
 	f.Close()
 
 	return nil
+}
+
+// GetNodeBaseInfo - get nodebaseinfo from nodeinfo
+func GetNodeBaseInfo(node *coredbpb.NodeInfo) *pb.NodeBaseInfo {
+	return &pb.NodeBaseInfo{
+		ServAddr:        node.ServAddr,
+		Addr:            node.Addr,
+		Name:            node.Name,
+		NodeTypeVersion: node.NodeTypeVersion,
+		NodeType:        node.NodeType,
+		CoreVersion:     node.CoreVersion,
+	}
 }

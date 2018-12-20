@@ -6,6 +6,8 @@ import (
 	"net"
 	"sync"
 
+	"github.com/zhs007/jarviscore/coredb/proto"
+
 	"go.uber.org/zap"
 
 	"github.com/zhs007/jarviscore/base"
@@ -17,11 +19,17 @@ type clientTask struct {
 	client   *jarvisClient2
 	msg      *pb.JarvisMsg
 	servaddr string
+	node     *coredbpb.NodeInfo
 }
 
 func (task *clientTask) Run(ctx context.Context) error {
 	if task.msg == nil {
-		return task.client._connectNode(ctx, task.servaddr)
+		err := task.client._connectNode(ctx, task.servaddr)
+		if err != nil && task.node != nil {
+			task.client.node.mgrEvent.onNodeEvent(ctx, EventOnIConnectNodeFail, task.node)
+		}
+
+		return err
 	}
 
 	return task.client._sendMsg(ctx, task.msg)
@@ -58,11 +66,12 @@ func (c *jarvisClient2) start(ctx context.Context) error {
 }
 
 // addTask - add a client task
-func (c *jarvisClient2) addTask(msg *pb.JarvisMsg, servaddr string) {
+func (c *jarvisClient2) addTask(msg *pb.JarvisMsg, servaddr string, node *coredbpb.NodeInfo) {
 	task := &clientTask{
 		msg:      msg,
 		servaddr: servaddr,
 		client:   c,
+		node:     node,
 	}
 
 	c.pool.SendTask(task)
@@ -156,7 +165,7 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, msg *pb.JarvisMsg) error {
 		} else {
 			jarvisbase.Debug("jarvisClient2._sendMsg:stream", jarvisbase.JSON("msg", msg))
 
-			c.node.mgrJasvisMsg.sendMsg(msg, nil, nil)
+			c.node.PostMsg(msg, nil, nil)
 		}
 	}
 
@@ -212,6 +221,11 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string) error
 
 	if IsMyServAddr(servaddr, c.node.myinfo.BindAddr) {
 		jarvisbase.Warn("jarvisClient2._connectNode", zap.Error(ErrServAddrIsMe))
+
+		// cn := c.node.coredb.FindNodeWithServAddr(servaddr)
+		// if cn != nil {
+		// 	cn.Deprecated = true
+		// }
 
 		return ErrServAddrIsMe
 	}
@@ -289,7 +303,7 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string) error
 				// c.Unlock()
 			}
 
-			c.node.mgrJasvisMsg.sendMsg(msg, nil, nil)
+			c.node.PostMsg(msg, nil, nil)
 		}
 	}
 

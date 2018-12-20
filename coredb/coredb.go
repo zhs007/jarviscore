@@ -312,52 +312,69 @@ func (db *CoreDB) LoadAllNodes() error {
 // 	return nil
 // }
 
-// InsNode -
-func (db *CoreDB) InsNode(ni *jarviscorepb.NodeBaseInfo) error {
-	cni := &coredbpb.NodeInfo{
-		ServAddr:        ni.ServAddr,
-		Addr:            ni.Addr,
-		Name:            ni.Name,
-		ConnectNums:     0,
-		ConnectedNums:   0,
-		CtrlID:          0,
-		LstClientAddr:   nil,
-		AddTime:         time.Now().Unix(),
-		ConnectMe:       false,
-		ConnectNode:     false,
-		NodeTypeVersion: ni.NodeTypeVersion,
-		NodeType:        ni.NodeType,
-		CoreVersion:     ni.CoreVersion,
-	}
+// // InsNode -
+// func (db *CoreDB) InsNode(ni *jarviscorepb.NodeBaseInfo) error {
+// 	cni := &coredbpb.NodeInfo{
+// 		ServAddr:        ni.ServAddr,
+// 		Addr:            ni.Addr,
+// 		Name:            ni.Name,
+// 		ConnectNums:     0,
+// 		ConnectedNums:   0,
+// 		CtrlID:          0,
+// 		LstClientAddr:   nil,
+// 		AddTime:         time.Now().Unix(),
+// 		ConnectMe:       false,
+// 		ConnectNode:     false,
+// 		NodeTypeVersion: ni.NodeTypeVersion,
+// 		NodeType:        ni.NodeType,
+// 		CoreVersion:     ni.CoreVersion,
+// 	}
 
-	params := make(map[string]interface{})
+// 	params := make(map[string]interface{})
 
-	err := ankadb.MakeParamsFromMsg(params, "nodeInfo", cni)
-	if err != nil {
-		return err
-	}
+// 	err := ankadb.MakeParamsFromMsg(params, "nodeInfo", cni)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	result, err := db.ankaDB.LocalQuery(context.Background(), queryUpdNodeInfo, params)
-	if err != nil {
-		return err
-	}
+// 	result, err := db.ankaDB.LocalQuery(context.Background(), queryUpdNodeInfo, params)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	jarvisbase.Info("insNode", jarvisbase.JSON("result", result))
+// 	jarvisbase.Info("insNode", jarvisbase.JSON("result", result))
 
-	db.mapNodes[cni.Addr] = cni
+// 	db.mapNodes[cni.Addr] = cni
 
-	return nil
-}
+// 	return nil
+// }
 
 // UpdNodeBaseInfo -
 func (db *CoreDB) UpdNodeBaseInfo(ni *jarviscorepb.NodeBaseInfo) error {
 	cni, ok := db.mapNodes[ni.Addr]
 	if !ok {
-		return ErrCoreDBHasNotNode
+		cni = &coredbpb.NodeInfo{
+			ServAddr:        ni.ServAddr,
+			Addr:            ni.Addr,
+			Name:            ni.Name,
+			ConnectNums:     0,
+			ConnectedNums:   0,
+			CtrlID:          0,
+			LstClientAddr:   nil,
+			AddTime:         time.Now().Unix(),
+			ConnectMe:       false,
+			ConnectNode:     false,
+			NodeTypeVersion: ni.NodeTypeVersion,
+			NodeType:        ni.NodeType,
+			CoreVersion:     ni.CoreVersion,
+		}
+	} else {
+		cni.ServAddr = ni.ServAddr
+		cni.Name = ni.Name
+		cni.NodeTypeVersion = ni.NodeTypeVersion
+		cni.NodeType = ni.NodeType
+		cni.CoreVersion = ni.CoreVersion
 	}
-
-	cni.ServAddr = ni.ServAddr
-	cni.Name = ni.Name
 
 	params := make(map[string]interface{})
 
@@ -372,6 +389,34 @@ func (db *CoreDB) UpdNodeBaseInfo(ni *jarviscorepb.NodeBaseInfo) error {
 	}
 
 	jarvisbase.Debug("updNodeBaseInfo", jarvisbase.JSON("result", result))
+
+	db.mapNodes[cni.Addr] = cni
+
+	return nil
+}
+
+// UpdNodeInfo -
+func (db *CoreDB) UpdNodeInfo(addr string) error {
+	cni, ok := db.mapNodes[addr]
+	if !ok {
+		return ErrCoreDBHasNotNode
+	}
+
+	params := make(map[string]interface{})
+
+	err := ankadb.MakeParamsFromMsg(params, "nodeInfo", cni)
+	if err != nil {
+		return err
+	}
+
+	result, err := db.ankaDB.LocalQuery(context.Background(), queryUpdNodeInfo, params)
+	if err != nil {
+		return err
+	}
+
+	jarvisbase.Debug("UpdNodeInfo", jarvisbase.JSON("result", result))
+
+	db.mapNodes[cni.Addr] = cni
 
 	return nil
 }

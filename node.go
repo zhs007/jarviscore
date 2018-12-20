@@ -53,6 +53,9 @@ type JarvisNode interface {
 
 	// RegCtrl - register a ctrl
 	RegCtrl(ctrltype string, ctrl Ctrl) error
+
+	// PostMsg - like windows postMessage
+	PostMsg(msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer, chanEnd chan int)
 }
 
 // jarvisNode -
@@ -201,7 +204,7 @@ func (n *jarvisNode) sendCtrl(ctx context.Context, addr string, ci *pb.CtrlInfo)
 		return err
 	}
 
-	n.mgrClient2.addTask(msg, "")
+	n.mgrClient2.addTask(msg, "", nil)
 
 	// jarvisbase.Debug("jarvisNode.SendCtrl", jarvisbase.JSON("msg", msg))
 
@@ -257,7 +260,7 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 
 	// if is not my msg, broadcast msg
 	if n.myinfo.Addr != msg.DestAddr {
-		n.mgrClient2.addTask(msg, "")
+		n.mgrClient2.addTask(msg, "", nil)
 	} else {
 		// verify msg
 		err := VerifyJarvisMsg(msg)
@@ -303,7 +306,7 @@ func (n *jarvisNode) onMsgLocalConnect(ctx context.Context, msg *pb.JarvisMsg) e
 
 	cn := n.coredb.FindNodeWithServAddr(ci.ServAddr)
 	if cn == nil {
-		n.mgrClient2.addTask(nil, ci.ServAddr)
+		n.mgrClient2.addTask(nil, ci.ServAddr, nil)
 
 		return nil
 	}
@@ -314,7 +317,7 @@ func (n *jarvisNode) onMsgLocalConnect(ctx context.Context, msg *pb.JarvisMsg) e
 	}
 
 	if !cn.ConnectNode {
-		n.mgrClient2.addTask(nil, cn.ServAddr)
+		n.mgrClient2.addTask(nil, cn.ServAddr, cn)
 
 		return nil
 	}
@@ -327,18 +330,18 @@ func (n *jarvisNode) onMsgNodeInfo(ctx context.Context, msg *pb.JarvisMsg) error
 	ni := msg.GetNodeInfo()
 	cn := n.coredb.GetNode(ni.Addr)
 	if cn == nil {
-		err := n.coredb.InsNode(ni)
+		err := n.coredb.UpdNodeBaseInfo(ni)
 		if err != nil {
-			jarvisbase.Warn("jarvisNode.onMsgNodeInfo:insNode", zap.Error(err))
+			jarvisbase.Warn("jarvisNode.onMsgNodeInfo:UpdNodeBaseInfo", zap.Error(err))
 
 			return err
 		}
 
-		n.mgrClient2.addTask(nil, ni.ServAddr)
+		n.mgrClient2.addTask(nil, ni.ServAddr, n.coredb.GetNode(ni.Addr))
 
 		return nil
 	} else if !cn.ConnectNode {
-		n.mgrClient2.addTask(nil, ni.ServAddr)
+		n.mgrClient2.addTask(nil, ni.ServAddr, cn)
 
 		return nil
 	}
@@ -382,38 +385,46 @@ func (n *jarvisNode) onMsgConnectNode(ctx context.Context, msg *pb.JarvisMsg, st
 
 	cn := n.coredb.GetNode(ci.MyInfo.Addr)
 	if cn == nil {
-		err := n.coredb.InsNode(ci.MyInfo)
+		err := n.coredb.UpdNodeBaseInfo(ci.MyInfo)
 		if err != nil {
-			jarvisbase.Warn("jarvisNode.onMsgConnectNode:insNode", zap.Error(err))
+			jarvisbase.Warn("jarvisNode.onMsgConnectNode:UpdNodeBaseInfo", zap.Error(err))
 
 			return err
 		}
 
 		cn = n.coredb.GetNode(ci.MyInfo.Addr)
+	}
 
-		// cn.ConnectMe = true
+	if !cn.ConnectMe {
 		n.mgrEvent.onNodeEvent(ctx, EventOnNodeConnected, cn)
 
-		msg, err := BuildLocalConnectOther(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, ci.MyInfo.Addr,
-			ci.MyInfo.ServAddr, ci.MyInfo)
-		if err != nil {
-			jarvisbase.Warn("jarvisNode.onMsgConnectNode:BuildLocalConnectOther", zap.Error(err))
-
-			return err
-		}
-		// SignJarvisMsg(n.coredb.privKey, msg)
-		n.mgrJasvisMsg.sendMsg(msg, nil, nil)
-	} else if !cn.ConnectNode {
-		msg, err := BuildLocalConnectOther(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, ci.MyInfo.Addr,
-			ci.MyInfo.ServAddr, ci.MyInfo)
-		if err != nil {
-			jarvisbase.Warn("jarvisNode.onMsgConnectNode:BuildLocalConnectOther", zap.Error(err))
-
-			return err
-		}
-		// SignJarvisMsg(n.coredb.privKey, msg)
-		n.mgrJasvisMsg.sendMsg(msg, nil, nil)
+		n.coredb.UpdNodeInfo(cn.Addr)
+	} else {
+		n.mgrEvent.onNodeEvent(ctx, EventOnNodeConnected, cn)
 	}
+	// cn.ConnectMe = true
+	// n.mgrEvent.onNodeEvent(ctx, EventOnNodeConnected, cn)
+
+	// msg, err := BuildLocalConnectOther(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, ci.MyInfo.Addr,
+	// 	ci.MyInfo.ServAddr, ci.MyInfo)
+	// if err != nil {
+	// 	jarvisbase.Warn("jarvisNode.onMsgConnectNode:BuildLocalConnectOther", zap.Error(err))
+
+	// 	return err
+	// }
+	// // SignJarvisMsg(n.coredb.privKey, msg)
+	// n.PostMsg(msg, nil, nil)
+	// } else if !cn.ConnectNode {
+	// 	msg, err := BuildLocalConnectOther(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, ci.MyInfo.Addr,
+	// 		ci.MyInfo.ServAddr, ci.MyInfo)
+	// 	if err != nil {
+	// 		jarvisbase.Warn("jarvisNode.onMsgConnectNode:BuildLocalConnectOther", zap.Error(err))
+
+	// 		return err
+	// 	}
+	// 	// SignJarvisMsg(n.coredb.privKey, msg)
+	// 	n.PostMsg(msg, nil, nil)
+	// }
 
 	jarvisbase.Debug("jarvisNode.onMsgConnectNode:end")
 
@@ -425,7 +436,7 @@ func (n *jarvisNode) onMsgReplyConnect(ctx context.Context, msg *pb.JarvisMsg) e
 	ni := msg.GetNodeInfo()
 	cn := n.coredb.GetNode(ni.Addr)
 	if cn == nil {
-		err := n.coredb.InsNode(ni)
+		err := n.coredb.UpdNodeBaseInfo(ni)
 		if err != nil {
 			jarvisbase.Warn("jarvisNode.onMsgReplyConnect:InsNode", zap.Error(err))
 
@@ -433,12 +444,20 @@ func (n *jarvisNode) onMsgReplyConnect(ctx context.Context, msg *pb.JarvisMsg) e
 		}
 
 		cn = n.coredb.GetNode(ni.Addr)
+	} else {
+		n.coredb.UpdNodeBaseInfo(ni)
 	}
 
-	// cn.ConnectNode = true
-	n.mgrEvent.onNodeEvent(ctx, EventOnIConnectNode, cn)
+	if !cn.ConnectNode {
+		n.mgrEvent.onNodeEvent(ctx, EventOnIConnectNode, cn)
 
-	n.coredb.UpdNodeBaseInfo(ni)
+		err := n.coredb.UpdNodeInfo(cn.Addr)
+		if err != nil {
+			jarvisbase.Warn("jarvisNode.onMsgReplyConnect:UpdNodeInfo", zap.Error(err))
+		}
+	} else {
+		n.mgrEvent.onNodeEvent(ctx, EventOnIConnectNode, cn)
+	}
 
 	return nil
 }
@@ -490,7 +509,7 @@ func (n *jarvisNode) connectNode(servaddr string) error {
 	}
 
 	// SignJarvisMsg(n.coredb.privKey, msg)
-	n.mgrJasvisMsg.sendMsg(msg, nil, nil)
+	n.PostMsg(msg, nil, nil)
 
 	return nil
 }
@@ -504,7 +523,7 @@ func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg) er
 		return err
 	}
 
-	n.mgrClient2.addTask(sendmsg, "")
+	n.mgrClient2.addTask(sendmsg, "", nil)
 
 	n.mgrEvent.onMsgEvent(ctx, EventOnCtrl, msg)
 
@@ -518,13 +537,13 @@ func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg) er
 			return err
 		}
 
-		n.mgrClient2.addTask(sendmsg2, "")
+		n.mgrClient2.addTask(sendmsg2, "", nil)
 
 		return nil
 	}
 
 	sendmsg2, err := BuildCtrlResult(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, msg.SrcAddr, ci.CtrlID, string(ret))
-	n.mgrClient2.addTask(sendmsg2, "")
+	n.mgrClient2.addTask(sendmsg2, "", nil)
 
 	return nil
 }
@@ -545,7 +564,7 @@ func (n *jarvisNode) onMsgCtrlResult(ctx context.Context, msg *pb.JarvisMsg) err
 func (n *jarvisNode) onMsgLocalSendMsg(ctx context.Context, msg *pb.JarvisMsg) error {
 	sendmsg := msg.GetMsg()
 
-	n.mgrClient2.addTask(sendmsg, "")
+	n.mgrClient2.addTask(sendmsg, "", nil)
 
 	return nil
 }
@@ -560,7 +579,7 @@ func (n *jarvisNode) AddCtrl2List(addr string, ci *pb.CtrlInfo) error {
 	}
 
 	// SignJarvisMsg(n.coredb.privKey, msg)
-	n.mgrJasvisMsg.sendMsg(msg, nil, nil)
+	n.PostMsg(msg, nil, nil)
 
 	return nil
 }
@@ -568,6 +587,19 @@ func (n *jarvisNode) AddCtrl2List(addr string, ci *pb.CtrlInfo) error {
 // onNodeConnected - func event
 func onNodeConnected(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 	node.ConnectMe = true
+
+	if !node.ConnectNode {
+		msg, err := BuildLocalConnectOther(jarvisnode.GetCoreDB().GetPrivateKey(), 0,
+			jarvisnode.GetMyInfo().Addr, node.Addr,
+			node.ServAddr, GetNodeBaseInfo(node))
+		if err != nil {
+			jarvisbase.Warn("jarvisNode.onMsgConnectNode:BuildLocalConnectOther", zap.Error(err))
+
+			return err
+		}
+
+		jarvisnode.PostMsg(msg, nil, nil)
+	}
 
 	return nil
 }
@@ -610,7 +642,7 @@ func (n *jarvisNode) onMsgLocalRequesrNodes(ctx context.Context, msg *pb.JarvisM
 				return nil
 			}
 
-			n.mgrClient2.addTask(sendmsg, "")
+			n.mgrClient2.addTask(sendmsg, "", nil)
 		}
 
 		return nil
@@ -650,7 +682,7 @@ func (n *jarvisNode) RequestCtrl(ctx context.Context, addr string, ci *pb.CtrlIn
 		return err
 	}
 
-	n.mgrJasvisMsg.sendMsg(msg, nil, nil)
+	n.PostMsg(msg, nil, nil)
 
 	return nil
 }
@@ -671,7 +703,7 @@ func (n *jarvisNode) SendFile(ctx context.Context, addr string, fd *pb.FileData)
 		return err
 	}
 
-	n.mgrJasvisMsg.sendMsg(msg, nil, nil)
+	n.PostMsg(msg, nil, nil)
 
 	return nil
 }
@@ -687,7 +719,7 @@ func (n *jarvisNode) onTimerRequestNodes() error {
 		return err
 	}
 
-	n.mgrJasvisMsg.sendMsg(msg, nil, nil)
+	n.PostMsg(msg, nil, nil)
 
 	return nil
 }
@@ -956,7 +988,7 @@ func (n *jarvisNode) RequestFile(ctx context.Context, addr string, rf *pb.Reques
 		return err
 	}
 
-	n.mgrJasvisMsg.sendMsg(msg, nil, nil)
+	n.PostMsg(msg, nil, nil)
 
 	return nil
 }
@@ -966,4 +998,9 @@ func (n *jarvisNode) RegCtrl(ctrltype string, ctrl Ctrl) error {
 	n.mgrCtrl.Reg(ctrltype, ctrl)
 
 	return nil
+}
+
+// PostMsg - like windows postMessage
+func (n *jarvisNode) PostMsg(msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer, chanEnd chan int) {
+	n.mgrJasvisMsg.sendMsg(msg, stream, chanEnd)
 }

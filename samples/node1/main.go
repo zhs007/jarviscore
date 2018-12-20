@@ -57,7 +57,7 @@ func main() {
 }
 
 func sendCtrl(ctx context.Context, jarvisnode jarviscore.JarvisNode, node *coredbpb.NodeInfo) error {
-	dat, err := ioutil.ReadFile("test.sh")
+	dat, err := ioutil.ReadFile("./test/test.sh")
 	if err != nil {
 		jarvisbase.Warn("load script file", zap.Error(err))
 

@@ -8,7 +8,7 @@ import (
 func TestCtrlScriptFile(t *testing.T) {
 	ctrl := &CtrlScriptFile{}
 
-	dat, err := ioutil.ReadFile("test.sh")
+	dat, err := ioutil.ReadFile("./test/test.sh")
 	if err != nil {
 		t.Fatalf("load script file %v", err)
 	}

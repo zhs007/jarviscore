@@ -84,7 +84,7 @@ func (s *jarvisServer2) ProcMsg(in *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcM
 
 	chanEnd := make(chan int)
 
-	s.node.mgrJasvisMsg.sendMsg(in, stream, chanEnd)
+	s.node.PostMsg(in, stream, chanEnd)
 
 	<-chanEnd
 
