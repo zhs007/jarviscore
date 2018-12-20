@@ -54,13 +54,30 @@ func TestCheckNode(t *testing.T) {
 
 	cp := 0
 
+	mapICN1 := make(map[string]string)
+	mapNC1 := make(map[string]string)
+	mapICN2 := make(map[string]string)
+	mapNC2 := make(map[string]string)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
 	node1.RegNodeEventFunc(EventOnIConnectNode,
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 			if addr2 != node.Addr {
 				t.Fatalf("TestCheckNode node addr fail")
 			}
 
-			cp++
+			_, ok := mapICN1[node.Addr]
+			if !ok {
+				mapICN1[node.Addr] = node.Addr
+
+				cp++
+
+				if cp == 4 {
+					cancel()
+				}
+			}
 
 			return nil
 		})
@@ -71,7 +88,16 @@ func TestCheckNode(t *testing.T) {
 				t.Fatalf("TestCheckNode node addr fail")
 			}
 
-			cp++
+			_, ok := mapNC1[node.Addr]
+			if !ok {
+				mapNC1[node.Addr] = node.Addr
+
+				cp++
+
+				if cp == 4 {
+					cancel()
+				}
+			}
 
 			return nil
 		})
@@ -82,7 +108,16 @@ func TestCheckNode(t *testing.T) {
 				t.Fatalf("TestCheckNode node addr fail")
 			}
 
-			cp++
+			_, ok := mapICN2[node.Addr]
+			if !ok {
+				mapICN2[node.Addr] = node.Addr
+
+				cp++
+
+				if cp == 4 {
+					cancel()
+				}
+			}
 
 			return nil
 		})
@@ -93,13 +128,19 @@ func TestCheckNode(t *testing.T) {
 				t.Fatalf("TestCheckNode node addr fail")
 			}
 
-			cp++
+			_, ok := mapNC2[node.Addr]
+			if !ok {
+				mapNC2[node.Addr] = node.Addr
+
+				cp++
+
+				if cp == 4 {
+					cancel()
+				}
+			}
 
 			return nil
 		})
-
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
 
 	go node1.Start(ctx)
 	go node2.Start(ctx)

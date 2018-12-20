@@ -52,22 +52,37 @@ func TestCheckNodeCtrl(t *testing.T) {
 	cp := 0
 	ctrlp := 0
 
+	mapICN1 := make(map[string]string)
+	mapNC1 := make(map[string]string)
+	mapICN2 := make(map[string]string)
+	mapNC2 := make(map[string]string)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
 	node1.RegNodeEventFunc(EventOnIConnectNode,
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 			if addr2 != node.Addr {
 				t.Fatalf("TestCheckNodeCtrl node addr fail")
 			}
 
-			if ctrlp == 0 {
+			_, ok := mapICN1[node.Addr]
+			if !ok {
+				mapICN1[node.Addr] = node.Addr
+
 				err := sendCtrl(ctx, jarvisnode, node)
 				if err != nil {
 					t.Fatalf("TestCheckNodeCtrl sendctrl err %v", err)
 				}
 
 				ctrlp++
-			}
 
-			cp++
+				cp++
+
+				if cp == 4 && ctrlp == 3 {
+					cancel()
+				}
+			}
 
 			return nil
 		})
@@ -78,7 +93,16 @@ func TestCheckNodeCtrl(t *testing.T) {
 				t.Fatalf("TestCheckNodeCtrl node addr fail")
 			}
 
-			cp++
+			_, ok := mapNC1[node.Addr]
+			if !ok {
+				mapNC1[node.Addr] = node.Addr
+
+				cp++
+
+				if cp == 4 && ctrlp == 3 {
+					cancel()
+				}
+			}
 
 			return nil
 		})
@@ -86,6 +110,10 @@ func TestCheckNodeCtrl(t *testing.T) {
 	node1.RegMsgEventFunc(EventOnCtrlResult,
 		func(ctx context.Context, jarvisnode JarvisNode, msg *pb.JarvisMsg) error {
 			ctrlp++
+
+			if cp == 4 && ctrlp == 3 {
+				cancel()
+			}
 
 			return nil
 		})
@@ -96,7 +124,16 @@ func TestCheckNodeCtrl(t *testing.T) {
 				t.Fatalf("TestCheckNodeCtrl node addr fail")
 			}
 
-			cp++
+			_, ok := mapICN2[node.Addr]
+			if !ok {
+				mapICN2[node.Addr] = node.Addr
+
+				cp++
+
+				if cp == 4 && ctrlp == 3 {
+					cancel()
+				}
+			}
 
 			return nil
 		})
@@ -107,7 +144,16 @@ func TestCheckNodeCtrl(t *testing.T) {
 				t.Fatalf("TestCheckNodeCtrl node addr fail")
 			}
 
-			cp++
+			_, ok := mapNC2[node.Addr]
+			if !ok {
+				mapNC2[node.Addr] = node.Addr
+
+				cp++
+
+				if cp == 4 && ctrlp == 3 {
+					cancel()
+				}
+			}
 
 			return nil
 		})
@@ -116,11 +162,12 @@ func TestCheckNodeCtrl(t *testing.T) {
 		func(ctx context.Context, jarvisnode JarvisNode, msg *pb.JarvisMsg) error {
 			ctrlp++
 
+			if cp == 4 && ctrlp == 3 {
+				cancel()
+			}
+
 			return nil
 		})
-
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	defer cancel()
 
 	go node1.Start(ctx)
 	go node2.Start(ctx)
