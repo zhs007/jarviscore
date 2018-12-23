@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/zhs007/jarviscore/coredb/proto"
+	"github.com/zhs007/jarviscore/proto"
 )
 
 func TestCheckPrivateKey(t *testing.T) {
@@ -59,7 +60,7 @@ func TestCheckNode(t *testing.T) {
 	mapICN2 := make(map[string]string)
 	mapNC2 := make(map[string]string)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	node1.RegNodeEventFunc(EventOnIConnectNode,
@@ -155,4 +156,61 @@ func TestCheckNode(t *testing.T) {
 	}
 
 	t.Logf("TestCheckPrivateKey OK")
+}
+
+func TestConnectNodeFail(t *testing.T) {
+	cfg1, err := LoadConfig("./test/node5.yaml")
+	if err != nil {
+		t.Fatalf("TestConnectNodeFail load config %v", err)
+	}
+
+	// cfg2, err := LoadConfig("./test/node6.yaml")
+	// if err != nil {
+	// 	t.Fatalf("TestConnectNodeFail load config %v", err)
+	// }
+
+	InitJarvisCore(cfg1)
+	defer ReleaseJarvisCore()
+
+	node1 := NewNode(cfg1)
+	nbi := &jarviscorepb.NodeBaseInfo{
+		ServAddr:        "127.0.0.1:7898",
+		Addr:            "1JJaKpZGhYPuVHc1EKiiHZEswPAB5SybW5",
+		Name:            "test005",
+		NodeTypeVersion: "v0.1.0",
+		NodeType:        "test",
+		CoreVersion:     "v0.1.0",
+	}
+	node1.AddNodeBaseInfo(nbi)
+
+	isfail := false
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	node1.RegNodeEventFunc(EventOnNodeConnected,
+		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
+			return nil
+		})
+
+	node1.RegNodeEventFunc(EventOnIConnectNodeFail,
+		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
+			isfail = true
+
+			cancel()
+
+			return nil
+		})
+
+	go node1.Start(ctx)
+
+	<-ctx.Done()
+
+	node1.GetCoreDB().Close()
+
+	if !isfail {
+		t.Fatalf("TestConnectNodeFail no fail.")
+	}
+
+	t.Logf("TestConnectNodeFail OK")
 }

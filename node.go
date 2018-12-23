@@ -31,6 +31,9 @@ type JarvisNode interface {
 	// AddCtrl2List - add ctrl msg to tasklist
 	AddCtrl2List(addr string, ci *pb.CtrlInfo) error
 
+	// AddNodeBaseInfo - add nodeinfo
+	AddNodeBaseInfo(nbi *pb.NodeBaseInfo) error
+
 	// OnMsg - proc JarvisMsg
 	OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer) error
 
@@ -328,25 +331,26 @@ func (n *jarvisNode) onMsgLocalConnect(ctx context.Context, msg *pb.JarvisMsg) e
 // onMsgNodeInfo
 func (n *jarvisNode) onMsgNodeInfo(ctx context.Context, msg *pb.JarvisMsg) error {
 	ni := msg.GetNodeInfo()
-	cn := n.coredb.GetNode(ni.Addr)
-	if cn == nil {
-		err := n.coredb.UpdNodeBaseInfo(ni)
-		if err != nil {
-			jarvisbase.Warn("jarvisNode.onMsgNodeInfo:UpdNodeBaseInfo", zap.Error(err))
+	return n.AddNodeBaseInfo(ni)
+	// cn := n.coredb.GetNode(ni.Addr)
+	// if cn == nil {
+	// 	err := n.coredb.UpdNodeBaseInfo(ni)
+	// 	if err != nil {
+	// 		jarvisbase.Warn("jarvisNode.onMsgNodeInfo:UpdNodeBaseInfo", zap.Error(err))
 
-			return err
-		}
+	// 		return err
+	// 	}
 
-		n.mgrClient2.addTask(nil, ni.ServAddr, n.coredb.GetNode(ni.Addr))
+	// 	n.mgrClient2.addTask(nil, ni.ServAddr, n.coredb.GetNode(ni.Addr))
 
-		return nil
-	} else if !cn.ConnectNode {
-		n.mgrClient2.addTask(nil, ni.ServAddr, cn)
+	// 	return nil
+	// } else if !cn.ConnectNode {
+	// 	n.mgrClient2.addTask(nil, ni.ServAddr, cn)
 
-		return nil
-	}
+	// 	return nil
+	// }
 
-	return nil
+	// return nil
 }
 
 // onMsgConnectNode
@@ -1003,4 +1007,27 @@ func (n *jarvisNode) RegCtrl(ctrltype string, ctrl Ctrl) error {
 // PostMsg - like windows postMessage
 func (n *jarvisNode) PostMsg(msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer, chanEnd chan int) {
 	n.mgrJasvisMsg.sendMsg(msg, stream, chanEnd)
+}
+
+// AddNodeBaseInfo - add nodeinfo
+func (n *jarvisNode) AddNodeBaseInfo(nbi *pb.NodeBaseInfo) error {
+	cn := n.coredb.GetNode(nbi.Addr)
+	if cn == nil {
+		err := n.coredb.UpdNodeBaseInfo(nbi)
+		if err != nil {
+			jarvisbase.Warn("jarvisNode.AddNodeBaseInfo:UpdNodeBaseInfo", zap.Error(err))
+
+			return err
+		}
+
+		n.mgrClient2.addTask(nil, nbi.ServAddr, n.coredb.GetNode(nbi.Addr))
+
+		return nil
+	} else if !cn.ConnectNode {
+		n.mgrClient2.addTask(nil, nbi.ServAddr, cn)
+
+		return nil
+	}
+
+	return nil
 }
