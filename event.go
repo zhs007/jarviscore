@@ -18,6 +18,8 @@ var (
 	EventOnRequestNode = "requestnode"
 	// EventOnEndRequestNode - onEndRequestNode
 	EventOnEndRequestNode = "endrequestnode"
+	// EventOnDeprecateNode - onDeprecateNode
+	EventOnDeprecateNode = "deprecatenode"
 
 	// EventOnCtrl - OnCtrl
 	EventOnCtrl = "onctrl"
@@ -63,7 +65,8 @@ func (mgr *eventMgr) checkNodeEvent(event string) bool {
 		event == EventOnIConnectNode ||
 		event == EventOnIConnectNodeFail ||
 		event == EventOnRequestNode ||
-		event == EventOnEndRequestNode
+		event == EventOnEndRequestNode ||
+		event == EventOnDeprecateNode
 }
 
 func (mgr *eventMgr) checkMsgEvent(event string) bool {

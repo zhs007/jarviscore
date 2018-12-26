@@ -122,7 +122,7 @@ func NewNode(cfg *Config) JarvisNode {
 	node.mgrEvent = newEventMgr(node)
 	node.mgrEvent.regNodeEventFunc(EventOnNodeConnected, onNodeConnected)
 	node.mgrEvent.regNodeEventFunc(EventOnIConnectNode, onIConnectNode)
-	node.mgrEvent.regNodeEventFunc(EventOnIConnectNodeFail, onIConnectNodeFail)
+	node.mgrEvent.regNodeEventFunc(EventOnDeprecateNode, onDeprecateNode)
 
 	err = node.coredb.LoadPrivateKeyEx()
 	if err != nil {
@@ -638,16 +638,16 @@ func onIConnectNode(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.N
 	return nil
 }
 
-// onIConnectNodeFail - func event
-func onIConnectNodeFail(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
-	jarvisbase.Debug("onIConnectNodeFail")
+// onDeprecateNode - func event
+func onDeprecateNode(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
+	jarvisbase.Debug("onDeprecateNode")
 
 	if !node.Deprecated {
 		node.Deprecated = true
 
 		err := jarvisnode.GetCoreDB().UpdNodeInfo(node.Addr)
 		if err != nil {
-			jarvisbase.Warn("jarvisNode.onIConnectNodeFail:UpdNodeInfo", zap.Error(err))
+			jarvisbase.Warn("jarvisNode.onDeprecateNode:UpdNodeInfo", zap.Error(err))
 		}
 	}
 
@@ -675,7 +675,7 @@ func (n *jarvisNode) onMsgLocalRequesrNodes(ctx context.Context, msg *pb.JarvisM
 	// jarvisbase.Debug("jarvisNode.onMsgLocalRequesrNodes")
 
 	n.coredb.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
-		if n.mgrClient2.isConnected(v.Addr) {
+		if !v.Deprecated && n.mgrClient2.isConnected(v.Addr) {
 			sendmsg, err := BuildRequestNodes(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, v.Addr)
 			if err != nil {
 				jarvisbase.Warn("jarvisNode.onMsgLocalRequesrNodes:BuildRequestNodes", zap.Error(err))

@@ -26,6 +26,10 @@ func (task *clientTask) Run(ctx context.Context) error {
 	if task.msg == nil {
 		err := task.client._connectNode(ctx, task.servaddr)
 		if err != nil && task.node != nil {
+			if err == ErrServAddrIsMe || err == ErrInvalidServAddr {
+				task.client.node.mgrEvent.onNodeEvent(ctx, EventOnDeprecateNode, task.node)
+			}
+
 			task.client.node.mgrEvent.onNodeEvent(ctx, EventOnIConnectNodeFail, task.node)
 		}
 
@@ -218,7 +222,7 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string) error
 	if err != nil {
 		jarvisbase.Warn("jarvisClient2._connectNode:checkServAddr", zap.Error(err))
 
-		return err
+		return ErrInvalidServAddr
 	}
 
 	if IsMyServAddr(servaddr, c.node.myinfo.BindAddr) {
