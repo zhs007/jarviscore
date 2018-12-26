@@ -124,26 +124,26 @@ func (c *jarvisClient2) _getValidClientConn(addr string) (*clientInfo2, error) {
 	return nci, nil
 }
 
-func (c *jarvisClient2) _sendMsg(ctx context.Context, msg *pb.JarvisMsg) error {
+func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg) error {
 	// c.Lock()
 	// defer c.Unlock()
 
-	_, ok := c.mapClient.Load(msg.DestAddr)
+	_, ok := c.mapClient.Load(smsg.DestAddr)
 	// c.Unlock()
 	if !ok {
-		return c._broadCastMsg(ctx, msg)
+		return c._broadCastMsg(ctx, smsg)
 	}
 
-	jarvisbase.Debug("jarvisClient2._sendMsg", jarvisbase.JSON("msg", msg))
+	jarvisbase.Debug("jarvisClient2._sendMsg", jarvisbase.JSON("msg", smsg))
 
-	ci2, err := c._getValidClientConn(msg.DestAddr)
+	ci2, err := c._getValidClientConn(smsg.DestAddr)
 	if err != nil {
 		jarvisbase.Warn("jarvisClient2._sendMsg:getValidClientConn", zap.Error(err))
 
 		return err
 	}
 
-	stream, err := ci2.client.ProcMsg(ctx, msg)
+	stream, err := ci2.client.ProcMsg(ctx, smsg)
 	if err != nil {
 		jarvisbase.Warn("jarvisClient2._sendMsg:ProcMsg", zap.Error(err))
 
@@ -151,9 +151,11 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, msg *pb.JarvisMsg) error {
 	}
 
 	for {
-		msg, err := stream.Recv()
+		getmsg, err := stream.Recv()
 		if err == io.EOF {
 			jarvisbase.Debug("jarvisClient2._sendMsg:stream eof")
+
+			c.node.mgrEvent.onNodeEvent(ctx, EventOnEndRequestNode, c.node.GetCoreDB().GetNode(smsg.DestAddr))
 
 			break
 		}
@@ -163,9 +165,9 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, msg *pb.JarvisMsg) error {
 
 			break
 		} else {
-			jarvisbase.Debug("jarvisClient2._sendMsg:stream", jarvisbase.JSON("msg", msg))
+			jarvisbase.Debug("jarvisClient2._sendMsg:stream", jarvisbase.JSON("msg", getmsg))
 
-			c.node.PostMsg(msg, nil, nil)
+			c.node.PostMsg(getmsg, nil, nil)
 		}
 	}
 

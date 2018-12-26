@@ -1,0 +1,41 @@
+#jarvis node config
+
+# rootservaddr - jarvis root node address
+rootservaddr: '127.0.0.1:7707'
+# lsttrustnode - trust node list
+lsttrustnode: ['1JJaKpZGhYPuVHc1EKiiHZEswPAB5SybW5']
+
+# timerequestchild - requestchild time
+#                  - default 180
+timerequestchild: 180
+
+# maxmsglength - max msg length
+#                  - default 4mb
+maxmsglength: 4194304
+
+# ankadb - ankadb config
+ankadb:
+  # dbpath - dbpath
+  dbpath: './test/dat7'
+  # httpserv - http service address, it can be empty
+  httpserv: ''
+  # ankadb engine
+  engine: 'leveldb'
+
+# log - log config
+log:
+  # logpath - log path
+  logpath: './test/logs1'
+  # loglevel - log level, it can be debug, info, warn, error
+  loglevel: 'warn'
+  # logconsole - it can be output to console
+  logconsole: true
+
+# basenodeinfo - my node base config  
+basenodeinfo:
+  # nodename - my node name
+  nodename: 'node001'
+  # bindaddr - my bind address
+  bindaddr: ':7708'
+  # servaddr - other node connct me
+  servaddr: '127.0.0.1:7708'

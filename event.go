@@ -14,6 +14,10 @@ var (
 	EventOnIConnectNode = "connectnode"
 	// EventOnIConnectNodeFail - onIConnectNodeFail
 	EventOnIConnectNodeFail = "connectnodefail"
+	// EventOnRequestNode - onRequestNode
+	EventOnRequestNode = "requestnode"
+	// EventOnEndRequestNode - onEndRequestNode
+	EventOnEndRequestNode = "endrequestnode"
 
 	// EventOnCtrl - OnCtrl
 	EventOnCtrl = "onctrl"
@@ -57,7 +61,9 @@ func newEventMgr(node JarvisNode) *eventMgr {
 func (mgr *eventMgr) checkNodeEvent(event string) bool {
 	return event == EventOnNodeConnected ||
 		event == EventOnIConnectNode ||
-		event == EventOnIConnectNodeFail
+		event == EventOnIConnectNodeFail ||
+		event == EventOnRequestNode ||
+		event == EventOnEndRequestNode
 }
 
 func (mgr *eventMgr) checkMsgEvent(event string) bool {

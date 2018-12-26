@@ -27,6 +27,8 @@ type JarvisNode interface {
 	SendFile(ctx context.Context, addr string, fd *pb.FileData) error
 	// RequestFile - request node send filedata to me
 	RequestFile(ctx context.Context, addr string, rf *pb.RequestFile) error
+	// RequestNodes - request nodes
+	RequestNodes() error
 
 	// AddCtrl2List - add ctrl msg to tasklist
 	AddCtrl2List(addr string, ci *pb.CtrlInfo) error
@@ -646,6 +648,8 @@ func (n *jarvisNode) onMsgLocalRequesrNodes(ctx context.Context, msg *pb.JarvisM
 				return nil
 			}
 
+			n.mgrEvent.onNodeEvent(ctx, EventOnRequestNode, v)
+
 			n.mgrClient2.addTask(sendmsg, "", nil)
 		}
 
@@ -716,6 +720,21 @@ func (n *jarvisNode) SendFile(ctx context.Context, addr string, fd *pb.FileData)
 func (n *jarvisNode) onTimerRequestNodes() error {
 	jarvisbase.Debug("jarvisNode.onTimerRequestNodes")
 
+	return n.RequestNodes()
+	// msg, err := BuildLocalRequestNodes(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, "")
+	// if err != nil {
+	// 	jarvisbase.Warn("jarvisNode.onTimerRequestNodes:BuildLocalRequestNodes", zap.Error(err))
+
+	// 	return err
+	// }
+
+	// n.PostMsg(msg, nil, nil)
+
+	// return nil
+}
+
+// RequestNodes - request nodes
+func (n *jarvisNode) RequestNodes() error {
 	msg, err := BuildLocalRequestNodes(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, "")
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.onTimerRequestNodes:BuildLocalRequestNodes", zap.Error(err))
