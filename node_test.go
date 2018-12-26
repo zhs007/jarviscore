@@ -209,6 +209,7 @@ func TestConnectNodeFail(t *testing.T) {
 	node1.AddNodeBaseInfo(nbi)
 
 	isfail := false
+	errstr := ""
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -220,6 +221,11 @@ func TestConnectNodeFail(t *testing.T) {
 
 	node1.RegNodeEventFunc(EventOnIConnectNodeFail,
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
+			if !node.Deprecated {
+				errstr = "EventOnIConnectNodeFail fail"
+				cancel()
+			}
+
 			isfail = true
 
 			cancel()
@@ -232,6 +238,10 @@ func TestConnectNodeFail(t *testing.T) {
 	<-ctx.Done()
 
 	node1.GetCoreDB().Close()
+
+	if errstr != "" {
+		t.Fatalf(errstr)
+	}
 
 	if !isfail {
 		t.Fatalf("TestConnectNodeFail no fail.")

@@ -122,6 +122,7 @@ func NewNode(cfg *Config) JarvisNode {
 	node.mgrEvent = newEventMgr(node)
 	node.mgrEvent.regNodeEventFunc(EventOnNodeConnected, onNodeConnected)
 	node.mgrEvent.regNodeEventFunc(EventOnIConnectNode, onIConnectNode)
+	node.mgrEvent.regNodeEventFunc(EventOnIConnectNodeFail, onIConnectNodeFail)
 
 	err = node.coredb.LoadPrivateKeyEx()
 	if err != nil {
@@ -401,13 +402,14 @@ func (n *jarvisNode) onMsgConnectNode(ctx context.Context, msg *pb.JarvisMsg, st
 		cn = n.coredb.GetNode(ci.MyInfo.Addr)
 	}
 
-	if !cn.ConnectMe {
-		n.mgrEvent.onNodeEvent(ctx, EventOnNodeConnected, cn)
+	n.mgrEvent.onNodeEvent(ctx, EventOnNodeConnected, cn)
+	// if !cn.ConnectMe {
+	// 	n.mgrEvent.onNodeEvent(ctx, EventOnNodeConnected, cn)
 
-		n.coredb.UpdNodeInfo(cn.Addr)
-	} else {
-		n.mgrEvent.onNodeEvent(ctx, EventOnNodeConnected, cn)
-	}
+	// 	n.coredb.UpdNodeInfo(cn.Addr)
+	// } else {
+	// 	n.mgrEvent.onNodeEvent(ctx, EventOnNodeConnected, cn)
+	// }
 	// cn.ConnectMe = true
 	// n.mgrEvent.onNodeEvent(ctx, EventOnNodeConnected, cn)
 
@@ -454,16 +456,18 @@ func (n *jarvisNode) onMsgReplyConnect(ctx context.Context, msg *pb.JarvisMsg) e
 		n.coredb.UpdNodeBaseInfo(ni)
 	}
 
-	if !cn.ConnectNode {
-		n.mgrEvent.onNodeEvent(ctx, EventOnIConnectNode, cn)
+	// if !cn.ConnectNode {
+	// 	n.mgrEvent.onNodeEvent(ctx, EventOnIConnectNode, cn)
 
-		err := n.coredb.UpdNodeInfo(cn.Addr)
-		if err != nil {
-			jarvisbase.Warn("jarvisNode.onMsgReplyConnect:UpdNodeInfo", zap.Error(err))
-		}
-	} else {
-		n.mgrEvent.onNodeEvent(ctx, EventOnIConnectNode, cn)
-	}
+	// 	err := n.coredb.UpdNodeInfo(cn.Addr)
+	// 	if err != nil {
+	// 		jarvisbase.Warn("jarvisNode.onMsgReplyConnect:UpdNodeInfo", zap.Error(err))
+	// 	}
+	// } else {
+	// n.mgrEvent.onNodeEvent(ctx, EventOnIConnectNode, cn)
+	// }
+
+	n.mgrEvent.onNodeEvent(ctx, EventOnIConnectNode, cn)
 
 	return nil
 }
@@ -592,7 +596,15 @@ func (n *jarvisNode) AddCtrl2List(addr string, ci *pb.CtrlInfo) error {
 
 // onNodeConnected - func event
 func onNodeConnected(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
-	node.ConnectMe = true
+
+	if !node.ConnectMe {
+		node.ConnectMe = true
+
+		err := jarvisnode.GetCoreDB().UpdNodeInfo(node.Addr)
+		if err != nil {
+			jarvisbase.Warn("jarvisNode.onNodeConnected:UpdNodeInfo", zap.Error(err))
+		}
+	}
 
 	if !node.ConnectNode {
 		msg, err := BuildLocalConnectOther(jarvisnode.GetCoreDB().GetPrivateKey(), 0,
@@ -614,7 +626,30 @@ func onNodeConnected(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.
 func onIConnectNode(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 	jarvisbase.Debug("onIConnectNode")
 
-	node.ConnectNode = true
+	if !node.ConnectNode {
+		node.ConnectNode = true
+
+		err := jarvisnode.GetCoreDB().UpdNodeInfo(node.Addr)
+		if err != nil {
+			jarvisbase.Warn("jarvisNode.onIConnectNode:UpdNodeInfo", zap.Error(err))
+		}
+	}
+
+	return nil
+}
+
+// onIConnectNodeFail - func event
+func onIConnectNodeFail(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
+	jarvisbase.Debug("onIConnectNodeFail")
+
+	if !node.Deprecated {
+		node.Deprecated = true
+
+		err := jarvisnode.GetCoreDB().UpdNodeInfo(node.Addr)
+		if err != nil {
+			jarvisbase.Warn("jarvisNode.onIConnectNodeFail:UpdNodeInfo", zap.Error(err))
+		}
+	}
 
 	return nil
 }
