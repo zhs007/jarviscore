@@ -40,6 +40,8 @@ enum MSGTYPE {
     REPLY_REQUEST_FILE = 16;
     // multi message
     MULTI_MSG = 17;    
+    // reply connect2
+    REPLY_CONNECT2 = 18;    
 }
 
 // REPLYTYPE - reply type
@@ -69,6 +71,12 @@ message NodeBaseInfo {
     string nodeType = 5;
     // jarviscore version
     string coreVersion = 6;
+}
+
+// ReplyConnect2 - used in REPLY_CONNECT2
+message ReplyConnect2 {
+    int64 yourLastMsgID = 1;
+    NodeBaseInfo nbi = 2;
 }
 
 // ConnectInfo - used in LOCAL_CONNECT_OTHER, CONNECT_NODE
@@ -155,6 +163,7 @@ message JarvisMsg {
         FileData file = 105;
         RequestFile requestFile = 106;
         MultiMsgData multiMsgData = 107;
+        ReplyConnect2 replyConn2 = 108;
     }
 }
 

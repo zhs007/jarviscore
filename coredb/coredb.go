@@ -137,8 +137,15 @@ func (db *CoreDB) savePrivateKey() error {
 		return err
 	}
 
-	jarvisbase.Info("savePrivateKey",
-		jarvisbase.JSON("result", ret))
+	err = ankadb.GetResultError(ret)
+	if err != nil {
+		jarvisbase.Error("CoreDB.savePrivateKey:GetResultError", zap.Error(err))
+
+		return err
+	}
+
+	// jarvisbase.Info("savePrivateKey",
+	// 	jarvisbase.JSON("result", ret))
 
 	return nil
 }
@@ -179,12 +186,19 @@ func (db *CoreDB) _loadPrivateKey() error {
 		return err
 	}
 
-	jarvisbase.Info("_loadPrivateKey",
-		jarvisbase.JSON("result", result))
+	err = ankadb.GetResultError(result)
+	if err != nil {
+		jarvisbase.Warn("CoreDB._loadPrivateKey:GetResultError", zap.Error(err))
 
-	if result.HasErrors() {
-		return result.Errors[0]
+		return err
 	}
+
+	// jarvisbase.Info("_loadPrivateKey",
+	// 	jarvisbase.JSON("result", result))
+
+	// if result.HasErrors() {
+	// 	return result.Errors[0]
+	// }
 
 	rpd := &ResultPrivateKey{}
 	err = ankadb.MakeObjFromResult(result, rpd)
@@ -227,17 +241,31 @@ func (db *CoreDB) _foreachNode(oneach func(string, *coredbpb.NodeInfo), snapshot
 	// params["createTime"] = time.Now().Unix()
 
 	result, err := db.ankaDB.LocalQuery(context.Background(), queryNodeInfos, params)
+	if err != nil {
+		jarvisbase.Warn("CoreDB._foreachNode:LocalQuery", zap.Error(err))
 
-	jarvisbase.Debug("CoreDB._foreachNode", jarvisbase.JSON("result", result))
+		return nil, err
+	}
+
+	err = ankadb.GetResultError(result)
+	if err != nil {
+		jarvisbase.Warn("CoreDB._foreachNode:GetResultError", zap.Error(err))
+
+		return nil, err
+	}
+
+	// jarvisbase.Debug("CoreDB._foreachNode", jarvisbase.JSON("result", result))
 
 	rnis := &ResultNodeInfos{}
 	err = ankadb.MakeObjFromResult(result, rnis)
 	if err != nil {
+		jarvisbase.Warn("CoreDB._foreachNode:MakeObjFromResult", zap.Error(err))
+
 		return nil, err
 	}
 
 	lst := ResultNodeInfos2NodeInfoList(rnis)
-	jarvisbase.Debug("CoreDB._foreachNode", jarvisbase.JSON("lst", lst))
+	// jarvisbase.Debug("CoreDB._foreachNode", jarvisbase.JSON("lst", lst))
 
 	for _, v := range lst.Nodes {
 		oneach(v.Addr, v)
@@ -249,12 +277,16 @@ func (db *CoreDB) _foreachNode(oneach func(string, *coredbpb.NodeInfo), snapshot
 func (db *CoreDB) foreachNodeEx(oneach func(string, *coredbpb.NodeInfo)) error {
 	rnis, err := db._foreachNode(oneach, 0, 0, 128)
 	if err != nil {
+		jarvisbase.Warn("CoreDB.foreachNodeEx:_foreachNode", zap.Error(err))
+
 		return err
 	}
 
 	for bi := rnis.EndIndex; bi < rnis.MaxIndex; {
 		rnis, err = db._foreachNode(oneach, rnis.SnapshotID, int(bi), 128)
 		if err != nil {
+			jarvisbase.Warn("CoreDB.foreachNodeEx:for:_foreachNode:", zap.Error(err))
+
 			return err
 		}
 
@@ -271,6 +303,7 @@ func (db *CoreDB) LoadAllNodes() error {
 	err := db.foreachNodeEx(func(key string, val *coredbpb.NodeInfo) {
 		val.ConnectMe = false
 		val.ConnectNode = false
+		val.Deprecated = false
 
 		db.mapNodes[val.Addr] = val
 		curnodes++
@@ -380,15 +413,26 @@ func (db *CoreDB) UpdNodeBaseInfo(ni *jarviscorepb.NodeBaseInfo) error {
 
 	err := ankadb.MakeParamsFromMsg(params, "nodeInfo", cni)
 	if err != nil {
+		jarvisbase.Warn("CoreDB.UpdNodeBaseInfo:MakeParamsFromMsg", zap.Error(err))
+
 		return err
 	}
 
 	result, err := db.ankaDB.LocalQuery(context.Background(), queryUpdNodeInfo, params)
 	if err != nil {
+		jarvisbase.Warn("CoreDB.UpdNodeBaseInfo:LocalQuery", zap.Error(err))
+
 		return err
 	}
 
-	jarvisbase.Debug("updNodeBaseInfo", jarvisbase.JSON("result", result))
+	err = ankadb.GetResultError(result)
+	if err != nil {
+		jarvisbase.Warn("CoreDB.UpdNodeBaseInfo:GetResultError", zap.Error(err))
+
+		return err
+	}
+
+	// jarvisbase.Debug("updNodeBaseInfo", jarvisbase.JSON("result", result))
 
 	db.mapNodes[cni.Addr] = cni
 
@@ -399,6 +443,8 @@ func (db *CoreDB) UpdNodeBaseInfo(ni *jarviscorepb.NodeBaseInfo) error {
 func (db *CoreDB) UpdNodeInfo(addr string) error {
 	cni, ok := db.mapNodes[addr]
 	if !ok {
+		jarvisbase.Warn("CoreDB.UpdNodeInfo", zap.Error(ErrCoreDBHasNotNode))
+
 		return ErrCoreDBHasNotNode
 	}
 
@@ -406,15 +452,26 @@ func (db *CoreDB) UpdNodeInfo(addr string) error {
 
 	err := ankadb.MakeParamsFromMsg(params, "nodeInfo", cni)
 	if err != nil {
+		jarvisbase.Warn("CoreDB.UpdNodeInfo:MakeParamsFromMsg", zap.Error(err))
+
 		return err
 	}
 
 	result, err := db.ankaDB.LocalQuery(context.Background(), queryUpdNodeInfo, params)
 	if err != nil {
+		jarvisbase.Warn("CoreDB.UpdNodeInfo:LocalQuery", zap.Error(err))
+
 		return err
 	}
 
-	jarvisbase.Debug("UpdNodeInfo", jarvisbase.JSON("result", result))
+	err = ankadb.GetResultError(result)
+	if err != nil {
+		jarvisbase.Warn("CoreDB.UpdNodeInfo:GetResultError", zap.Error(err))
+
+		return err
+	}
+
+	// jarvisbase.Debug("UpdNodeInfo", jarvisbase.JSON("result", result))
 
 	db.mapNodes[cni.Addr] = cni
 
@@ -433,19 +490,28 @@ func (db *CoreDB) TrustNode(addr string) (string, error) {
 		return err.Error(), err
 	}
 
-	s, err := json.Marshal(ret)
+	err = ankadb.GetResultError(ret)
 	if err != nil {
-		jarvisbase.Error("CoreDB.GetMyState", zap.Error(err))
+		jarvisbase.Warn("CoreDB.TrustNode:GetResultError", zap.Error(err))
 
 		return err.Error(), err
 	}
 
-	jarvisbase.Info("trustNode",
-		zap.String("result", string(s)))
+	s, err := json.Marshal(ret)
+	if err != nil {
+		jarvisbase.Error("CoreDB.TrustNode", zap.Error(err))
+
+		return err.Error(), err
+	}
+
+	// jarvisbase.Info("trustNode",
+	// 	zap.String("result", string(s)))
 
 	rpd := &ResultPrivateKey{}
 	err = ankadb.MakeObjFromResult(ret, rpd)
 	if err != nil {
+		jarvisbase.Error("CoreDB.TrustNode:MakeObjFromResult", zap.Error(err))
+
 		return err.Error(), err
 	}
 
@@ -478,6 +544,13 @@ func (db *CoreDB) GetMyState() (string, error) {
 		return err.Error(), err
 	}
 
+	err = ankadb.GetResultError(ret)
+	if err != nil {
+		jarvisbase.Warn("CoreDB.GetMyState:GetResultError", zap.Error(err))
+
+		return err.Error(), err
+	}
+
 	s, err := json.Marshal(ret)
 	if err != nil {
 		jarvisbase.Error("CoreDB.GetMyState", zap.Error(err))
@@ -485,12 +558,14 @@ func (db *CoreDB) GetMyState() (string, error) {
 		return err.Error(), err
 	}
 
-	jarvisbase.Info("GetMyState",
-		zap.String("result", string(s)))
+	// jarvisbase.Info("GetMyState",
+	// 	zap.String("result", string(s)))
 
 	rpd := &ResultPrivateKey{}
 	err = ankadb.MakeObjFromResult(ret, rpd)
 	if err != nil {
+		jarvisbase.Error("CoreDB.GetMyState:MakeObjFromResult", zap.Error(err))
+
 		return err.Error(), err
 	}
 
@@ -509,6 +584,13 @@ func (db *CoreDB) GetNodes(nums int) (string, error) {
 
 	ret, err := db.ankaDB.LocalQuery(context.Background(), queryNodeInfos, params)
 
+	err = ankadb.GetResultError(ret)
+	if err != nil {
+		jarvisbase.Warn("CoreDB.GetNodes:GetResultError", zap.Error(err))
+
+		return err.Error(), err
+	}
+
 	s, err := json.Marshal(ret)
 	if err != nil {
 		jarvisbase.Error("CoreDB.GetNodes", zap.Error(err))
@@ -516,8 +598,8 @@ func (db *CoreDB) GetNodes(nums int) (string, error) {
 		return err.Error(), err
 	}
 
-	jarvisbase.Info("GetNodes",
-		zap.String("result", string(s)))
+	// jarvisbase.Info("GetNodes",
+	// 	zap.String("result", string(s)))
 
 	return string(s), nil
 }

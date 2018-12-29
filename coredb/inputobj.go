@@ -50,6 +50,27 @@ var inputTypeNodeInfo = graphql.NewInputObject(
 			"coreVersion": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
 			},
+			"curMsgID": &graphql.InputObjectFieldConfig{
+				Type: graphqlext.Int64,
+			},
+			"lastConnectTime": &graphql.InputObjectFieldConfig{
+				Type: graphqlext.Timestamp,
+			},
+			"lastConnectedTime": &graphql.InputObjectFieldConfig{
+				Type: graphqlext.Timestamp,
+			},
+			"lastConnectMeTime": &graphql.InputObjectFieldConfig{
+				Type: graphqlext.Timestamp,
+			},
+			"lstGroups": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewList(graphql.String),
+			},
+			"lastRecvMsgID": &graphql.InputObjectFieldConfig{
+				Type: graphqlext.Int64,
+			},
+			"deprecated": &graphql.InputObjectFieldConfig{
+				Type: graphql.Boolean,
+			},
 		},
 	},
 )

@@ -21,6 +21,13 @@ type NodeInfo {
     nodeTypeVersion: String
     nodeType: String
     coreVersion: String
+    curMsgID: Int64
+    lastConnectTime: Timestamp
+    lastConnectedTime: Timestamp
+    lastConnectMeTime: Timestamp
+    lstGroups: [String]
+    lastRecvMsgID: Int64
+    deprecated: Boolean
 }
 
 type NodeInfoList {

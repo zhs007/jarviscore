@@ -45,6 +45,8 @@ message NodeInfo {
     repeated string lstGroups = 18;
     // deprecated
     bool deprecated = 19;
+    // last receive message id
+    int64 lastRecvMsgID = 20;
 }
 
 // node info list

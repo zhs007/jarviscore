@@ -78,6 +78,27 @@ var typeNodeInfo = graphql.NewObject(
 			"coreVersion": &graphql.Field{
 				Type: graphql.String,
 			},
+			"curMsgID": &graphql.Field{
+				Type: graphqlext.Int64,
+			},
+			"lastConnectTime": &graphql.Field{
+				Type: graphqlext.Timestamp,
+			},
+			"lastConnectedTime": &graphql.Field{
+				Type: graphqlext.Timestamp,
+			},
+			"lastConnectMeTime": &graphql.Field{
+				Type: graphqlext.Timestamp,
+			},
+			"lstGroups": &graphql.Field{
+				Type: graphql.NewList(graphql.String),
+			},
+			"lastRecvMsgID": &graphql.Field{
+				Type: graphqlext.Int64,
+			},
+			"deprecated": &graphql.Field{
+				Type: graphql.Boolean,
+			},
 		},
 	},
 )
