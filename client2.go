@@ -228,11 +228,6 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string) error
 	if IsMyServAddr(servaddr, c.node.myinfo.BindAddr) {
 		jarvisbase.Warn("jarvisClient2._connectNode", zap.Error(ErrServAddrIsMe))
 
-		// cn := c.node.coredb.FindNodeWithServAddr(servaddr)
-		// if cn != nil {
-		// 	cn.Deprecated = true
-		// }
-
 		return ErrServAddrIsMe
 	}
 
@@ -300,23 +295,11 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string) error
 			if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT {
 				ni := msg.GetNodeInfo()
 
-				// c.Lock()
-				// defer c.Unlock()
-
-				// c.mapClient[ni.Addr] = ci
 				c.mapClient.Store(ni.Addr, ci)
-
-				// c.Unlock()
 			} else if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT2 {
 				rc2 := msg.GetReplyConn2()
 
-				// c.Lock()
-				// defer c.Unlock()
-
-				// c.mapClient[ni.Addr] = ci
 				c.mapClient.Store(rc2.Nbi.Addr, ci)
-
-				// c.Unlock()
 			}
 
 			c.node.PostMsg(msg, nil, nil)

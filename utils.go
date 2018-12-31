@@ -226,11 +226,11 @@ func BuildConnNode(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string
 }
 
 // BuildReplyConn - build jarvismsg with REPLY_CONNECT
-func BuildReplyConn(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string, destAddr string, lastMsgID int64,
+func BuildReplyConn(jarvisnode JarvisNode, srcAddr string, destAddr string, lastMsgID int64,
 	ni *pb.NodeBaseInfo) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		MsgID:     msgid,
+		MsgID:     jarvisnode.GetCoreDB().GetMsgID(destAddr),
 		CurTime:   time.Now().Unix(),
 		SrcAddr:   srcAddr,
 		MyAddr:    srcAddr,
@@ -242,7 +242,7 @@ func BuildReplyConn(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr strin
 		},
 	}
 
-	err := SignJarvisMsg(privkey, msg)
+	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
 	if err != nil {
 		return nil, err
 	}
@@ -278,11 +278,11 @@ func BuildReplyConn2(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr stri
 }
 
 // BuildLocalConnectOther - build jarvismsg with LOCAL_CONNECT_OTHER
-func BuildLocalConnectOther(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string,
+func BuildLocalConnectOther(jarvisnode JarvisNode, srcAddr string,
 	destAddr string, servaddr string, ni *pb.NodeBaseInfo) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		MsgID:    msgid,
+		MsgID:    jarvisnode.GetCoreDB().GetMsgID(destAddr),
 		CurTime:  time.Now().Unix(),
 		SrcAddr:  srcAddr,
 		MyAddr:   srcAddr,
@@ -296,7 +296,7 @@ func BuildLocalConnectOther(privkey *jarviscrypto.PrivateKey, msgid int64, srcAd
 		},
 	}
 
-	err := SignJarvisMsg(privkey, msg)
+	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
 	if err != nil {
 		return nil, err
 	}
@@ -305,11 +305,11 @@ func BuildLocalConnectOther(privkey *jarviscrypto.PrivateKey, msgid int64, srcAd
 }
 
 // BuildRequestCtrl - build jarvismsg with REQUEST_CTRL
-func BuildRequestCtrl(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string,
+func BuildRequestCtrl(jarvisnode JarvisNode, srcAddr string,
 	destAddr string, ci *pb.CtrlInfo) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		MsgID:    msgid,
+		MsgID:    jarvisnode.GetCoreDB().GetMsgID(destAddr),
 		CurTime:  time.Now().Unix(),
 		SrcAddr:  srcAddr,
 		MyAddr:   srcAddr,
@@ -320,7 +320,7 @@ func BuildRequestCtrl(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr str
 		},
 	}
 
-	err := SignJarvisMsg(privkey, msg)
+	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
 	if err != nil {
 		return nil, err
 	}
@@ -379,11 +379,11 @@ func BuildCtrlResult(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr stri
 }
 
 // BuildLocalSendMsg - build jarvismsg with LOCAL_SENDMSG
-func BuildLocalSendMsg(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string,
+func BuildLocalSendMsg(jarvisnode JarvisNode, srcAddr string,
 	destAddr string, sendmsg *pb.JarvisMsg) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		MsgID:    msgid,
+		MsgID:    jarvisnode.GetCoreDB().GetMsgID(destAddr),
 		CurTime:  time.Now().Unix(),
 		SrcAddr:  srcAddr,
 		MyAddr:   srcAddr,
@@ -394,7 +394,7 @@ func BuildLocalSendMsg(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr st
 		},
 	}
 
-	err := SignJarvisMsg(privkey, msg)
+	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
 	if err != nil {
 		return nil, err
 	}
@@ -403,11 +403,11 @@ func BuildLocalSendMsg(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr st
 }
 
 // BuildLocalRequestNodes - build jarvismsg with LOCAL_REQUEST_NODES
-func BuildLocalRequestNodes(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string,
+func BuildLocalRequestNodes(jarvisnode JarvisNode, srcAddr string,
 	destAddr string) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		MsgID:    msgid,
+		MsgID:    jarvisnode.GetCoreDB().GetMsgID(destAddr),
 		CurTime:  time.Now().Unix(),
 		SrcAddr:  srcAddr,
 		MyAddr:   srcAddr,
@@ -415,7 +415,7 @@ func BuildLocalRequestNodes(privkey *jarviscrypto.PrivateKey, msgid int64, srcAd
 		MsgType:  pb.MSGTYPE_LOCAL_REQUEST_NODES,
 	}
 
-	err := SignJarvisMsg(privkey, msg)
+	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
 	if err != nil {
 		return nil, err
 	}
@@ -445,11 +445,11 @@ func BuildRequestNodes(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr st
 }
 
 // BuildNodeInfo - build jarvismsg with NODE_INFO
-func BuildNodeInfo(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string, destAddr string,
+func BuildNodeInfo(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	ni *pb.NodeBaseInfo) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		MsgID:    msgid,
+		MsgID:    jarvisnode.GetCoreDB().GetMsgID(destAddr),
 		CurTime:  time.Now().Unix(),
 		SrcAddr:  srcAddr,
 		MyAddr:   srcAddr,
@@ -460,7 +460,7 @@ func BuildNodeInfo(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string
 		},
 	}
 
-	err := SignJarvisMsg(privkey, msg)
+	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
 	if err != nil {
 		return nil, err
 	}
@@ -469,11 +469,11 @@ func BuildNodeInfo(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string
 }
 
 // BuildFileData - build jarvismsg with TRANSFER_FILE
-func BuildFileData(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string, destAddr string,
+func BuildFileData(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	fd *pb.FileData) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		MsgID:    msgid,
+		MsgID:    jarvisnode.GetCoreDB().GetMsgID(destAddr),
 		CurTime:  time.Now().Unix(),
 		SrcAddr:  srcAddr,
 		MyAddr:   srcAddr,
@@ -484,7 +484,7 @@ func BuildFileData(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string
 		},
 	}
 
-	err := SignJarvisMsg(privkey, msg)
+	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
 	if err != nil {
 		return nil, err
 	}
@@ -493,11 +493,11 @@ func BuildFileData(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string
 }
 
 // BuildRequestFile - build jarvismsg with REQUEST_FILE
-func BuildRequestFile(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string, destAddr string,
+func BuildRequestFile(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	rf *pb.RequestFile) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		MsgID:    msgid,
+		MsgID:    jarvisnode.GetCoreDB().GetMsgID(destAddr),
 		CurTime:  time.Now().Unix(),
 		SrcAddr:  srcAddr,
 		MyAddr:   srcAddr,
@@ -508,7 +508,7 @@ func BuildRequestFile(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr str
 		},
 	}
 
-	err := SignJarvisMsg(privkey, msg)
+	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
 	if err != nil {
 		return nil, err
 	}
@@ -517,11 +517,11 @@ func BuildRequestFile(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr str
 }
 
 // BuildReplyRequestFile - build jarvismsg with REPLY_REQUEST_FILE
-func BuildReplyRequestFile(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string, destAddr string,
+func BuildReplyRequestFile(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	fd *pb.FileData) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		MsgID:    msgid,
+		MsgID:    jarvisnode.GetCoreDB().GetMsgID(destAddr),
 		CurTime:  time.Now().Unix(),
 		SrcAddr:  srcAddr,
 		MyAddr:   srcAddr,
@@ -532,7 +532,7 @@ func BuildReplyRequestFile(privkey *jarviscrypto.PrivateKey, msgid int64, srcAdd
 		},
 	}
 
-	err := SignJarvisMsg(privkey, msg)
+	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
 	if err != nil {
 		return nil, err
 	}

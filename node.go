@@ -204,7 +204,7 @@ func (n *jarvisNode) GetCoreDB() *coredb.CoreDB {
 
 // sendCtrl - send ctrl to jarvisnode with addr
 func (n *jarvisNode) sendCtrl(ctx context.Context, addr string, ci *pb.CtrlInfo) error {
-	msg, err := BuildRequestCtrl(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, addr, ci)
+	msg, err := BuildRequestCtrl(n, n.myinfo.Addr, addr, ci)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.SendCtrl", zap.Error(err))
 
@@ -419,7 +419,7 @@ func (n *jarvisNode) onMsgConnectNode(ctx context.Context, msg *pb.JarvisMsg, st
 		CoreVersion:     n.myinfo.CoreVersion,
 	}
 
-	sendmsg, err := BuildReplyConn(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, ci.MyInfo.Addr, lastRecvMsg, mni)
+	sendmsg, err := BuildReplyConn(n, n.myinfo.Addr, ci.MyInfo.Addr, lastRecvMsg, mni)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.onMsgConnectNode:BuildReplyConn", zap.Error(err))
 
@@ -557,7 +557,7 @@ func (n *jarvisNode) connectNode(servaddr string) error {
 		CoreVersion:     n.myinfo.CoreVersion,
 	}
 
-	msg, err := BuildLocalConnectOther(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, "", servaddr, nbi)
+	msg, err := BuildLocalConnectOther(n, n.myinfo.Addr, "", servaddr, nbi)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.connectNode:BuildLocalConnectOther", zap.Error(err))
 
@@ -627,7 +627,7 @@ func (n *jarvisNode) onMsgLocalSendMsg(ctx context.Context, msg *pb.JarvisMsg) e
 
 // AddCtrl2List - add ctrl msg to tasklist
 func (n *jarvisNode) AddCtrl2List(addr string, ci *pb.CtrlInfo) error {
-	msg, err := BuildRequestCtrl(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, addr, ci)
+	msg, err := BuildRequestCtrl(n, n.myinfo.Addr, addr, ci)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.AddCtrl2List", zap.Error(err))
 
@@ -646,8 +646,7 @@ func onNodeConnected(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.
 	node.ConnectMe = true
 
 	if !node.ConnectNode {
-		msg, err := BuildLocalConnectOther(jarvisnode.GetCoreDB().GetPrivateKey(), 0,
-			jarvisnode.GetMyInfo().Addr, node.Addr,
+		msg, err := BuildLocalConnectOther(jarvisnode, jarvisnode.GetMyInfo().Addr, node.Addr,
 			node.ServAddr, GetNodeBaseInfo(node))
 		if err != nil {
 			jarvisbase.Warn("jarvisNode.onMsgConnectNode:BuildLocalConnectOther", zap.Error(err))
@@ -765,14 +764,14 @@ func (n *jarvisNode) onMsgLocalRequesrNodes(ctx context.Context, msg *pb.JarvisM
 
 // RequestCtrl - send ctrl to jarvisnode with addr
 func (n *jarvisNode) RequestCtrl(ctx context.Context, addr string, ci *pb.CtrlInfo) error {
-	sendmsg, err := BuildRequestCtrl(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, addr, ci)
+	sendmsg, err := BuildRequestCtrl(n, n.myinfo.Addr, addr, ci)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.RequestCtrl", zap.Error(err))
 
 		return err
 	}
 
-	msg, err := BuildLocalSendMsg(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, "", sendmsg)
+	msg, err := BuildLocalSendMsg(n, n.myinfo.Addr, "", sendmsg)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.RequestCtrl:BuildLocalSendMsg", zap.Error(err))
 
@@ -786,14 +785,14 @@ func (n *jarvisNode) RequestCtrl(ctx context.Context, addr string, ci *pb.CtrlIn
 
 // SendFile - send filedata to jarvisnode with addr
 func (n *jarvisNode) SendFile(ctx context.Context, addr string, fd *pb.FileData) error {
-	sendmsg, err := BuildFileData(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, addr, fd)
+	sendmsg, err := BuildFileData(n, n.myinfo.Addr, addr, fd)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.SendFile", zap.Error(err))
 
 		return err
 	}
 
-	msg, err := BuildLocalSendMsg(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, "", sendmsg)
+	msg, err := BuildLocalSendMsg(n, n.myinfo.Addr, "", sendmsg)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.SendFile:BuildLocalSendMsg", zap.Error(err))
 
@@ -824,7 +823,7 @@ func (n *jarvisNode) onTimerRequestNodes() error {
 
 // RequestNodes - request nodes
 func (n *jarvisNode) RequestNodes() error {
-	msg, err := BuildLocalRequestNodes(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, "")
+	msg, err := BuildLocalRequestNodes(n, n.myinfo.Addr, "")
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.onTimerRequestNodes:BuildLocalRequestNodes", zap.Error(err))
 
@@ -855,7 +854,7 @@ func (n *jarvisNode) onMsgRequestNodes(ctx context.Context, msg *pb.JarvisMsg, s
 
 		// jarvisbase.Debug("jarvisNode.onMsgRequestNodes", jarvisbase.JSON("node", mni))
 
-		sendmsg, err := BuildNodeInfo(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, msg.SrcAddr, mni)
+		sendmsg, err := BuildNodeInfo(n, n.myinfo.Addr, msg.SrcAddr, mni)
 		if err != nil {
 			jarvisbase.Warn("jarvisNode.onMsgRequestNodes:BuildNodeInfo", zap.Error(err))
 
@@ -1058,7 +1057,7 @@ func (n *jarvisNode) onMsgRequestFile(ctx context.Context, msg *pb.JarvisMsg,
 		Filename: rf.Filename,
 	}
 
-	sendmsg, err := BuildReplyRequestFile(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, msg.SrcAddr, fd)
+	sendmsg, err := BuildReplyRequestFile(n, n.myinfo.Addr, msg.SrcAddr, fd)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.onMsgRequestFile:BuildReplyRequestFile", zap.Error(err))
 
@@ -1086,14 +1085,14 @@ func (n *jarvisNode) onMsgReplyRequestFile(ctx context.Context, msg *pb.JarvisMs
 
 // RequestFile - request node send filedata to me
 func (n *jarvisNode) RequestFile(ctx context.Context, addr string, rf *pb.RequestFile) error {
-	sendmsg, err := BuildRequestFile(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, addr, rf)
+	sendmsg, err := BuildRequestFile(n, n.myinfo.Addr, addr, rf)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.RequestFile", zap.Error(err))
 
 		return err
 	}
 
-	msg, err := BuildLocalSendMsg(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, "", sendmsg)
+	msg, err := BuildLocalSendMsg(n, n.myinfo.Addr, "", sendmsg)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.RequestFile:BuildLocalSendMsg", zap.Error(err))
 
