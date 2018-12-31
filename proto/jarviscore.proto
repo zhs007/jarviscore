@@ -41,7 +41,7 @@ enum MSGTYPE {
     // multi message
     MULTI_MSG = 17;    
     // reply connect2
-    REPLY_CONNECT2 = 18;    
+    REPLY_CONNECT2 = 18 [deprecated = true];
 }
 
 // REPLYTYPE - reply type
@@ -153,6 +153,7 @@ message JarvisMsg {
     MSGTYPE msgType = 9;
     REPLYTYPE replyType = 10;
     string err = 11;
+    int64 lastMsgID = 12;
 
     oneof data {
         NodeBaseInfo nodeInfo = 100;
@@ -163,7 +164,7 @@ message JarvisMsg {
         FileData file = 105;
         RequestFile requestFile = 106;
         MultiMsgData multiMsgData = 107;
-        ReplyConnect2 replyConn2 = 108;
+        ReplyConnect2 replyConn2 = 108 [deprecated = true];
     }
 }
 

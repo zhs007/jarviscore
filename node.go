@@ -419,9 +419,9 @@ func (n *jarvisNode) onMsgConnectNode(ctx context.Context, msg *pb.JarvisMsg, st
 		CoreVersion:     n.myinfo.CoreVersion,
 	}
 
-	sendmsg, err := BuildReplyConn2(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, ci.MyInfo.Addr, mni, lastRecvMsg)
+	sendmsg, err := BuildReplyConn(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, ci.MyInfo.Addr, lastRecvMsg, mni)
 	if err != nil {
-		jarvisbase.Warn("jarvisNode.onMsgConnectNode:BuildReplyConn2", zap.Error(err))
+		jarvisbase.Warn("jarvisNode.onMsgConnectNode:BuildReplyConn", zap.Error(err))
 
 		return err
 	}
@@ -499,6 +499,8 @@ func (n *jarvisNode) onMsgReplyConnect(ctx context.Context, msg *pb.JarvisMsg) e
 	} else {
 		n.coredb.UpdNodeBaseInfo(ni)
 	}
+
+	cn.CurMsgID = msg.LastMsgID
 
 	// if !cn.ConnectNode {
 	// 	n.mgrEvent.onNodeEvent(ctx, EventOnIConnectNode, cn)

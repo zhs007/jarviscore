@@ -226,16 +226,17 @@ func BuildConnNode(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string
 }
 
 // BuildReplyConn - build jarvismsg with REPLY_CONNECT
-func BuildReplyConn(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string, destAddr string,
+func BuildReplyConn(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string, destAddr string, lastMsgID int64,
 	ni *pb.NodeBaseInfo) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		MsgID:    msgid,
-		CurTime:  time.Now().Unix(),
-		SrcAddr:  srcAddr,
-		MyAddr:   srcAddr,
-		DestAddr: destAddr,
-		MsgType:  pb.MSGTYPE_REPLY_CONNECT,
+		MsgID:     msgid,
+		CurTime:   time.Now().Unix(),
+		SrcAddr:   srcAddr,
+		MyAddr:    srcAddr,
+		DestAddr:  destAddr,
+		MsgType:   pb.MSGTYPE_REPLY_CONNECT,
+		LastMsgID: lastMsgID,
 		Data: &pb.JarvisMsg_NodeInfo{
 			NodeInfo: ni,
 		},
