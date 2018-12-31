@@ -115,17 +115,17 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 
 			return append(str[:], buf[:]...), nil
 		}
-	} else if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT2 {
-		rc2 := msg.GetReplyConn2()
-		if rc2 != nil {
-			str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
-			buf, err := proto.Marshal(rc2)
-			if err != nil {
-				return nil, err
-			}
+		// } else if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT2 {
+		// 	rc2 := msg.GetReplyConn2()
+		// 	if rc2 != nil {
+		// 		str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
+		// 		buf, err := proto.Marshal(rc2)
+		// 		if err != nil {
+		// 			return nil, err
+		// 		}
 
-			return append(str[:], buf[:]...), nil
-		}
+		// 		return append(str[:], buf[:]...), nil
+		// 	}
 	}
 
 	// jarvisbase.Debug("buildSignBuf", zap.Error(ErrInvalidMsgType))
@@ -250,32 +250,32 @@ func BuildReplyConn(jarvisnode JarvisNode, srcAddr string, destAddr string, last
 	return msg, nil
 }
 
-// BuildReplyConn2 - build jarvismsg with REPLY_CONNECT2
-func BuildReplyConn2(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string, destAddr string,
-	ni *pb.NodeBaseInfo, lastMsgID int64) (*pb.JarvisMsg, error) {
+// // BuildReplyConn2 - build jarvismsg with REPLY_CONNECT2
+// func BuildReplyConn2(privkey *jarviscrypto.PrivateKey, msgid int64, srcAddr string, destAddr string,
+// 	ni *pb.NodeBaseInfo, lastMsgID int64) (*pb.JarvisMsg, error) {
 
-	msg := &pb.JarvisMsg{
-		MsgID:    msgid,
-		CurTime:  time.Now().Unix(),
-		SrcAddr:  srcAddr,
-		MyAddr:   srcAddr,
-		DestAddr: destAddr,
-		MsgType:  pb.MSGTYPE_REPLY_CONNECT2,
-		Data: &pb.JarvisMsg_ReplyConn2{
-			ReplyConn2: &pb.ReplyConnect2{
-				YourLastMsgID: lastMsgID,
-				Nbi:           ni,
-			},
-		},
-	}
+// 	msg := &pb.JarvisMsg{
+// 		MsgID:    msgid,
+// 		CurTime:  time.Now().Unix(),
+// 		SrcAddr:  srcAddr,
+// 		MyAddr:   srcAddr,
+// 		DestAddr: destAddr,
+// 		MsgType:  pb.MSGTYPE_REPLY_CONNECT2,
+// 		Data: &pb.JarvisMsg_ReplyConn2{
+// 			ReplyConn2: &pb.ReplyConnect2{
+// 				YourLastMsgID: lastMsgID,
+// 				Nbi:           ni,
+// 			},
+// 		},
+// 	}
 
-	err := SignJarvisMsg(privkey, msg)
-	if err != nil {
-		return nil, err
-	}
+// 	err := SignJarvisMsg(privkey, msg)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	return msg, nil
-}
+// 	return msg, nil
+// }
 
 // BuildLocalConnectOther - build jarvismsg with LOCAL_CONNECT_OTHER
 func BuildLocalConnectOther(jarvisnode JarvisNode, srcAddr string,

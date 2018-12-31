@@ -669,9 +669,9 @@ func (db *CoreDB) Close() {
 func (db *CoreDB) GetMsgID(addr string) int64 {
 	v, ok := db.mapNodes[addr]
 	if ok {
-		curmsgid := v.CurMsgID
+		curmsgid := v.LastSendMsgID
 
-		v.CurMsgID = v.CurMsgID + 1
+		v.LastSendMsgID = v.LastSendMsgID + 1
 
 		db.UpdNodeInfo(addr)
 

@@ -295,8 +295,8 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 			return n.onMsgRequestFile(ctx, msg, stream)
 		} else if msg.MsgType == pb.MSGTYPE_REPLY_REQUEST_FILE {
 			return n.onMsgReplyRequestFile(ctx, msg)
-		} else if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT2 {
-			return n.onMsgReplyConnect2(ctx, msg)
+			// } else if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT2 {
+			// 	return n.onMsgReplyConnect2(ctx, msg)
 		}
 
 	}
@@ -351,18 +351,7 @@ func (n *jarvisNode) onMsgReplyConnect2(ctx context.Context, msg *pb.JarvisMsg) 
 		n.coredb.UpdNodeBaseInfo(rc2.Nbi)
 	}
 
-	cn.CurMsgID = rc2.YourLastMsgID
-
-	// if !cn.ConnectNode {
-	// 	n.mgrEvent.onNodeEvent(ctx, EventOnIConnectNode, cn)
-
-	// 	err := n.coredb.UpdNodeInfo(cn.Addr)
-	// 	if err != nil {
-	// 		jarvisbase.Warn("jarvisNode.onMsgReplyConnect:UpdNodeInfo", zap.Error(err))
-	// 	}
-	// } else {
-	// n.mgrEvent.onNodeEvent(ctx, EventOnIConnectNode, cn)
-	// }
+	cn.LastSendMsgID = rc2.YourLastMsgID
 
 	n.mgrEvent.onNodeEvent(ctx, EventOnIConnectNode, cn)
 
@@ -500,7 +489,7 @@ func (n *jarvisNode) onMsgReplyConnect(ctx context.Context, msg *pb.JarvisMsg) e
 		n.coredb.UpdNodeBaseInfo(ni)
 	}
 
-	cn.CurMsgID = msg.LastMsgID
+	cn.LastSendMsgID = msg.LastMsgID
 
 	// if !cn.ConnectNode {
 	// 	n.mgrEvent.onNodeEvent(ctx, EventOnIConnectNode, cn)

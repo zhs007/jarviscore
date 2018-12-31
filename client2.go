@@ -296,10 +296,10 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string) error
 				ni := msg.GetNodeInfo()
 
 				c.mapClient.Store(ni.Addr, ci)
-			} else if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT2 {
-				rc2 := msg.GetReplyConn2()
+				// } else if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT2 {
+				// 	rc2 := msg.GetReplyConn2()
 
-				c.mapClient.Store(rc2.Nbi.Addr, ci)
+				// 	c.mapClient.Store(rc2.Nbi.Addr, ci)
 			}
 
 			c.node.PostMsg(msg, nil, nil)
