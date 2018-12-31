@@ -561,7 +561,7 @@ func (n *jarvisNode) connectNode(servaddr string) error {
 
 // onMsgRequestCtrl
 func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg) error {
-	sendmsg, err := BuildReply(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, msg.SrcAddr, pb.REPLYTYPE_OK, "")
+	sendmsg, err := BuildReply(n, n.myinfo.Addr, msg.SrcAddr, pb.REPLYTYPE_OK, "")
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.onMsgRequestCtrl:BuildReply", zap.Error(err))
 
@@ -575,7 +575,7 @@ func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg) er
 	ci := msg.GetCtrlInfo()
 	ret, err := n.mgrCtrl.Run(ci)
 	if err != nil {
-		sendmsg2, err := BuildCtrlResult(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, msg.SrcAddr, ci.CtrlID, err.Error())
+		sendmsg2, err := BuildCtrlResult(n, n.myinfo.Addr, msg.SrcAddr, ci.CtrlID, err.Error())
 		if err != nil {
 			jarvisbase.Warn("jarvisNode.onMsgRequestCtrl:BuildCtrlResult", zap.Error(err))
 
@@ -587,7 +587,7 @@ func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg) er
 		return nil
 	}
 
-	sendmsg2, err := BuildCtrlResult(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, msg.SrcAddr, ci.CtrlID, string(ret))
+	sendmsg2, err := BuildCtrlResult(n, n.myinfo.Addr, msg.SrcAddr, ci.CtrlID, string(ret))
 	n.mgrClient2.addTask(sendmsg2, "", nil)
 
 	return nil
@@ -718,7 +718,7 @@ func (n *jarvisNode) onMsgLocalRequesrNodes(ctx context.Context, msg *pb.JarvisM
 		jarvisbase.Debug(fmt.Sprintf("jarvisNode.onMsgLocalRequesrNodes %v", v))
 
 		if !v.Deprecated && n.mgrClient2.isConnected(v.Addr) {
-			sendmsg, err := BuildRequestNodes(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, v.Addr)
+			sendmsg, err := BuildRequestNodes(n, n.myinfo.Addr, v.Addr)
 			if err != nil {
 				jarvisbase.Warn("jarvisNode.onMsgLocalRequesrNodes:BuildRequestNodes", zap.Error(err))
 
@@ -906,7 +906,7 @@ func (n *jarvisNode) FindNodeWithName(name string) *coredbpb.NodeInfo {
 func (n *jarvisNode) replyStream(msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer,
 	rt pb.REPLYTYPE, strErr string) error {
 
-	sendmsg, err := BuildReply(n.coredb.GetPrivateKey(), 0, n.myinfo.Addr, msg.SrcAddr, rt, strErr)
+	sendmsg, err := BuildReply(n, n.myinfo.Addr, msg.SrcAddr, rt, strErr)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.replyStream:BuildReply", zap.Error(err))
 

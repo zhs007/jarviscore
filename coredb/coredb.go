@@ -665,8 +665,8 @@ func (db *CoreDB) Close() {
 	db.ankaDB.MgrDB.GetDB("coredb").Close()
 }
 
-// GetMsgID - get msgid
-func (db *CoreDB) GetMsgID(addr string) int64 {
+// GetNewSendMsgID - get msgid
+func (db *CoreDB) GetNewSendMsgID(addr string) int64 {
 	v, ok := db.mapNodes[addr]
 	if ok {
 		curmsgid := v.LastSendMsgID
