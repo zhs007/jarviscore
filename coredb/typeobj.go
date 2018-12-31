@@ -78,7 +78,7 @@ var typeNodeInfo = graphql.NewObject(
 			"coreVersion": &graphql.Field{
 				Type: graphql.String,
 			},
-			"curMsgID": &graphql.Field{
+			"lastSendMsgID": &graphql.Field{
 				Type: graphqlext.Int64,
 			},
 			"lastConnectTime": &graphql.Field{

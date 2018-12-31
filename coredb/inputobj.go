@@ -50,7 +50,7 @@ var inputTypeNodeInfo = graphql.NewInputObject(
 			"coreVersion": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
 			},
-			"curMsgID": &graphql.InputObjectFieldConfig{
+			"lastSendMsgID": &graphql.InputObjectFieldConfig{
 				Type: graphqlext.Int64,
 			},
 			"lastConnectTime": &graphql.InputObjectFieldConfig{

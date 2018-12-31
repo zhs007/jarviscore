@@ -21,7 +21,7 @@ type NodeInfo {
     nodeTypeVersion: String
     nodeType: String
     coreVersion: String
-    curMsgID: Int64
+    lastSendMsgID: Int64
     lastConnectTime: Timestamp
     lastConnectedTime: Timestamp
     lastConnectMeTime: Timestamp
