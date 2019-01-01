@@ -45,4 +45,8 @@ var (
 	ErrInvalidServAddr = errors.New("invalid servaddr")
 	// ErrInvalidNodeName - invalid nodename
 	ErrInvalidNodeName = errors.New("invalid nodename")
+	// ErrUnknowNode - unknow node
+	ErrUnknowNode = errors.New("unknow node")
+	// ErrInvalidMsgID - invalid msgid
+	ErrInvalidMsgID = errors.New("invalid msgid")
 )

@@ -272,7 +272,14 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 		// verify msg
 		err := VerifyJarvisMsg(msg)
 		if err != nil {
-			jarvisbase.Warn("jarvisNode.OnMsg", zap.Error(err))
+			jarvisbase.Warn("jarvisNode.OnMsg:VerifyJarvisMsg", zap.Error(err))
+
+			return nil
+		}
+
+		err = n.checkMsgID(ctx, msg)
+		if err != nil {
+			jarvisbase.Warn("jarvisNode.OnMsg:checkMsgID", zap.Error(err))
 
 			return nil
 		}
@@ -334,29 +341,29 @@ func (n *jarvisNode) onMsgLocalConnect(ctx context.Context, msg *pb.JarvisMsg) e
 	return nil
 }
 
-// onMsgReplyConnect2
-func (n *jarvisNode) onMsgReplyConnect2(ctx context.Context, msg *pb.JarvisMsg) error {
-	rc2 := msg.GetReplyConn2()
-	cn := n.coredb.GetNode(rc2.Nbi.Addr)
-	if cn == nil {
-		err := n.coredb.UpdNodeBaseInfo(rc2.Nbi)
-		if err != nil {
-			jarvisbase.Warn("jarvisNode.onMsgReplyConnect2:InsNode", zap.Error(err))
+// // onMsgReplyConnect2
+// func (n *jarvisNode) onMsgReplyConnect2(ctx context.Context, msg *pb.JarvisMsg) error {
+// 	rc2 := msg.GetReplyConn2()
+// 	cn := n.coredb.GetNode(rc2.Nbi.Addr)
+// 	if cn == nil {
+// 		err := n.coredb.UpdNodeBaseInfo(rc2.Nbi)
+// 		if err != nil {
+// 			jarvisbase.Warn("jarvisNode.onMsgReplyConnect2:InsNode", zap.Error(err))
 
-			return err
-		}
+// 			return err
+// 		}
 
-		cn = n.coredb.GetNode(rc2.Nbi.Addr)
-	} else {
-		n.coredb.UpdNodeBaseInfo(rc2.Nbi)
-	}
+// 		cn = n.coredb.GetNode(rc2.Nbi.Addr)
+// 	} else {
+// 		n.coredb.UpdNodeBaseInfo(rc2.Nbi)
+// 	}
 
-	cn.LastSendMsgID = rc2.YourLastMsgID
+// 	cn.LastSendMsgID = rc2.YourLastMsgID
 
-	n.mgrEvent.onNodeEvent(ctx, EventOnIConnectNode, cn)
+// 	n.mgrEvent.onNodeEvent(ctx, EventOnIConnectNode, cn)
 
-	return nil
-}
+// 	return nil
+// }
 
 // onMsgNodeInfo
 func (n *jarvisNode) onMsgNodeInfo(ctx context.Context, msg *pb.JarvisMsg) error {
@@ -391,13 +398,13 @@ func (n *jarvisNode) onMsgConnectNode(ctx context.Context, msg *pb.JarvisMsg, st
 		return ErrStreamNil
 	}
 
-	lastRecvMsg := int64(1)
+	// lastRecvMsg := int64(1)
 
 	ci := msg.GetConnInfo()
-	cn := n.coredb.GetNode(ci.MyInfo.Addr)
-	if cn != nil {
-		lastRecvMsg = cn.LastRecvMsgID
-	}
+	// cn := n.coredb.GetNode(ci.MyInfo.Addr)
+	// if cn != nil {
+	// lastRecvMsg = cn.LastRecvMsgID
+	// }
 
 	mni := &pb.NodeBaseInfo{
 		ServAddr:        n.myinfo.ServAddr,
@@ -408,7 +415,7 @@ func (n *jarvisNode) onMsgConnectNode(ctx context.Context, msg *pb.JarvisMsg, st
 		CoreVersion:     n.myinfo.CoreVersion,
 	}
 
-	sendmsg, err := BuildReplyConn(n, n.myinfo.Addr, ci.MyInfo.Addr, lastRecvMsg, mni)
+	sendmsg, err := BuildReplyConn(n, n.myinfo.Addr, ci.MyInfo.Addr, mni)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.onMsgConnectNode:BuildReplyConn", zap.Error(err))
 
@@ -423,7 +430,7 @@ func (n *jarvisNode) onMsgConnectNode(ctx context.Context, msg *pb.JarvisMsg, st
 		return err
 	}
 
-	// cn := n.coredb.GetNode(ci.MyInfo.Addr)
+	cn := n.coredb.GetNode(ci.MyInfo.Addr)
 	if cn == nil {
 		err := n.coredb.UpdNodeBaseInfo(ci.MyInfo)
 		if err != nil {
@@ -489,7 +496,9 @@ func (n *jarvisNode) onMsgReplyConnect(ctx context.Context, msg *pb.JarvisMsg) e
 		n.coredb.UpdNodeBaseInfo(ni)
 	}
 
-	cn.LastSendMsgID = msg.LastMsgID
+	if msg.LastMsgID > 0 {
+		cn.LastSendMsgID = msg.LastMsgID
+	}
 
 	// if !cn.ConnectNode {
 	// 	n.mgrEvent.onNodeEvent(ctx, EventOnIConnectNode, cn)
@@ -1123,6 +1132,35 @@ func (n *jarvisNode) AddNodeBaseInfo(nbi *pb.NodeBaseInfo) error {
 		n.mgrClient2.addTask(nil, nbi.ServAddr, cn)
 
 		return nil
+	}
+
+	return nil
+}
+
+// checkMsgID
+func (n *jarvisNode) checkMsgID(ctx context.Context, msg *pb.JarvisMsg) error {
+	if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT {
+		return nil
+	}
+
+	// it is my message
+	cn := n.GetCoreDB().GetNode(msg.SrcAddr)
+	if cn == nil {
+		return ErrUnknowNode
+	}
+
+	if msg.MsgID <= cn.LastRecvMsgID {
+		jarvisbase.Warn("jarvisNode.checkMsgID",
+			zap.Int64("msgid", msg.MsgID),
+			zap.Int64("lasrrevmsgid", cn.LastRecvMsgID))
+
+		return ErrInvalidMsgID
+	}
+
+	if msg.LastMsgID > 0 {
+		n.GetCoreDB().UpdMsgID(msg.SrcAddr, msg.LastMsgID, msg.MsgID)
+	} else {
+		n.GetCoreDB().UpdRecvMsgID(msg.SrcAddr, msg.MsgID)
 	}
 
 	return nil

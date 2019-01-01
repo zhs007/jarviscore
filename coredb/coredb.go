@@ -304,6 +304,9 @@ func (db *CoreDB) LoadAllNodes() error {
 		val.ConnectMe = false
 		val.ConnectNode = false
 		val.Deprecated = false
+		if val.LastRecvMsgID <= 0 {
+			val.LastRecvMsgID = 1
+		}
 
 		db.mapNodes[val.Addr] = val
 		curnodes++
@@ -400,6 +403,7 @@ func (db *CoreDB) UpdNodeBaseInfo(ni *jarviscorepb.NodeBaseInfo) error {
 			NodeTypeVersion: ni.NodeTypeVersion,
 			NodeType:        ni.NodeType,
 			CoreVersion:     ni.CoreVersion,
+			LastRecvMsgID:   1,
 		}
 	} else {
 		cni.ServAddr = ni.ServAddr
@@ -669,14 +673,53 @@ func (db *CoreDB) Close() {
 func (db *CoreDB) GetNewSendMsgID(addr string) int64 {
 	v, ok := db.mapNodes[addr]
 	if ok {
-		curmsgid := v.LastSendMsgID
-
 		v.LastSendMsgID = v.LastSendMsgID + 1
 
 		db.UpdNodeInfo(addr)
 
-		return curmsgid
+		return v.LastSendMsgID
 	}
 
 	return 0
+}
+
+// GetCurRecvMsgID - get msgid
+func (db *CoreDB) GetCurRecvMsgID(addr string) int64 {
+	v, ok := db.mapNodes[addr]
+	if ok {
+		return v.LastRecvMsgID
+	}
+
+	return 1
+}
+
+// UpdSendMsgID - update msgid
+func (db *CoreDB) UpdSendMsgID(addr string, msgid int64) {
+	v, ok := db.mapNodes[addr]
+	if ok {
+		v.LastSendMsgID = msgid
+
+		db.UpdNodeInfo(addr)
+	}
+}
+
+// UpdRecvMsgID - update msgid
+func (db *CoreDB) UpdRecvMsgID(addr string, msgid int64) {
+	v, ok := db.mapNodes[addr]
+	if ok {
+		v.LastRecvMsgID = msgid
+
+		db.UpdNodeInfo(addr)
+	}
+}
+
+// UpdMsgID - update msgid
+func (db *CoreDB) UpdMsgID(addr string, sendmsgid int64, recvmsgid int64) {
+	v, ok := db.mapNodes[addr]
+	if ok {
+		v.LastSendMsgID = sendmsgid
+		v.LastRecvMsgID = recvmsgid
+
+		db.UpdNodeInfo(addr)
+	}
 }
