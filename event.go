@@ -27,6 +27,12 @@ var (
 	EventOnCtrlResult = "ctrlresult"
 	// EventOnReplyRequestFile - OnReplyRequestFile
 	EventOnReplyRequestFile = "replyrequestfile"
+	// EventOnRequestFile - OnRequestFile
+	EventOnRequestFile = "onrequestfile"
+	// EventOnReplyTransferFile - OnReplyTransferFile
+	EventOnReplyTransferFile = "replytransferfile"
+	// EventOnTransferFile - OnTransferFile
+	EventOnTransferFile = "ontransferfile"
 
 	// EventOnPrivateKey - OnPrivateKey
 	EventOnPrivateKey = "privatekey"
@@ -72,7 +78,10 @@ func (mgr *eventMgr) checkNodeEvent(event string) bool {
 func (mgr *eventMgr) checkMsgEvent(event string) bool {
 	return event == EventOnCtrl ||
 		event == EventOnCtrlResult ||
-		event == EventOnReplyRequestFile
+		event == EventOnReplyRequestFile ||
+		event == EventOnRequestFile ||
+		event == EventOnReplyTransferFile ||
+		event == EventOnTransferFile
 }
 
 func (mgr *eventMgr) checkStateEvent(event string) bool {

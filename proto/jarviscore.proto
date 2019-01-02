@@ -21,7 +21,7 @@ enum MSGTYPE {
     // trusted node request you remove a trusted node
     RM_TRUST_NODE = 7;
     // reply msg
-    REPLY = 8;
+    REPLY = 8 [deprecated = true];
     // node info
     NODE_INFO = 9;
     // reply connect
@@ -42,6 +42,10 @@ enum MSGTYPE {
     MULTI_MSG = 17;    
     // reply connect2
     REPLY_CONNECT2 = 18 [deprecated = true];
+    // reply transfer file
+    REPLY_TRANSFER_FILE = 19;
+    // reply2 msg
+    REPLY2 = 20;
 }
 
 // REPLYTYPE - reply type
@@ -88,6 +92,11 @@ message ConnectInfo {
 message ReplyJoin {
     string addr = 1;
     string name = 2;
+}
+
+// ReplyTransferFile - used in REPLY_TRANSFER_FILE
+message ReplyTransferFile {
+    string md5String = 1;
 }
 
 // FileData - file data
@@ -154,6 +163,7 @@ message JarvisMsg {
     REPLYTYPE replyType = 10;
     string err = 11;
     int64 lastMsgID = 12;
+    int64 replyMsgID = 13;
 
     oneof data {
         NodeBaseInfo nodeInfo = 100;
@@ -165,6 +175,7 @@ message JarvisMsg {
         RequestFile requestFile = 106;
         MultiMsgData multiMsgData = 107;
         ReplyConnect2 replyConn2 = 108 [deprecated = true];
+        ReplyTransferFile replyTransferFile = 109;
     }
 }
 

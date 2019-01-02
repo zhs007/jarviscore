@@ -31,8 +31,8 @@ type JarvisNode interface {
 	// RequestNodes - request nodes
 	RequestNodes() error
 
-	// AddCtrl2List - add ctrl msg to tasklist
-	AddCtrl2List(addr string, ci *pb.CtrlInfo) error
+	// // AddCtrl2List - add ctrl msg to tasklist
+	// AddCtrl2List(addr string, ci *pb.CtrlInfo) error
 
 	// AddNodeBaseInfo - add nodeinfo
 	AddNodeBaseInfo(nbi *pb.NodeBaseInfo) error
@@ -202,22 +202,22 @@ func (n *jarvisNode) GetCoreDB() *coredb.CoreDB {
 	return n.coredb
 }
 
-// sendCtrl - send ctrl to jarvisnode with addr
-func (n *jarvisNode) sendCtrl(ctx context.Context, addr string, ci *pb.CtrlInfo) error {
-	msg, err := BuildRequestCtrl(n, n.myinfo.Addr, addr, ci)
-	if err != nil {
-		jarvisbase.Warn("jarvisNode.SendCtrl", zap.Error(err))
+// // sendCtrl - send ctrl to jarvisnode with addr
+// func (n *jarvisNode) sendCtrl(ctx context.Context, addr string, ci *pb.CtrlInfo) error {
+// 	msg, err := BuildRequestCtrl(n, n.myinfo.Addr, addr, ci)
+// 	if err != nil {
+// 		jarvisbase.Warn("jarvisNode.SendCtrl", zap.Error(err))
 
-		return err
-	}
+// 		return err
+// 	}
 
-	n.mgrClient2.addTask(msg, "", nil)
+// 	n.mgrClient2.addTask(msg, "", nil)
 
-	// jarvisbase.Debug("jarvisNode.SendCtrl", jarvisbase.JSON("msg", msg))
+// 	// jarvisbase.Debug("jarvisNode.SendCtrl", jarvisbase.JSON("msg", msg))
 
-	return nil
-	// return n.requestCtrl(ctx, addr, ctrltype, []byte(command))
-}
+// 	return nil
+// 	// return n.requestCtrl(ctx, addr, ctrltype, []byte(command))
+// }
 
 // OnMsg - proc JarvisMsg
 func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer) error {
@@ -289,9 +289,9 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 		} else if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT {
 			return n.onMsgReplyConnect(ctx, msg)
 		} else if msg.MsgType == pb.MSGTYPE_REQUEST_CTRL {
-			return n.onMsgRequestCtrl(ctx, msg)
-		} else if msg.MsgType == pb.MSGTYPE_REPLY {
-			return n.onMsgReply(ctx, msg)
+			return n.onMsgRequestCtrl(ctx, msg, stream)
+			// } else if msg.MsgType == pb.MSGTYPE_REPLY {
+			// 	return n.onMsgReply(ctx, msg)
 		} else if msg.MsgType == pb.MSGTYPE_REPLY_CTRL_RESULT {
 			return n.onMsgCtrlResult(ctx, msg)
 		} else if msg.MsgType == pb.MSGTYPE_REQUEST_NODES {
@@ -304,6 +304,10 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 			return n.onMsgReplyRequestFile(ctx, msg)
 			// } else if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT2 {
 			// 	return n.onMsgReplyConnect2(ctx, msg)
+		} else if msg.MsgType == pb.MSGTYPE_REPLY_TRANSFER_FILE {
+			return n.onMsgReplyTransferFile(ctx, msg)
+		} else if msg.MsgType == pb.MSGTYPE_REPLY2 {
+			return n.onMsgReply2(ctx, msg)
 		}
 
 	}
@@ -569,15 +573,16 @@ func (n *jarvisNode) connectNode(servaddr string) error {
 }
 
 // onMsgRequestCtrl
-func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg) error {
-	sendmsg, err := BuildReply(n, n.myinfo.Addr, msg.SrcAddr, pb.REPLYTYPE_OK, "")
-	if err != nil {
-		jarvisbase.Warn("jarvisNode.onMsgRequestCtrl:BuildReply", zap.Error(err))
+func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer) error {
+	n.replyStream2(msg, stream, pb.REPLYTYPE_ISME, "")
+	// sendmsg, err := BuildReply(n, n.myinfo.Addr, msg.SrcAddr, pb.REPLYTYPE_OK, "")
+	// if err != nil {
+	// 	jarvisbase.Warn("jarvisNode.onMsgRequestCtrl:BuildReply", zap.Error(err))
 
-		return err
-	}
+	// 	return err
+	// }
 
-	n.mgrClient2.addTask(sendmsg, "", nil)
+	// n.mgrClient2.addTask(sendmsg, "", nil)
 
 	n.mgrEvent.onMsgEvent(ctx, EventOnCtrl, msg)
 
@@ -602,8 +607,20 @@ func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg) er
 	return nil
 }
 
-// onMsgReply
-func (n *jarvisNode) onMsgReply(ctx context.Context, msg *pb.JarvisMsg) error {
+// // onMsgReply
+// func (n *jarvisNode) onMsgReply(ctx context.Context, msg *pb.JarvisMsg) error {
+// 	return nil
+// }
+
+// onMsgReply2
+func (n *jarvisNode) onMsgReply2(ctx context.Context, msg *pb.JarvisMsg) error {
+	return nil
+}
+
+// onMsgReplyTransferFile
+func (n *jarvisNode) onMsgReplyTransferFile(ctx context.Context, msg *pb.JarvisMsg) error {
+	n.mgrEvent.onMsgEvent(ctx, EventOnReplyTransferFile, msg)
+
 	return nil
 }
 
@@ -623,20 +640,20 @@ func (n *jarvisNode) onMsgLocalSendMsg(ctx context.Context, msg *pb.JarvisMsg) e
 	return nil
 }
 
-// AddCtrl2List - add ctrl msg to tasklist
-func (n *jarvisNode) AddCtrl2List(addr string, ci *pb.CtrlInfo) error {
-	msg, err := BuildRequestCtrl(n, n.myinfo.Addr, addr, ci)
-	if err != nil {
-		jarvisbase.Warn("jarvisNode.AddCtrl2List", zap.Error(err))
+// // AddCtrl2List - add ctrl msg to tasklist
+// func (n *jarvisNode) AddCtrl2List(addr string, ci *pb.CtrlInfo) error {
+// 	msg, err := BuildRequestCtrl(n, n.myinfo.Addr, addr, ci)
+// 	if err != nil {
+// 		jarvisbase.Warn("jarvisNode.AddCtrl2List", zap.Error(err))
 
-		return err
-	}
+// 		return err
+// 	}
 
-	// SignJarvisMsg(n.coredb.privKey, msg)
-	n.PostMsg(msg, nil, nil)
+// 	// SignJarvisMsg(n.coredb.privKey, msg)
+// 	n.PostMsg(msg, nil, nil)
 
-	return nil
-}
+// 	return nil
+// }
 
 // onNodeConnected - func event
 func onNodeConnected(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
@@ -911,20 +928,62 @@ func (n *jarvisNode) FindNodeWithName(name string) *coredbpb.NodeInfo {
 	// return nil
 }
 
-// replyStream
-func (n *jarvisNode) replyStream(msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer,
+// // replyStream
+// func (n *jarvisNode) replyStream(msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer,
+// 	rt pb.REPLYTYPE, strErr string) error {
+
+// 	sendmsg, err := BuildReply(n, n.myinfo.Addr, msg.SrcAddr, rt, strErr)
+// 	if err != nil {
+// 		jarvisbase.Warn("jarvisNode.replyStream:BuildReply", zap.Error(err))
+
+// 		return err
+// 	}
+
+// 	err = stream.SendMsg(sendmsg)
+// 	if err != nil {
+// 		jarvisbase.Warn("jarvisNode.replyStream:SendMsg", zap.Error(err))
+
+// 		return err
+// 	}
+
+// 	return nil
+// }
+
+// replyStream2
+func (n *jarvisNode) replyStream2(msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer,
 	rt pb.REPLYTYPE, strErr string) error {
 
-	sendmsg, err := BuildReply(n, n.myinfo.Addr, msg.SrcAddr, rt, strErr)
+	sendmsg, err := BuildReply2(n, n.myinfo.Addr, msg.SrcAddr, rt, strErr, msg.MsgID)
 	if err != nil {
-		jarvisbase.Warn("jarvisNode.replyStream:BuildReply", zap.Error(err))
+		jarvisbase.Warn("jarvisNode.replyStream2:BuildReply2", zap.Error(err))
 
 		return err
 	}
 
 	err = stream.SendMsg(sendmsg)
 	if err != nil {
-		jarvisbase.Warn("jarvisNode.replyStream:SendMsg", zap.Error(err))
+		jarvisbase.Warn("jarvisNode.replyStream2:SendMsg", zap.Error(err))
+
+		return err
+	}
+
+	return nil
+}
+
+// replyTransferFile
+func (n *jarvisNode) replyTransferFile(msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer,
+	md5str string) error {
+
+	sendmsg, err := BuildReplyTransferFile(n, n.myinfo.Addr, msg.SrcAddr, md5str, msg.MsgID)
+	if err != nil {
+		jarvisbase.Warn("jarvisNode.replyTransferFile:BuildReply2", zap.Error(err))
+
+		return err
+	}
+
+	err = stream.SendMsg(sendmsg)
+	if err != nil {
+		jarvisbase.Warn("jarvisNode.replyTransferFile:SendMsg", zap.Error(err))
 
 		return err
 	}
@@ -948,7 +1007,7 @@ func (n *jarvisNode) onMsgTransferFile(ctx context.Context, msg *pb.JarvisMsg,
 
 	err := StoreLocalFile(fd)
 	if err != nil {
-		err1 := n.replyStream(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
+		err1 := n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
 		if err1 != nil {
 			jarvisbase.Warn("jarvisNode.onMsgTransferFile:replyStream err", zap.Error(err1))
 
@@ -957,6 +1016,12 @@ func (n *jarvisNode) onMsgTransferFile(ctx context.Context, msg *pb.JarvisMsg,
 
 		return err
 	}
+
+	n.mgrEvent.onMsgEvent(ctx, EventOnTransferFile, msg)
+
+	md5str := GetMD5String(fd.File)
+
+	// BuildReplyTransferFile(n)
 
 	// f, err := os.Create(fd.Filename)
 	// if err != nil {
@@ -975,9 +1040,9 @@ func (n *jarvisNode) onMsgTransferFile(ctx context.Context, msg *pb.JarvisMsg,
 	// f.Write(fd.File)
 	// f.Close()
 
-	err = n.replyStream(msg, stream, pb.REPLYTYPE_OK, "")
+	err = n.replyTransferFile(msg, stream, md5str)
 	if err != nil {
-		jarvisbase.Warn("jarvisNode.onMsgTransferFile:replyStream", zap.Error(err))
+		jarvisbase.Warn("jarvisNode.onMsgTransferFile:replyTransferFile", zap.Error(err))
 
 		return err
 	}

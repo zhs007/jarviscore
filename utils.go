@@ -1,9 +1,11 @@
 package jarviscore
 
 import (
+	"crypto/md5"
 	"fmt"
 	"math/big"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/golang/protobuf/proto"
@@ -14,6 +16,17 @@ import (
 	"github.com/zhs007/jarviscore/crypto"
 	pb "github.com/zhs007/jarviscore/proto"
 )
+
+// GetMD5String - md5 buf and return string
+func GetMD5String(buf []byte) string {
+	return fmt.Sprintf("%x", md5.Sum(buf))
+}
+
+// GetRealFilename - get filename
+func GetRealFilename(fn string) string {
+	arr := strings.Split(fn, "/")
+	return arr[len(arr)-1]
+}
 
 // buildSignBuf - build sign buf
 //		sign(msgID + msgType + destAddr + curTime + srcAddr + data)
@@ -126,6 +139,23 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 
 		// 		return append(str[:], buf[:]...), nil
 		// 	}
+	} else if msg.MsgType == pb.MSGTYPE_REPLY_TRANSFER_FILE {
+		rtf := msg.GetReplyTransferFile()
+		if rtf != nil {
+			str := []byte(fmt.Sprintf("%v%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr,
+				msg.ReplyMsgID))
+			buf, err := proto.Marshal(rtf)
+			if err != nil {
+				return nil, err
+			}
+
+			return append(str[:], buf[:]...), nil
+		}
+	} else if msg.MsgType == pb.MSGTYPE_REPLY2 {
+		str := []byte(fmt.Sprintf("%v%v%v%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr,
+			msg.ReplyType, msg.Err, msg.ReplyMsgID))
+
+		return str, nil
 	}
 
 	// jarvisbase.Debug("buildSignBuf", zap.Error(ErrInvalidMsgType))
@@ -331,20 +361,45 @@ func BuildRequestCtrl(jarvisnode JarvisNode, srcAddr string,
 	return msg, nil
 }
 
-// BuildReply - build jarvismsg with REPLY
-func BuildReply(jarvisnode JarvisNode, srcAddr string,
-	destAddr string, rt pb.REPLYTYPE, strErr string) (*pb.JarvisMsg, error) {
+// // BuildReply - build jarvismsg with REPLY
+// func BuildReply(jarvisnode JarvisNode, srcAddr string,
+// 	destAddr string, rt pb.REPLYTYPE, strErr string) (*pb.JarvisMsg, error) {
+
+// 	msg := &pb.JarvisMsg{
+// 		MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
+// 		CurTime:   time.Now().Unix(),
+// 		SrcAddr:   srcAddr,
+// 		MyAddr:    srcAddr,
+// 		DestAddr:  destAddr,
+// 		MsgType:   pb.MSGTYPE_REPLY,
+// 		LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+// 		ReplyType: rt,
+// 		Err:       strErr,
+// 	}
+
+// 	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	return msg, nil
+// }
+
+// BuildReply2 - build jarvismsg with REPLY2
+func BuildReply2(jarvisnode JarvisNode, srcAddr string,
+	destAddr string, rt pb.REPLYTYPE, strErr string, replyMsgID int64) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
-		CurTime:   time.Now().Unix(),
-		SrcAddr:   srcAddr,
-		MyAddr:    srcAddr,
-		DestAddr:  destAddr,
-		MsgType:   pb.MSGTYPE_REPLY,
-		LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
-		ReplyType: rt,
-		Err:       strErr,
+		MsgID:      jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
+		CurTime:    time.Now().Unix(),
+		SrcAddr:    srcAddr,
+		MyAddr:     srcAddr,
+		DestAddr:   destAddr,
+		MsgType:    pb.MSGTYPE_REPLY2,
+		LastMsgID:  jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+		ReplyType:  rt,
+		Err:        strErr,
+		ReplyMsgID: replyMsgID,
 	}
 
 	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
@@ -602,4 +657,32 @@ func GetNodeBaseInfo(node *coredbpb.NodeInfo) *pb.NodeBaseInfo {
 		NodeType:        node.NodeType,
 		CoreVersion:     node.CoreVersion,
 	}
+}
+
+// BuildReplyTransferFile - build jarvismsg with REPLY_TRANSFER_FILE
+func BuildReplyTransferFile(jarvisnode JarvisNode, srcAddr string, destAddr string,
+	md5str string, replyMsgID int64) (*pb.JarvisMsg, error) {
+
+	msg := &pb.JarvisMsg{
+		MsgID:      jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
+		CurTime:    time.Now().Unix(),
+		SrcAddr:    srcAddr,
+		MyAddr:     srcAddr,
+		DestAddr:   destAddr,
+		MsgType:    pb.MSGTYPE_REPLY_TRANSFER_FILE,
+		LastMsgID:  jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+		ReplyMsgID: replyMsgID,
+		Data: &pb.JarvisMsg_ReplyTransferFile{
+			ReplyTransferFile: &pb.ReplyTransferFile{
+				Md5String: md5str,
+			},
+		},
+	}
+
+	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg, nil
 }
