@@ -47,19 +47,14 @@ type clientInfo2 struct {
 
 // jarvisClient2 -
 type jarvisClient2 struct {
-	// sync.RWMutex
-	// sync.Map
-
 	pool      jarvisbase.RoutinePool
 	node      *jarvisNode
 	mapClient sync.Map
-	// mapClient map[string]*clientInfo2
 }
 
 func newClient2(node *jarvisNode) *jarvisClient2 {
 	return &jarvisClient2{
 		node: node,
-		// mapClient: make(map[string]*clientInfo2),
 		pool: jarvisbase.NewRoutinePool(),
 	}
 }
@@ -82,17 +77,12 @@ func (c *jarvisClient2) addTask(msg *pb.JarvisMsg, servaddr string, node *coredb
 }
 
 func (c *jarvisClient2) isConnected(addr string) bool {
-	// c.Lock()
-	// defer c.Unlock()
-
 	_, ok := c.mapClient.Load(addr)
+
 	return ok
 }
 
 func (c *jarvisClient2) _getValidClientConn(addr string) (*clientInfo2, error) {
-	// c.Lock()
-	// defer c.Unlock()
-
 	mi, ok := c.mapClient.Load(addr)
 	if ok {
 		ci, ok := mi.(*clientInfo2)
@@ -129,11 +119,8 @@ func (c *jarvisClient2) _getValidClientConn(addr string) (*clientInfo2, error) {
 }
 
 func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg) error {
-	// c.Lock()
-	// defer c.Unlock()
-
 	_, ok := c.mapClient.Load(smsg.DestAddr)
-	// c.Unlock()
+
 	if !ok {
 		return c._broadCastMsg(ctx, smsg)
 	}
@@ -296,10 +283,6 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string) error
 				ni := msg.GetNodeInfo()
 
 				c.mapClient.Store(ni.Addr, ci)
-				// } else if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT2 {
-				// 	rc2 := msg.GetReplyConn2()
-
-				// 	c.mapClient.Store(rc2.Nbi.Addr, ci)
 			}
 
 			c.node.PostMsg(msg, nil, nil)

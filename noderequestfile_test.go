@@ -12,7 +12,7 @@ import (
 func requestFile(ctx context.Context, jarvisnode JarvisNode, destaddr string, fn string) error {
 	jarvisnode.RequestFile(ctx, destaddr, &pb.RequestFile{
 		Filename: fn,
-	})
+	}, nil)
 
 	return nil
 }

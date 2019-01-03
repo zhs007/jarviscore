@@ -23,7 +23,7 @@ func transferFile(ctx context.Context, jarvisnode JarvisNode, destaddr string, f
 		File:     b,
 		Filename: path.Join("./test/desttf.dat"),
 		// DestPath: path.Join("./test/desttf.dat"),
-	})
+	}, nil)
 
 	return md5str, nil
 }

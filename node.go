@@ -23,11 +23,11 @@ type JarvisNode interface {
 	GetCoreDB() *coredb.CoreDB
 
 	// RequestCtrl - send ctrl to jarvisnode with addr
-	RequestCtrl(ctx context.Context, addr string, ci *pb.CtrlInfo) error
+	RequestCtrl(ctx context.Context, addr string, ci *pb.CtrlInfo, funcReply FuncReplyRequest) error
 	// SendFile - send filedata to jarvisnode with addr
-	SendFile(ctx context.Context, addr string, fd *pb.FileData) error
+	SendFile(ctx context.Context, addr string, fd *pb.FileData, funcReply FuncReplyRequest) error
 	// RequestFile - request node send filedata to me
-	RequestFile(ctx context.Context, addr string, rf *pb.RequestFile) error
+	RequestFile(ctx context.Context, addr string, rf *pb.RequestFile, funcReply FuncReplyRequest) error
 	// RequestNodes - request nodes
 	RequestNodes() error
 
@@ -71,6 +71,7 @@ type jarvisNode struct {
 	mgrEvent     *eventMgr
 	cfg          *Config
 	mgrCtrl      *ctrlMgr
+	mgrRequest   *requestMgr
 }
 
 const (
@@ -110,6 +111,7 @@ func NewNode(cfg *Config) JarvisNode {
 		mgrCtrl: &ctrlMgr{
 			mapCtrl: make(map[string](Ctrl)),
 		},
+		mgrRequest: &requestMgr{},
 	}
 
 	node.mgrCtrl.Reg(CtrlTypeShell, &CtrlShell{})
@@ -472,11 +474,19 @@ func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg, st
 
 // onMsgReply2
 func (n *jarvisNode) onMsgReply2(ctx context.Context, msg *pb.JarvisMsg) error {
+	if msg.ReplyMsgID > 0 {
+		n.mgrRequest.onReplyRequest(ctx, n, msg)
+	}
+
 	return nil
 }
 
 // onMsgReplyTransferFile
 func (n *jarvisNode) onMsgReplyTransferFile(ctx context.Context, msg *pb.JarvisMsg) error {
+	if msg.ReplyMsgID > 0 {
+		n.mgrRequest.onReplyRequest(ctx, n, msg)
+	}
+
 	n.mgrEvent.onMsgEvent(ctx, EventOnReplyTransferFile, msg)
 
 	return nil
@@ -604,7 +614,7 @@ func (n *jarvisNode) onMsgLocalRequesrNodes(ctx context.Context, msg *pb.JarvisM
 }
 
 // RequestCtrl - send ctrl to jarvisnode with addr
-func (n *jarvisNode) RequestCtrl(ctx context.Context, addr string, ci *pb.CtrlInfo) error {
+func (n *jarvisNode) RequestCtrl(ctx context.Context, addr string, ci *pb.CtrlInfo, funcReply FuncReplyRequest) error {
 	sendmsg, err := BuildRequestCtrl(n, n.myinfo.Addr, addr, ci)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.RequestCtrl", zap.Error(err))
@@ -619,13 +629,17 @@ func (n *jarvisNode) RequestCtrl(ctx context.Context, addr string, ci *pb.CtrlIn
 		return err
 	}
 
+	if funcReply != nil {
+		n.mgrRequest.addRequestData(msg, funcReply)
+	}
+
 	n.PostMsg(msg, nil, nil)
 
 	return nil
 }
 
 // SendFile - send filedata to jarvisnode with addr
-func (n *jarvisNode) SendFile(ctx context.Context, addr string, fd *pb.FileData) error {
+func (n *jarvisNode) SendFile(ctx context.Context, addr string, fd *pb.FileData, funcReply FuncReplyRequest) error {
 	sendmsg, err := BuildTransferFile(n, n.myinfo.Addr, addr, fd)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.SendFile:BuildTransferFile", zap.Error(err))
@@ -638,6 +652,10 @@ func (n *jarvisNode) SendFile(ctx context.Context, addr string, fd *pb.FileData)
 		jarvisbase.Warn("jarvisNode.SendFile:BuildLocalSendMsg", zap.Error(err))
 
 		return err
+	}
+
+	if funcReply != nil {
+		n.mgrRequest.addRequestData(msg, funcReply)
 	}
 
 	n.PostMsg(msg, nil, nil)
@@ -854,13 +872,17 @@ func (n *jarvisNode) onMsgRequestFile(ctx context.Context, msg *pb.JarvisMsg,
 func (n *jarvisNode) onMsgReplyRequestFile(ctx context.Context, msg *pb.JarvisMsg) error {
 	// jarvisbase.Debug("jarvisNode.onMsgReplyRequestFile")
 
+	if msg.ReplyMsgID > 0 {
+		n.mgrRequest.onReplyRequest(ctx, n, msg)
+	}
+
 	n.mgrEvent.onMsgEvent(ctx, EventOnReplyRequestFile, msg)
 
 	return nil
 }
 
 // RequestFile - request node send filedata to me
-func (n *jarvisNode) RequestFile(ctx context.Context, addr string, rf *pb.RequestFile) error {
+func (n *jarvisNode) RequestFile(ctx context.Context, addr string, rf *pb.RequestFile, funcReply FuncReplyRequest) error {
 	sendmsg, err := BuildRequestFile(n, n.myinfo.Addr, addr, rf)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.RequestFile", zap.Error(err))
@@ -873,6 +895,10 @@ func (n *jarvisNode) RequestFile(ctx context.Context, addr string, rf *pb.Reques
 		jarvisbase.Warn("jarvisNode.RequestFile:BuildLocalSendMsg", zap.Error(err))
 
 		return err
+	}
+
+	if funcReply != nil {
+		n.mgrRequest.addRequestData(msg, funcReply)
 	}
 
 	n.PostMsg(msg, nil, nil)

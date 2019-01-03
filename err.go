@@ -49,4 +49,10 @@ var (
 	ErrUnknowNode = errors.New("unknow node")
 	// ErrInvalidMsgID - invalid msgid
 	ErrInvalidMsgID = errors.New("invalid msgid")
+	// ErrDuplicateMsgID - duplicate msgid
+	ErrDuplicateMsgID = errors.New("duplicate msgid")
+	// ErrInvalidRequestData4Node - invalid requestData4Node
+	ErrInvalidRequestData4Node = errors.New("invalid requestData4Node")
+	// ErrInvalidRequestNodeData - invalid requestNodeData
+	ErrInvalidRequestNodeData = errors.New("invalid requestNodeData")
 )

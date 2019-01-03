@@ -65,20 +65,6 @@ func (s *jarvisServer2) ProcMsg(in *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcM
 			return err
 		}
 
-		// msg, err := BuildReply(s.node.coredb.privKey, 0, s.node.myinfo.Addr, s.node.myinfo.Addr, pb.REPLYTYPE_ISME, "")
-		// if err != nil {
-		// 	jarvisbase.Debug("jarvisServer2.ProcMsg:isme", zap.Error(err))
-
-		// 	return err
-		// }
-
-		// err = stream.SendMsg(msg)
-		// if err != nil {
-		// 	jarvisbase.Debug("jarvisServer2.ProcMsg:isme:sendmsg", zap.Error(err))
-
-		// 	return err
-		// }
-
 		return nil
 	}
 
