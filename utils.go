@@ -468,8 +468,8 @@ func BuildNodeInfo(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	return msg, nil
 }
 
-// BuildFileData - build jarvismsg with TRANSFER_FILE
-func BuildFileData(jarvisnode JarvisNode, srcAddr string, destAddr string,
+// BuildTransferFile - build jarvismsg with TRANSFER_FILE
+func BuildTransferFile(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	fd *pb.FileData) (*pb.JarvisMsg, error) {
 
 	fd.Md5String = GetMD5String(fd.File)

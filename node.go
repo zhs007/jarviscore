@@ -626,9 +626,9 @@ func (n *jarvisNode) RequestCtrl(ctx context.Context, addr string, ci *pb.CtrlIn
 
 // SendFile - send filedata to jarvisnode with addr
 func (n *jarvisNode) SendFile(ctx context.Context, addr string, fd *pb.FileData) error {
-	sendmsg, err := BuildFileData(n, n.myinfo.Addr, addr, fd)
+	sendmsg, err := BuildTransferFile(n, n.myinfo.Addr, addr, fd)
 	if err != nil {
-		jarvisbase.Warn("jarvisNode.SendFile", zap.Error(err))
+		jarvisbase.Warn("jarvisNode.SendFile:BuildTransferFile", zap.Error(err))
 
 		return err
 	}

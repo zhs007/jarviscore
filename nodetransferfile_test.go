@@ -21,8 +21,8 @@ func transferFile(ctx context.Context, jarvisnode JarvisNode, destaddr string, f
 
 	jarvisnode.SendFile(ctx, destaddr, &pb.FileData{
 		File:     b,
-		Filename: GetRealFilename(fn),
-		DestPath: path.Join("./test/desttf.dat"),
+		Filename: path.Join("./test/desttf.dat"),
+		// DestPath: path.Join("./test/desttf.dat"),
 	})
 
 	return md5str, nil
