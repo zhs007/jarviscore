@@ -1106,11 +1106,15 @@ func (n *jarvisNode) onMsgRequestFile(ctx context.Context, msg *pb.JarvisMsg,
 		return ErrStreamNil
 	}
 
+	n.mgrEvent.onMsgEvent(ctx, EventOnRequestFile, msg)
+
 	rf := msg.GetRequestFile()
 
 	buf, err := ioutil.ReadFile(rf.Filename)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.onMsgRequestFile:ReadFile", zap.Error(err))
+
+		n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
 
 		return err
 	}
@@ -1123,6 +1127,8 @@ func (n *jarvisNode) onMsgRequestFile(ctx context.Context, msg *pb.JarvisMsg,
 	sendmsg, err := BuildReplyRequestFile(n, n.myinfo.Addr, msg.SrcAddr, fd)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.onMsgRequestFile:BuildReplyRequestFile", zap.Error(err))
+
+		n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
 
 		return err
 	}

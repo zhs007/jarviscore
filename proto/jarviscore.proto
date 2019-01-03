@@ -104,6 +104,7 @@ message FileData {
     bytes file = 1;
     string filename = 2;
     string destPath = 3;
+    string md5String = 4;
 }
 
 // RequestFile - request file

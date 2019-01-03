@@ -2,8 +2,6 @@ package jarviscore
 
 import (
 	"context"
-	"io/ioutil"
-	"path"
 	"testing"
 	"time"
 
@@ -11,32 +9,23 @@ import (
 	pb "github.com/zhs007/jarviscore/proto"
 )
 
-func transferFile(ctx context.Context, jarvisnode JarvisNode, destaddr string, fn string) (string, error) {
-	b, err := ioutil.ReadFile(fn)
-	if err != nil {
-		return "", err
-	}
-
-	md5str := GetMD5String(b)
-
-	jarvisnode.SendFile(ctx, destaddr, &pb.FileData{
-		File:     b,
-		Filename: GetRealFilename(fn),
-		DestPath: path.Join("./test/desttf.dat"),
+func requestFile(ctx context.Context, jarvisnode JarvisNode, destaddr string, fn string) error {
+	jarvisnode.RequestFile(ctx, destaddr, &pb.RequestFile{
+		Filename: fn,
 	})
 
-	return md5str, nil
+	return nil
 }
 
-func TestCheckNodeTransferFile(t *testing.T) {
-	cfg1, err := LoadConfig("./test/node9.yaml")
+func TestCheckNodeRequestFile(t *testing.T) {
+	cfg1, err := LoadConfig("./test/node11.yaml")
 	if err != nil {
-		t.Fatalf("TestCheckNodeTransferFile load config %v", err)
+		t.Fatalf("TestCheckNodeRequestFile load config %v", err)
 	}
 
-	cfg2, err := LoadConfig("./test/node10.yaml")
+	cfg2, err := LoadConfig("./test/node12.yaml")
 	if err != nil {
-		t.Fatalf("TestCheckNodeTransferFile load config %v", err)
+		t.Fatalf("TestCheckNodeRequestFile load config %v", err)
 	}
 
 	InitJarvisCore(cfg1)
@@ -60,11 +49,10 @@ func TestCheckNodeTransferFile(t *testing.T) {
 	defer cancel()
 
 	errstr := ""
-	md5str := ""
 
-	funcStartTransferFile := func(ctx context.Context, cancel context.CancelFunc) {
+	funcStartRequestFile := func(ctx context.Context, cancel context.CancelFunc) {
 		if cp == 4 && tfp == 0 {
-			md5str, err = transferFile(ctx, node1, node2.GetMyInfo().Addr, "./test/test.sh")
+			err = requestFile(ctx, node1, node2.GetMyInfo().Addr, "./test/test.sh")
 			tfp++
 		} else if cp == 4 && tfp == 3 {
 			cancel()
@@ -74,7 +62,7 @@ func TestCheckNodeTransferFile(t *testing.T) {
 	node1.RegNodeEventFunc(EventOnIConnectNode,
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 			if addr2 != node.Addr {
-				errstr = "TestCheckNodeTransferFile node addr fail"
+				errstr = "TestCheckNodeRequestFile node addr fail"
 
 				cancel()
 			}
@@ -85,7 +73,7 @@ func TestCheckNodeTransferFile(t *testing.T) {
 
 				cp++
 
-				funcStartTransferFile(ctx, cancel)
+				funcStartRequestFile(ctx, cancel)
 			}
 
 			return nil
@@ -94,7 +82,7 @@ func TestCheckNodeTransferFile(t *testing.T) {
 	node1.RegNodeEventFunc(EventOnNodeConnected,
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 			if addr2 != node.Addr {
-				errstr = "TestCheckNodeTransferFile node addr fail"
+				errstr = "TestCheckNodeRequestFile node addr fail"
 
 				cancel()
 			}
@@ -105,20 +93,22 @@ func TestCheckNodeTransferFile(t *testing.T) {
 
 				cp++
 
-				funcStartTransferFile(ctx, cancel)
+				funcStartRequestFile(ctx, cancel)
 			}
 
 			return nil
 		})
 
-	node1.RegMsgEventFunc(EventOnReplyTransferFile,
+	node1.RegMsgEventFunc(EventOnReplyRequestFile,
 		func(ctx context.Context, jarvisnode JarvisNode, msg *pb.JarvisMsg) error {
-			rtf := msg.GetReplyTransferFile()
+			rtf := msg.GetFile()
 			if rtf == nil {
 				errstr = "no rtf"
 
 				cancel()
 			}
+
+			md5str := GetMD5String(rtf.File)
 
 			if rtf.Md5String != md5str {
 				errstr = "md5 fail"
@@ -137,7 +127,7 @@ func TestCheckNodeTransferFile(t *testing.T) {
 	node2.RegNodeEventFunc(EventOnIConnectNode,
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 			if addr1 != node.Addr {
-				errstr = "TestCheckNodeTransferFile node addr fail"
+				errstr = "TestCheckNodeRequestFile node addr fail"
 
 				cancel()
 			}
@@ -148,7 +138,7 @@ func TestCheckNodeTransferFile(t *testing.T) {
 
 				cp++
 
-				funcStartTransferFile(ctx, cancel)
+				funcStartRequestFile(ctx, cancel)
 			}
 
 			return nil
@@ -157,7 +147,7 @@ func TestCheckNodeTransferFile(t *testing.T) {
 	node2.RegNodeEventFunc(EventOnNodeConnected,
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 			if addr1 != node.Addr {
-				errstr = "TestCheckNodeTransferFile node addr fail"
+				errstr = "TestCheckNodeRequestFile node addr fail"
 
 				cancel()
 			}
@@ -168,13 +158,13 @@ func TestCheckNodeTransferFile(t *testing.T) {
 
 				cp++
 
-				funcStartTransferFile(ctx, cancel)
+				funcStartRequestFile(ctx, cancel)
 			}
 
 			return nil
 		})
 
-	node2.RegMsgEventFunc(EventOnTransferFile,
+	node2.RegMsgEventFunc(EventOnRequestFile,
 		func(ctx context.Context, jarvisnode JarvisNode, msg *pb.JarvisMsg) error {
 			tfp++
 
@@ -190,16 +180,16 @@ func TestCheckNodeTransferFile(t *testing.T) {
 	node2.GetCoreDB().Close()
 
 	if errstr != "" {
-		t.Fatalf("TestCheckNodeTransferFile err %v", errstr)
+		t.Fatalf("TestCheckNodeRequestFile err %v", errstr)
 	}
 
 	if cp != 4 {
-		t.Fatalf("TestCheckNodeTransferFile need some time %v", cp)
+		t.Fatalf("TestCheckNodeRequestFile need some time %v", cp)
 	}
 
 	if tfp != 3 {
-		t.Fatalf("TestCheckNodeTransferFile ctrl need some time %v", tfp)
+		t.Fatalf("TestCheckNodeRequestFile ctrl need some time %v", tfp)
 	}
 
-	t.Logf("TestCheckNodeTransferFile OK")
+	t.Logf("TestCheckNodeRequestFile OK")
 }
