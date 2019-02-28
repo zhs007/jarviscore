@@ -8,6 +8,131 @@ import (
 	"github.com/zhs007/jarviscore/crypto"
 )
 
+// newPrivateData - new private data
+func newPrivateData(anka ankadb.AnkaDB, priKey string, pubKey string, addr string,
+	createTime int64) (*pb.PrivateData, error) {
+
+	curdb := anka.GetDBMgr().GetDB("coredb")
+	if curdb == nil {
+		return nil, ankadb.ErrCtxCurDB
+	}
+
+	priKeyBytes, err := jarviscrypto.Base58Decode(priKey)
+	if err != nil {
+		return nil, ankadb.ErrQuertParams
+	}
+
+	pubKeyBytes, err := jarviscrypto.Base58Decode(pubKey)
+	if err != nil {
+		return nil, ankadb.ErrQuertParams
+	}
+
+	pd := &pb.PrivateData{
+		PriKey:     priKeyBytes,
+		PubKey:     pubKeyBytes,
+		CreateTime: createTime,
+		Addr:       addr,
+		OnlineTime: 0,
+	}
+
+	err = ankadb.PutMsg2DB(curdb, []byte(keyMyPrivateData), pd)
+	if err != nil {
+		return nil, err
+	}
+
+	// private key not allow query
+	pd.PriKey = nil
+	pd.PubKey = nil
+	pd.StrPubKey = pubKey
+
+	return pd, nil
+}
+
+// updPrivateData - update private data
+func updPrivateData(anka ankadb.AnkaDB, curOnlineTime int64) (*pb.PrivateData, error) {
+	curdb := anka.GetDBMgr().GetDB("coredb")
+	if curdb == nil {
+		return nil, ankadb.ErrCtxCurDB
+	}
+
+	pd := &pb.PrivateData{}
+	err := ankadb.GetMsgFromDB(curdb, []byte(keyMyPrivateData), pd)
+	if err != nil {
+		return nil, err
+	}
+
+	pd.OnlineTime += curOnlineTime
+
+	err = ankadb.PutMsg2DB(curdb, []byte(keyMyPrivateData), pd)
+	if err != nil {
+		return nil, err
+	}
+
+	// private key not allow query
+	pd.StrPubKey = jarviscrypto.Base58Encode(pd.PubKey)
+	pd.PriKey = nil
+	pd.PubKey = nil
+
+	return pd, nil
+}
+
+// trustNode - trust a node
+func trustNode(anka ankadb.AnkaDB, addr string) (*pb.PrivateData, error) {
+	curdb := anka.GetDBMgr().GetDB("coredb")
+	if curdb == nil {
+		return nil, ankadb.ErrCtxCurDB
+	}
+
+	pd := &pb.PrivateData{}
+	err := ankadb.GetMsgFromDB(curdb, []byte(keyMyPrivateData), pd)
+	if err != nil {
+		return nil, err
+	}
+
+	hasaddr := false
+	if len(pd.LstTrustNode) > 0 {
+		for i := range pd.LstTrustNode {
+			if pd.LstTrustNode[i] == addr {
+				hasaddr = true
+
+				break
+			}
+		}
+	}
+
+	if !hasaddr {
+		pd.LstTrustNode = append(pd.LstTrustNode, addr)
+	}
+
+	err = ankadb.PutMsg2DB(curdb, []byte(keyMyPrivateData), pd)
+	if err != nil {
+		return nil, err
+	}
+
+	// private key not allow query
+	pd.StrPubKey = jarviscrypto.Base58Encode(pd.PubKey)
+	pd.PriKey = nil
+	pd.PubKey = nil
+
+	return pd, nil
+}
+
+// updNodeInfo - update node info
+func updNodeInfo(anka ankadb.AnkaDB, ni *pb.NodeInfo) (*pb.NodeInfo, error) {
+	curdb := anka.GetDBMgr().GetDB("coredb")
+	if curdb == nil {
+		return nil, ankadb.ErrCtxCurDB
+	}
+
+	err := ankadb.PutMsg2DB(curdb, []byte(makeNodeInfoKeyID(ni.Addr)), ni)
+	if err != nil {
+		return nil, err
+	}
+
+	return ni, nil
+}
+
+// typeMutation - define mutation for graphql
 var typeMutation = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Mutation",
 	Fields: graphql.Fields{
@@ -34,45 +159,12 @@ var typeMutation = graphql.NewObject(graphql.ObjectConfig{
 					return nil, ankadb.ErrCtxAnkaDB
 				}
 
-				curdb := anka.GetDBMgr().GetDB("coredb")
-				if curdb == nil {
-					return nil, ankadb.ErrCtxCurDB
-				}
-
 				priKey := params.Args["strPriKey"].(string)
 				pubKey := params.Args["strPubKey"].(string)
 				addr := params.Args["addr"].(string)
 				createTime := params.Args["createTime"].(int64)
 
-				priKeyBytes, err := jarviscrypto.Base58Decode(priKey)
-				if err != nil {
-					return nil, ankadb.ErrQuertParams
-				}
-
-				pubKeyBytes, err := jarviscrypto.Base58Decode(pubKey)
-				if err != nil {
-					return nil, ankadb.ErrQuertParams
-				}
-
-				pd := &pb.PrivateData{
-					PriKey:     priKeyBytes,
-					PubKey:     pubKeyBytes,
-					CreateTime: createTime,
-					Addr:       addr,
-					OnlineTime: 0,
-				}
-
-				err = ankadb.PutMsg2DB(curdb, []byte(keyMyPrivateData), pd)
-				if err != nil {
-					return nil, err
-				}
-
-				// private key not allow query
-				pd.PriKey = nil
-				pd.PubKey = nil
-				pd.StrPubKey = pubKey
-
-				return pd, nil
+				return newPrivateData(anka, priKey, pubKey, addr, createTime)
 			},
 		},
 		"updPrivateData": &graphql.Field{
@@ -89,32 +181,9 @@ var typeMutation = graphql.NewObject(graphql.ObjectConfig{
 					return nil, ankadb.ErrCtxAnkaDB
 				}
 
-				curdb := anka.GetDBMgr().GetDB("coredb")
-				if curdb == nil {
-					return nil, ankadb.ErrCtxCurDB
-				}
-
 				curOnlineTime := params.Args["curOnlineTime"].(int64)
 
-				pd := &pb.PrivateData{}
-				err := ankadb.GetMsgFromDB(curdb, []byte(keyMyPrivateData), pd)
-				if err != nil {
-					return nil, err
-				}
-
-				pd.OnlineTime += curOnlineTime
-
-				err = ankadb.PutMsg2DB(curdb, []byte(keyMyPrivateData), pd)
-				if err != nil {
-					return nil, err
-				}
-
-				// private key not allow query
-				pd.StrPubKey = jarviscrypto.Base58Encode(pd.PubKey)
-				pd.PriKey = nil
-				pd.PubKey = nil
-
-				return pd, nil
+				return updPrivateData(anka, curOnlineTime)
 			},
 		},
 		"trustNode": &graphql.Field{
@@ -131,45 +200,9 @@ var typeMutation = graphql.NewObject(graphql.ObjectConfig{
 					return nil, ankadb.ErrCtxAnkaDB
 				}
 
-				curdb := anka.GetDBMgr().GetDB("coredb")
-				if curdb == nil {
-					return nil, ankadb.ErrCtxCurDB
-				}
-
 				addr := params.Args["addr"].(string)
 
-				pd := &pb.PrivateData{}
-				err := ankadb.GetMsgFromDB(curdb, []byte(keyMyPrivateData), pd)
-				if err != nil {
-					return nil, err
-				}
-
-				hasaddr := false
-				if len(pd.LstTrustNode) > 0 {
-					for i := range pd.LstTrustNode {
-						if pd.LstTrustNode[i] == addr {
-							hasaddr = true
-
-							break
-						}
-					}
-				}
-
-				if !hasaddr {
-					pd.LstTrustNode = append(pd.LstTrustNode, addr)
-				}
-
-				err = ankadb.PutMsg2DB(curdb, []byte(keyMyPrivateData), pd)
-				if err != nil {
-					return nil, err
-				}
-
-				// private key not allow query
-				pd.StrPubKey = jarviscrypto.Base58Encode(pd.PubKey)
-				pd.PriKey = nil
-				pd.PubKey = nil
-
-				return pd, nil
+				return trustNode(anka, addr)
 			},
 		},
 		"updNodeInfo": &graphql.Field{
@@ -186,23 +219,13 @@ var typeMutation = graphql.NewObject(graphql.ObjectConfig{
 					return nil, ankadb.ErrCtxAnkaDB
 				}
 
-				curdb := anka.GetDBMgr().GetDB("coredb")
-				if curdb == nil {
-					return nil, ankadb.ErrCtxCurDB
-				}
-
 				ni := &pb.NodeInfo{}
 				err := ankadb.GetMsgFromParam(params, "nodeInfo", ni)
 				if err != nil {
 					return nil, err
 				}
 
-				err = ankadb.PutMsg2DB(curdb, []byte(makeNodeInfoKeyID(ni.Addr)), ni)
-				if err != nil {
-					return nil, err
-				}
-
-				return ni, nil
+				return updNodeInfo(anka, ni)
 			},
 		},
 	},
