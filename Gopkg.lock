@@ -22,14 +22,14 @@
     "ptypes/duration",
     "ptypes/timestamp"
   ]
-  revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
-  version = "v1.2.0"
+  revision = "c823c79ea1570fb5ff454033735a8e68575d1d0f"
+  version = "v1.3.0"
 
 [[projects]]
-  branch = "master"
   name = "github.com/golang/snappy"
   packages = ["."]
-  revision = "2e65f85255dbc3072edf28d6b5b8efc472979f5a"
+  revision = "2a8bb927dd31d8daada140a5d09578521ce5c36a"
+  version = "v0.0.1"
 
 [[projects]]
   name = "github.com/graphql-go/graphql"
@@ -46,8 +46,8 @@
     "language/typeInfo",
     "language/visitor"
   ]
-  revision = "5c1be0872a56fba73b279434ea95dfda735abedd"
-  version = "v0.7.6"
+  revision = "08943645bf265d192b32f2100cdff2428f7ae7c5"
+  version = "v0.7.7"
 
 [[projects]]
   branch = "master"
@@ -66,7 +66,7 @@
     "leveldb/table",
     "leveldb/util"
   ]
-  revision = "b001fa50d6b27f3f0bb175a87d0cb55426d0a0ae"
+  revision = "4217c9f31f5816db02addc94e56061da77f288d8"
 
 [[projects]]
   name = "github.com/zhs007/ankadb"
@@ -76,8 +76,8 @@
     "graphqlext",
     "proto"
   ]
-  revision = "530bdea9d82cde9c6a44931fb5d7e46e8dee8ffc"
-  version = "v0.2.8"
+  revision = "eff880a4a3071447e6f9c7cc366f3a39ebc79719"
+  version = "v0.2.9"
 
 [[projects]]
   name = "go.uber.org/atomic"
@@ -108,7 +108,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ripemd160"]
-  revision = "eb0de9b17e854e9b1ccd9963efafc79862359959"
+  revision = "31a38585487a4b1fd6ff4f8f3db26f1fb296ac82"
 
 [[projects]]
   branch = "master"
@@ -122,13 +122,13 @@
     "internal/timeseries",
     "trace"
   ]
-  revision = "351d144fa1fc0bd934e2408202be0c29f25e35a0"
+  revision = "c95aed5357e77a4bf7d3955c46740000a17adee1"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "4ed8d59d0b35e1e29334a206d1b3f38b1e5dfb31"
+  revision = "92a0ff1e1e2f61773648454ec71ec0c0f1c700a2"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -155,7 +155,7 @@
   branch = "master"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
-  revision = "31ac5d88444a9e7ad18077db9a165d793ad06a2e"
+  revision = "4f5b463f9597cbe0dd13a6a2cd4f85e788d27508"
 
 [[projects]]
   name = "google.golang.org/grpc"
@@ -164,17 +164,22 @@
     "balancer",
     "balancer/base",
     "balancer/roundrobin",
+    "binarylog/grpc_binarylog_v1",
     "codes",
     "connectivity",
     "credentials",
+    "credentials/internal",
     "encoding",
     "encoding/proto",
     "grpclog",
     "internal",
     "internal/backoff",
+    "internal/binarylog",
     "internal/channelz",
     "internal/envconfig",
     "internal/grpcrand",
+    "internal/grpcsync",
+    "internal/syscall",
     "internal/transport",
     "keepalive",
     "metadata",
@@ -187,8 +192,8 @@
     "status",
     "tap"
   ]
-  revision = "2e463a05d100327ca47ac218281906921038fd95"
-  version = "v1.16.0"
+  revision = "2fdaae294f38ed9a121193c51ec99fecd3b13eb7"
+  version = "v1.19.0"
 
 [[projects]]
   name = "gopkg.in/yaml.v2"

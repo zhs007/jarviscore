@@ -1,0 +1,15 @@
+FROM golang:1.10
+
+MAINTAINER zerro "zerrozhao@gmail.com"
+
+RUN go get -u github.com/golang/dep/cmd/dep
+
+WORKDIR $GOPATH/src/github.com/zhs007/jarviscore
+
+COPY ./Gopkg.* $GOPATH/src/github.com/zhs007/jarviscore/
+
+RUN dep ensure -vendor-only -v
+
+COPY . $GOPATH/src/github.com/zhs007/jarviscore
+
+RUN go test ./... -cover
