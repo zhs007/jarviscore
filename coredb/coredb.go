@@ -9,6 +9,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/graphql-go/graphql"
 	"github.com/zhs007/ankadb"
 	"github.com/zhs007/jarviscore/base"
 	"github.com/zhs007/jarviscore/coredb/proto"
@@ -71,7 +72,7 @@ const queryTrustNode = `mutation TrustNode($addr: ID!) {
 type CoreDB struct {
 	sync.RWMutex
 
-	ankaDB       *ankadb.AnkaDB
+	ankaDB       ankadb.AnkaDB
 	privKey      *jarviscrypto.PrivateKey
 	lstTrustNode []string
 	mapNodes     map[string]*coredbpb.NodeInfo
@@ -89,7 +90,17 @@ func NewCoreDB(dbpath string, httpAddr string, engine string) (*CoreDB, error) {
 		PathDB: path.Join(dbpath, "coredb"),
 	})
 
-	ankaDB, err := ankadb.NewAnkaDB(cfg, newDBLogic())
+	dblogic, err := ankadb.NewBaseDBLogic(graphql.SchemaConfig{
+		Query:    typeQuery,
+		Mutation: typeMutation,
+	})
+	if err != nil {
+		jarvisbase.Error("newdb", zap.Error(err))
+
+		return nil, err
+	}
+
+	ankaDB, err := ankadb.NewAnkaDB(cfg, dblogic)
 	if ankaDB == nil {
 		jarvisbase.Error("newdb", zap.Error(err))
 
@@ -98,13 +109,6 @@ func NewCoreDB(dbpath string, httpAddr string, engine string) (*CoreDB, error) {
 
 	jarvisbase.Info("newdb", zap.String("dbpath", dbpath),
 		zap.String("httpAddr", httpAddr), zap.String("engine", engine))
-
-	// ankaDB, err := newdb(dbpath, httpAddr, engine)
-	// if err != nil {
-	// 	jarvisbase.Error("newCoreDB:NewAnkaLDB", zap.Error(err))
-
-	// 	return nil, err
-	// }
 
 	return &CoreDB{
 		ankaDB:   ankaDB,
@@ -130,7 +134,7 @@ func (db *CoreDB) savePrivateKey() error {
 	params["addr"] = db.privKey.ToAddress()
 	params["createTime"] = time.Now().Unix()
 
-	ret, err := db.ankaDB.LocalQuery(context.Background(), queryNewPrivateData, params)
+	ret, err := db.ankaDB.Query(context.Background(), queryNewPrivateData, params)
 	if err != nil {
 		jarvisbase.Error("savePrivateKey", zap.Error(err))
 
@@ -181,7 +185,7 @@ func (db *CoreDB) LoadPrivateKeyEx() error {
 }
 
 func (db *CoreDB) _loadPrivateKey() error {
-	result, err := db.ankaDB.LocalQuery(context.Background(), queryPrivateKey, nil)
+	result, err := db.ankaDB.Query(context.Background(), queryPrivateKey, nil)
 	if err != nil {
 		return err
 	}
@@ -240,9 +244,9 @@ func (db *CoreDB) _foreachNode(oneach func(string, *coredbpb.NodeInfo), snapshot
 	params["nums"] = nums
 	// params["createTime"] = time.Now().Unix()
 
-	result, err := db.ankaDB.LocalQuery(context.Background(), queryNodeInfos, params)
+	result, err := db.ankaDB.Query(context.Background(), queryNodeInfos, params)
 	if err != nil {
-		jarvisbase.Warn("CoreDB._foreachNode:LocalQuery", zap.Error(err))
+		jarvisbase.Warn("CoreDB._foreachNode:Query", zap.Error(err))
 
 		return nil, err
 	}
@@ -422,9 +426,9 @@ func (db *CoreDB) UpdNodeBaseInfo(ni *jarviscorepb.NodeBaseInfo) error {
 		return err
 	}
 
-	result, err := db.ankaDB.LocalQuery(context.Background(), queryUpdNodeInfo, params)
+	result, err := db.ankaDB.Query(context.Background(), queryUpdNodeInfo, params)
 	if err != nil {
-		jarvisbase.Warn("CoreDB.UpdNodeBaseInfo:LocalQuery", zap.Error(err))
+		jarvisbase.Warn("CoreDB.UpdNodeBaseInfo:Query", zap.Error(err))
 
 		return err
 	}
@@ -461,9 +465,9 @@ func (db *CoreDB) UpdNodeInfo(addr string) error {
 		return err
 	}
 
-	result, err := db.ankaDB.LocalQuery(context.Background(), queryUpdNodeInfo, params)
+	result, err := db.ankaDB.Query(context.Background(), queryUpdNodeInfo, params)
 	if err != nil {
-		jarvisbase.Warn("CoreDB.UpdNodeInfo:LocalQuery", zap.Error(err))
+		jarvisbase.Warn("CoreDB.UpdNodeInfo:Query", zap.Error(err))
 
 		return err
 	}
@@ -487,7 +491,7 @@ func (db *CoreDB) TrustNode(addr string) (string, error) {
 	params := make(map[string]interface{})
 	params["addr"] = addr
 
-	ret, err := db.ankaDB.LocalQuery(context.Background(), queryTrustNode, params)
+	ret, err := db.ankaDB.Query(context.Background(), queryTrustNode, params)
 	if err != nil {
 		jarvisbase.Error("trustNode", zap.Error(err))
 
@@ -541,7 +545,7 @@ func (db *CoreDB) IsTrustNode(addr string) bool {
 
 // GetMyState - get my state
 func (db *CoreDB) GetMyState() (string, error) {
-	ret, err := db.ankaDB.LocalQuery(context.Background(), queryPrivateData, nil)
+	ret, err := db.ankaDB.Query(context.Background(), queryPrivateData, nil)
 	if err != nil {
 		jarvisbase.Error("CoreDB.GetMyState", zap.Error(err))
 
@@ -586,7 +590,7 @@ func (db *CoreDB) GetNodes(nums int) (string, error) {
 	params["nums"] = nums
 	params["createTime"] = time.Now().Unix()
 
-	ret, err := db.ankaDB.LocalQuery(context.Background(), queryNodeInfos, params)
+	ret, err := db.ankaDB.Query(context.Background(), queryNodeInfos, params)
 
 	err = ankadb.GetResultError(ret)
 	if err != nil {
@@ -666,7 +670,7 @@ func (db *CoreDB) FindMapNode(name string) *coredbpb.NodeInfo {
 
 // Close - close database
 func (db *CoreDB) Close() {
-	db.ankaDB.MgrDB.GetDB("coredb").Close()
+	db.ankaDB.GetDBMgr().GetDB("coredb").Close()
 }
 
 // GetNewSendMsgID - get msgid

@@ -34,7 +34,7 @@ var typeMutation = graphql.NewObject(graphql.ObjectConfig{
 					return nil, ankadb.ErrCtxAnkaDB
 				}
 
-				curdb := anka.MgrDB.GetDB("coredb")
+				curdb := anka.GetDBMgr().GetDB("coredb")
 				if curdb == nil {
 					return nil, ankadb.ErrCtxCurDB
 				}
@@ -89,7 +89,7 @@ var typeMutation = graphql.NewObject(graphql.ObjectConfig{
 					return nil, ankadb.ErrCtxAnkaDB
 				}
 
-				curdb := anka.MgrDB.GetDB("coredb")
+				curdb := anka.GetDBMgr().GetDB("coredb")
 				if curdb == nil {
 					return nil, ankadb.ErrCtxCurDB
 				}
@@ -131,7 +131,7 @@ var typeMutation = graphql.NewObject(graphql.ObjectConfig{
 					return nil, ankadb.ErrCtxAnkaDB
 				}
 
-				curdb := anka.MgrDB.GetDB("coredb")
+				curdb := anka.GetDBMgr().GetDB("coredb")
 				if curdb == nil {
 					return nil, ankadb.ErrCtxCurDB
 				}
@@ -186,7 +186,7 @@ var typeMutation = graphql.NewObject(graphql.ObjectConfig{
 					return nil, ankadb.ErrCtxAnkaDB
 				}
 
-				curdb := anka.MgrDB.GetDB("coredb")
+				curdb := anka.GetDBMgr().GetDB("coredb")
 				if curdb == nil {
 					return nil, ankadb.ErrCtxCurDB
 				}

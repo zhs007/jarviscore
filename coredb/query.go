@@ -23,7 +23,7 @@ var typeQuery = graphql.NewObject(
 						return nil, ankadb.ErrCtxAnkaDB
 					}
 
-					curdb := anka.MgrDB.GetDB("coredb")
+					curdb := anka.GetDBMgr().GetDB("coredb")
 					if curdb == nil {
 						return nil, ankadb.ErrCtxCurDB
 					}
@@ -55,7 +55,7 @@ var typeQuery = graphql.NewObject(
 						return nil, ankadb.ErrCtxAnkaDB
 					}
 
-					curdb := anka.MgrDB.GetDB("coredb")
+					curdb := anka.GetDBMgr().GetDB("coredb")
 					if curdb == nil {
 						return nil, ankadb.ErrCtxCurDB
 					}
@@ -91,7 +91,7 @@ var typeQuery = graphql.NewObject(
 						return nil, ankadb.ErrCtxAnkaDB
 					}
 
-					curdb := anka.MgrDB.GetDB("coredb")
+					curdb := anka.GetDBMgr().GetDB("coredb")
 					if curdb == nil {
 						return nil, ankadb.ErrCtxCurDB
 					}
@@ -129,12 +129,12 @@ var typeQuery = graphql.NewObject(
 						return nil, ankadb.ErrCtxAnkaDB
 					}
 
-					curdb := anka.MgrDB.GetDB("coredb")
+					curdb := anka.GetDBMgr().GetDB("coredb")
 					if curdb == nil {
 						return nil, ankadb.ErrCtxCurDB
 					}
 
-					mgrSnapshot := anka.MgrDB.GetMgrSnapshot("coredb")
+					mgrSnapshot := anka.GetDBMgr().GetMgrSnapshot("coredb")
 					if mgrSnapshot == nil {
 						return nil, ankadb.ErrCtxSnapshotMgr
 					}

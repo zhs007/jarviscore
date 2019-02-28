@@ -8,12 +8,6 @@
   revision = "00116ff8c62fc6d4daa24156ce0ad03ce49ae845"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/goinggo/mapstructure"
-  packages = ["."]
-  revision = "194205d9b4a98eff86d4e8d3c0dfe87dea59ef81"
-
-[[projects]]
   name = "github.com/golang/protobuf"
   packages = [
     "proto",
@@ -50,6 +44,12 @@
   version = "v0.7.7"
 
 [[projects]]
+  name = "github.com/mitchellh/mapstructure"
+  packages = ["."]
+  revision = "3536a929edddb9a5b34bd6861dc4a9647cb459fe"
+  version = "v1.1.2"
+
+[[projects]]
   branch = "master"
   name = "github.com/syndtr/goleveldb"
   packages = [
@@ -69,6 +69,7 @@
   revision = "4217c9f31f5816db02addc94e56061da77f288d8"
 
 [[projects]]
+  branch = "v0.3"
   name = "github.com/zhs007/ankadb"
   packages = [
     ".",
@@ -76,8 +77,7 @@
     "graphqlext",
     "proto"
   ]
-  revision = "eff880a4a3071447e6f9c7cc366f3a39ebc79719"
-  version = "v0.2.9"
+  revision = "6ff2cf208f8c4fd0ef4e36d44fba0052a235edaa"
 
 [[projects]]
   name = "go.uber.org/atomic"
@@ -204,6 +204,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9b3df6926a7855c1238afa1e6cb63df7733110b2ac10efec5d94f49a957c775f"
+  inputs-digest = "c8b27c268a10dff35bc2c18c921e1652fa290c1ec9bb98ead0763eeffbbb2b23"
   solver-name = "gps-cdcl"
   solver-version = 1
