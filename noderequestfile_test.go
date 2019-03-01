@@ -55,6 +55,8 @@ func TestCheckNodeRequestFile(t *testing.T) {
 			err = requestFile(ctx, node1, node2.GetMyInfo().Addr, "./test/test.sh")
 			tfp++
 		} else if cp == 4 && tfp == 3 {
+			t.Logf("TestCheckNodeRequestFile cancel ok")
+
 			cancel()
 		}
 	}
@@ -63,6 +65,8 @@ func TestCheckNodeRequestFile(t *testing.T) {
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 			if addr2 != node.Addr {
 				errstr = "TestCheckNodeRequestFile node addr fail"
+
+				t.Fatalf("TestCheckNodeRequestFile cancel %v", errstr)
 
 				cancel()
 			}
@@ -83,6 +87,8 @@ func TestCheckNodeRequestFile(t *testing.T) {
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 			if addr2 != node.Addr {
 				errstr = "TestCheckNodeRequestFile node addr fail"
+
+				t.Fatalf("TestCheckNodeRequestFile cancel %v", errstr)
 
 				cancel()
 			}
@@ -105,6 +111,8 @@ func TestCheckNodeRequestFile(t *testing.T) {
 			if rtf == nil {
 				errstr = "no rtf"
 
+				t.Fatalf("TestCheckNodeRequestFile cancel %v", errstr)
+
 				cancel()
 			}
 
@@ -113,11 +121,15 @@ func TestCheckNodeRequestFile(t *testing.T) {
 			if rtf.Md5String != md5str {
 				errstr = "md5 fail"
 
+				t.Fatalf("TestCheckNodeRequestFile cancel %v", errstr)
+
 				cancel()
 			}
 
 			tfp++
 			if cp == 4 && tfp == 3 {
+				t.Logf("TestCheckNodeRequestFile cancel ok")
+
 				cancel()
 			}
 
@@ -128,6 +140,8 @@ func TestCheckNodeRequestFile(t *testing.T) {
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 			if addr1 != node.Addr {
 				errstr = "TestCheckNodeRequestFile node addr fail"
+
+				t.Fatalf("TestCheckNodeRequestFile cancel %v", errstr)
 
 				cancel()
 			}
@@ -148,6 +162,8 @@ func TestCheckNodeRequestFile(t *testing.T) {
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 			if addr1 != node.Addr {
 				errstr = "TestCheckNodeRequestFile node addr fail"
+
+				t.Fatalf("TestCheckNodeRequestFile cancel %v", errstr)
 
 				cancel()
 			}

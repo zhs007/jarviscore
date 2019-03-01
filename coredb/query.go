@@ -4,6 +4,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/graphql-go/graphql"
 	"github.com/zhs007/ankadb"
+	"github.com/zhs007/ankadb/database"
 	"github.com/zhs007/ankadb/graphqlext"
 	"github.com/zhs007/ankadb/proto"
 	pb "github.com/zhs007/jarviscore/coredb/proto"
@@ -20,6 +21,10 @@ func getPrivateKey(anka ankadb.AnkaDB) (*pb.PrivateData, error) {
 	pd := &pb.PrivateData{}
 	err := ankadb.GetMsgFromDB(curdb, []byte(keyMyPrivateData), pd)
 	if err != nil {
+		if err == database.ErrNotFound {
+			return pd, nil
+		}
+
 		return nil, err
 	}
 

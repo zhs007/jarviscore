@@ -9,6 +9,7 @@ import (
 
 	"github.com/graphql-go/graphql"
 	"github.com/zhs007/ankadb"
+	"github.com/zhs007/ankadb/database"
 	"github.com/zhs007/jarviscore/base"
 	"github.com/zhs007/jarviscore/coredb/proto"
 	"github.com/zhs007/jarviscore/crypto"
@@ -168,8 +169,10 @@ func (db *CoreDB) Init() error {
 func (db *CoreDB) loadPrivateKey() error {
 	err := db._loadPrivateKey()
 	if err != nil {
-		jarvisbase.Info("loadPrivateKey:_loadPrivateKey",
-			zap.Error(err))
+		if err != database.ErrNotFound {
+			jarvisbase.Info("loadPrivateKey:_loadPrivateKey",
+				zap.Error(err))
+		}
 
 		db.privKey = jarviscrypto.GenerateKey()
 		jarvisbase.Info("loadPrivateKey:GenerateKey",
@@ -205,6 +208,10 @@ func (db *CoreDB) _loadPrivateKey() error {
 		jarvisbase.Warn("CoreDB._loadPrivateKey:MakeMsgFromResultEx", zap.Error(err))
 
 		return err
+	}
+
+	if pd.Addr == "" {
+		return database.ErrNotFound
 	}
 
 	jarvisbase.Info("_loadPrivateKey",

@@ -10,7 +10,7 @@ import (
 )
 
 // VERSION - jarviscore version
-const VERSION = "0.7.7"
+const VERSION = "0.7.8"
 
 func loadFile(filename string) ([]byte, error) {
 	file, err := os.Open(filename)
