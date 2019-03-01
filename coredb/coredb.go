@@ -2,7 +2,6 @@ package coredb
 
 import (
 	"context"
-	"encoding/json"
 	"sync"
 	"time"
 
@@ -153,15 +152,30 @@ func (db *CoreDB) savePrivateKey() error {
 	return nil
 }
 
-// LoadPrivateKeyEx -
-func (db *CoreDB) LoadPrivateKeyEx() error {
+// Init -
+func (db *CoreDB) Init() error {
+	err := db.loadPrivateKey()
+	if err != nil {
+		return err
+	}
+
+	err = db.loadAllNodes()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// loadPrivateKey -
+func (db *CoreDB) loadPrivateKey() error {
 	err := db._loadPrivateKey()
 	if err != nil {
-		jarvisbase.Info("loadPrivateKeyEx:_loadPrivateKey",
+		jarvisbase.Info("loadPrivateKey:_loadPrivateKey",
 			zap.Error(err))
 
 		db.privKey = jarviscrypto.GenerateKey()
-		jarvisbase.Info("loadPrivateKeyEx:GenerateKey",
+		jarvisbase.Info("loadPrivateKey:GenerateKey",
 			zap.String("privkey", db.privKey.ToAddress()))
 
 		return db.savePrivateKey()
@@ -169,16 +183,8 @@ func (db *CoreDB) LoadPrivateKeyEx() error {
 
 	myaddr := db.privKey.ToAddress()
 
-	jarvisbase.Info("loadPrivateKeyEx:OK",
+	jarvisbase.Info("loadPrivateKey:OK",
 		zap.String("privkey", myaddr))
-
-	// if len(config.LstTrustNode) > 0 {
-	// 	for i := range config.LstTrustNode {
-	// 		if !db.IsTrustNode(config.LstTrustNode[i]) {
-	// 			db.TrustNode(config.LstTrustNode[i])
-	// 		}
-	// 	}
-	// }
 
 	return nil
 }
@@ -196,42 +202,34 @@ func (db *CoreDB) _loadPrivateKey() error {
 		return err
 	}
 
-	// jarvisbase.Info("_loadPrivateKey",
-	// 	jarvisbase.JSON("result", result))
-
-	// if result.HasErrors() {
-	// 	return result.Errors[0]
-	// }
-
-	rpd := &ResultPrivateKey{}
-	err = ankadb.MakeObjFromResult(result, rpd)
+	pd := &coredbpb.PrivateData{}
+	err = ankadb.MakeMsgFromResultEx(result, "privateKey", pd)
 	if err != nil {
+		jarvisbase.Warn("CoreDB._loadPrivateKey:MakeMsgFromResultEx", zap.Error(err))
+
 		return err
 	}
 
 	jarvisbase.Info("_loadPrivateKey",
-		jarvisbase.JSON("rpd", rpd))
+		jarvisbase.JSON("privateKey", pd))
 
-	bytesPrikey, err := jarviscrypto.Base58Decode(rpd.PrivateKey.StrPriKey)
+	bytesPrikey, err := jarviscrypto.Base58Decode(pd.StrPriKey)
 	if err != nil {
+		jarvisbase.Warn("CoreDB._loadPrivateKey:Base58Decode", zap.Error(err))
+
 		return err
 	}
-
-	// tmp := jarviscrypto.Base58Encode(bytesPrikey)
-	// jarvisbase.Info("_loadPrivateKey",
-	// 	zap.String("recheck base58", tmp))
 
 	privkey := jarviscrypto.NewPrivateKey()
 	err = privkey.FromBytes(bytesPrikey)
 	if err != nil {
-		return err
-		// db.privKey = jarviscrypto.GenerateKey()
+		jarvisbase.Warn("CoreDB._loadPrivateKey:privkey.FromBytes", zap.Error(err))
 
-		// return db.savePrivateKey()
+		return err
 	}
 
 	db.privKey = privkey
-	db.lstTrustNode = rpd.PrivateKey.LstTrustNode
+	db.lstTrustNode = pd.LstTrustNode
 
 	return nil
 }
@@ -257,18 +255,13 @@ func (db *CoreDB) _foreachNode(oneach func(string, *coredbpb.NodeInfo), snapshot
 		return nil, err
 	}
 
-	// jarvisbase.Debug("CoreDB._foreachNode", jarvisbase.JSON("result", result))
-
-	rnis := &ResultNodeInfos{}
-	err = ankadb.MakeObjFromResult(result, rnis)
+	lst := &coredbpb.NodeInfoList{}
+	err = ankadb.MakeMsgFromResultEx(result, "nodeInfos", lst)
 	if err != nil {
-		jarvisbase.Warn("CoreDB._foreachNode:MakeObjFromResult", zap.Error(err))
+		jarvisbase.Warn("CoreDB._foreachNode:MakeMsgFromResultEx", zap.Error(err))
 
 		return nil, err
 	}
-
-	lst := ResultNodeInfos2NodeInfoList(rnis)
-	// jarvisbase.Debug("CoreDB._foreachNode", jarvisbase.JSON("lst", lst))
 
 	for _, v := range lst.Nodes {
 		oneach(v.Addr, v)
@@ -299,8 +292,8 @@ func (db *CoreDB) foreachNodeEx(oneach func(string, *coredbpb.NodeInfo)) error {
 	return nil
 }
 
-// LoadAllNodes -
-func (db *CoreDB) LoadAllNodes() error {
+// loadAllNodes -
+func (db *CoreDB) loadAllNodes() error {
 	curnodes := 0
 
 	err := db.foreachNodeEx(func(key string, val *coredbpb.NodeInfo) {
@@ -324,69 +317,6 @@ func (db *CoreDB) LoadAllNodes() error {
 
 	return nil
 }
-
-// func (db *coreDB) saveNode(cni *NodeInfo) error {
-// 	ni := &coredbpb.NodeInfo{
-// 		ServAddr:      cni.baseinfo.ServAddr,
-// 		Addr:          cni.baseinfo.Addr,
-// 		Name:          cni.baseinfo.Name,
-// 		ConnectNums:   int32(cni.connectNums),
-// 		ConnectedNums: int32(cni.connectedNums),
-// 	}
-
-// 	params := make(map[string]interface{})
-
-// 	err := ankadb.MakeParamsFromMsg(params, "nodeInfo", ni)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	result, err := db.ankaDB.LocalQuery(context.Background(), queryUpdNodeInfo, params)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	jarvisbase.Info("saveNode", jarvisbase.JSON("result", result))
-
-// 	return nil
-// }
-
-// // InsNode -
-// func (db *CoreDB) InsNode(ni *jarviscorepb.NodeBaseInfo) error {
-// 	cni := &coredbpb.NodeInfo{
-// 		ServAddr:        ni.ServAddr,
-// 		Addr:            ni.Addr,
-// 		Name:            ni.Name,
-// 		ConnectNums:     0,
-// 		ConnectedNums:   0,
-// 		CtrlID:          0,
-// 		LstClientAddr:   nil,
-// 		AddTime:         time.Now().Unix(),
-// 		ConnectMe:       false,
-// 		ConnectNode:     false,
-// 		NodeTypeVersion: ni.NodeTypeVersion,
-// 		NodeType:        ni.NodeType,
-// 		CoreVersion:     ni.CoreVersion,
-// 	}
-
-// 	params := make(map[string]interface{})
-
-// 	err := ankadb.MakeParamsFromMsg(params, "nodeInfo", cni)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	result, err := db.ankaDB.LocalQuery(context.Background(), queryUpdNodeInfo, params)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	jarvisbase.Info("insNode", jarvisbase.JSON("result", result))
-
-// 	db.mapNodes[cni.Addr] = cni
-
-// 	return nil
-// }
 
 // UpdNodeBaseInfo -
 func (db *CoreDB) UpdNodeBaseInfo(ni *jarviscorepb.NodeBaseInfo) error {
@@ -486,45 +416,35 @@ func (db *CoreDB) UpdNodeInfo(addr string) error {
 }
 
 // TrustNode - trust node with addr
-func (db *CoreDB) TrustNode(addr string) (string, error) {
+func (db *CoreDB) TrustNode(addr string) error {
 	params := make(map[string]interface{})
 	params["addr"] = addr
 
-	ret, err := db.ankaDB.Query(context.Background(), queryTrustNode, params)
+	result, err := db.ankaDB.Query(context.Background(), queryTrustNode, params)
 	if err != nil {
 		jarvisbase.Error("trustNode", zap.Error(err))
 
-		return err.Error(), err
+		return err
 	}
 
-	err = ankadb.GetResultError(ret)
+	err = ankadb.GetResultError(result)
 	if err != nil {
 		jarvisbase.Warn("CoreDB.TrustNode:GetResultError", zap.Error(err))
 
-		return err.Error(), err
+		return err
 	}
 
-	s, err := json.Marshal(ret)
+	pd := &coredbpb.PrivateData{}
+	err = ankadb.MakeMsgFromResultEx(result, "trustNode", pd)
 	if err != nil {
-		jarvisbase.Error("CoreDB.TrustNode", zap.Error(err))
+		jarvisbase.Warn("CoreDB.TrustNode:MakeMsgFromResultEx", zap.Error(err))
 
-		return err.Error(), err
+		return err
 	}
 
-	// jarvisbase.Info("trustNode",
-	// 	zap.String("result", string(s)))
+	db.lstTrustNode = pd.LstTrustNode
 
-	rpd := &ResultPrivateKey{}
-	err = ankadb.MakeObjFromResult(ret, rpd)
-	if err != nil {
-		jarvisbase.Error("CoreDB.TrustNode:MakeObjFromResult", zap.Error(err))
-
-		return err.Error(), err
-	}
-
-	db.lstTrustNode = rpd.PrivateKey.LstTrustNode
-
-	return string(s), nil
+	return nil
 }
 
 // IsTrustNode - is trust node with addr
@@ -542,73 +462,61 @@ func (db *CoreDB) IsTrustNode(addr string) bool {
 	return false
 }
 
-// GetMyState - get my state
-func (db *CoreDB) GetMyState() (string, error) {
-	ret, err := db.ankaDB.Query(context.Background(), queryPrivateData, nil)
+// GetMyData - get my state
+func (db *CoreDB) GetMyData() (*coredbpb.PrivateData, error) {
+	result, err := db.ankaDB.Query(context.Background(), queryPrivateData, nil)
 	if err != nil {
-		jarvisbase.Error("CoreDB.GetMyState", zap.Error(err))
+		jarvisbase.Error("CoreDB.GetMyData", zap.Error(err))
 
-		return err.Error(), err
+		return nil, err
 	}
 
-	err = ankadb.GetResultError(ret)
+	err = ankadb.GetResultError(result)
 	if err != nil {
-		jarvisbase.Warn("CoreDB.GetMyState:GetResultError", zap.Error(err))
+		jarvisbase.Warn("CoreDB.GetMyData:GetResultError", zap.Error(err))
 
-		return err.Error(), err
+		return nil, err
 	}
 
-	s, err := json.Marshal(ret)
+	pd := &coredbpb.PrivateData{}
+	err = ankadb.MakeMsgFromResultEx(result, "privateData", pd)
 	if err != nil {
-		jarvisbase.Error("CoreDB.GetMyState", zap.Error(err))
+		jarvisbase.Error("CoreDB.GetMyData:MakeMsgFromResultEx err", zap.Error(err))
 
-		return err.Error(), err
+		return nil, err
 	}
 
-	// jarvisbase.Info("GetMyState",
-	// 	zap.String("result", string(s)))
+	db.lstTrustNode = pd.LstTrustNode
 
-	rpd := &ResultPrivateKey{}
-	err = ankadb.MakeObjFromResult(ret, rpd)
-	if err != nil {
-		jarvisbase.Error("CoreDB.GetMyState:MakeObjFromResult", zap.Error(err))
-
-		return err.Error(), err
-	}
-
-	db.lstTrustNode = rpd.PrivateKey.LstTrustNode
-
-	return string(s), nil
+	return pd, nil
 }
 
 // GetNodes - get jarvis nodes
-func (db *CoreDB) GetNodes(nums int) (string, error) {
+func (db *CoreDB) GetNodes(nums int) (*coredbpb.NodeInfoList, error) {
 	params := make(map[string]interface{})
 	params["snapshotID"] = int64(0)
 	params["beginIndex"] = 0
 	params["nums"] = nums
 	params["createTime"] = time.Now().Unix()
 
-	ret, err := db.ankaDB.Query(context.Background(), queryNodeInfos, params)
+	result, err := db.ankaDB.Query(context.Background(), queryNodeInfos, params)
 
-	err = ankadb.GetResultError(ret)
+	err = ankadb.GetResultError(result)
 	if err != nil {
 		jarvisbase.Warn("CoreDB.GetNodes:GetResultError", zap.Error(err))
 
-		return err.Error(), err
+		return nil, err
 	}
 
-	s, err := json.Marshal(ret)
+	lst := &coredbpb.NodeInfoList{}
+	err = ankadb.MakeMsgFromResultEx(result, "nodeInfos", lst)
 	if err != nil {
-		jarvisbase.Error("CoreDB.GetNodes", zap.Error(err))
+		jarvisbase.Warn("CoreDB.GetNodes:MakeMsgFromResultEx", zap.Error(err))
 
-		return err.Error(), err
+		return nil, err
 	}
 
-	// jarvisbase.Info("GetNodes",
-	// 	zap.String("result", string(s)))
-
-	return string(s), nil
+	return lst, nil
 }
 
 // has node

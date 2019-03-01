@@ -124,14 +124,12 @@ func NewNode(cfg *Config) JarvisNode {
 	node.mgrEvent.regNodeEventFunc(EventOnIConnectNode, onIConnectNode)
 	node.mgrEvent.regNodeEventFunc(EventOnDeprecateNode, onDeprecateNode)
 
-	err = node.coredb.LoadPrivateKeyEx()
+	err = node.coredb.Init()
 	if err != nil {
-		jarvisbase.Error("NewNode:loadPrivateKey", zap.Error(err))
+		jarvisbase.Error("NewNode:Init", zap.Error(err))
 
 		return nil
 	}
-
-	node.coredb.LoadAllNodes()
 
 	node.myinfo.Addr = node.coredb.GetPrivateKey().ToAddress()
 	node.myinfo.Name = cfg.BaseNodeInfo.NodeName
