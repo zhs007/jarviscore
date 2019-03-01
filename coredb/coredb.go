@@ -3,7 +3,6 @@ package coredb
 import (
 	"context"
 	"encoding/json"
-	"path"
 	"sync"
 	"time"
 
@@ -87,7 +86,7 @@ func NewCoreDB(dbpath string, httpAddr string, engine string) (*CoreDB, error) {
 	cfg.ListDB = append(cfg.ListDB, ankadb.DBConfig{
 		Name:   "coredb",
 		Engine: engine,
-		PathDB: path.Join(dbpath, "coredb"),
+		PathDB: "coredb",
 	})
 
 	dblogic, err := ankadb.NewBaseDBLogic(graphql.SchemaConfig{
