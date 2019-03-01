@@ -68,12 +68,10 @@ const queryTrustNode = `mutation TrustNode($addr: ID!) {
 
 // CoreDB - jarvisnode core database
 type CoreDB struct {
-	sync.RWMutex
-
 	ankaDB       ankadb.AnkaDB
 	privKey      *jarviscrypto.PrivateKey
 	lstTrustNode []string
-	mapNodes     map[string]*coredbpb.NodeInfo
+	mapNodes     sync.Map
 }
 
 // NewCoreDB -
@@ -109,8 +107,7 @@ func NewCoreDB(dbpath string, httpAddr string, engine string) (*CoreDB, error) {
 		zap.String("httpAddr", httpAddr), zap.String("engine", engine))
 
 	return &CoreDB{
-		ankaDB:   ankaDB,
-		mapNodes: make(map[string]*coredbpb.NodeInfo),
+		ankaDB: ankaDB,
 	}, nil
 }
 
@@ -304,7 +301,7 @@ func (db *CoreDB) loadAllNodes() error {
 			val.LastRecvMsgID = 1
 		}
 
-		db.mapNodes[val.Addr] = val
+		db.mapNodes.Store(val.Addr, val)
 		curnodes++
 	})
 	if err != nil {
@@ -320,8 +317,8 @@ func (db *CoreDB) loadAllNodes() error {
 
 // UpdNodeBaseInfo -
 func (db *CoreDB) UpdNodeBaseInfo(ni *jarviscorepb.NodeBaseInfo) error {
-	cni, ok := db.mapNodes[ni.Addr]
-	if !ok {
+	cni := db.GetNode(ni.Addr)
+	if cni == nil {
 		cni = &coredbpb.NodeInfo{
 			ServAddr:        ni.ServAddr,
 			Addr:            ni.Addr,
@@ -371,15 +368,15 @@ func (db *CoreDB) UpdNodeBaseInfo(ni *jarviscorepb.NodeBaseInfo) error {
 
 	// jarvisbase.Debug("updNodeBaseInfo", jarvisbase.JSON("result", result))
 
-	db.mapNodes[cni.Addr] = cni
+	db.mapNodes.Store(cni.Addr, cni)
 
 	return nil
 }
 
 // UpdNodeInfo -
 func (db *CoreDB) UpdNodeInfo(addr string) error {
-	cni, ok := db.mapNodes[addr]
-	if !ok {
+	cni := db.GetNode(addr)
+	if cni == nil {
 		jarvisbase.Warn("CoreDB.UpdNodeInfo", zap.Error(ErrCoreDBHasNotNode))
 
 		return ErrCoreDBHasNotNode
@@ -410,7 +407,7 @@ func (db *CoreDB) UpdNodeInfo(addr string) error {
 
 	// jarvisbase.Debug("UpdNodeInfo", jarvisbase.JSON("result", result))
 
-	db.mapNodes[cni.Addr] = cni
+	db.mapNodes.Store(cni.Addr, cni)
 
 	return nil
 }
@@ -521,30 +518,40 @@ func (db *CoreDB) GetNodes(nums int) (*coredbpb.NodeInfoList, error) {
 
 // has node
 func (db *CoreDB) hasNode(addr string) bool {
-	_, ok := db.mapNodes[addr]
-
-	return ok
+	return db.GetNode(addr) != nil
 }
 
 // GetNode - get node with addr
 func (db *CoreDB) GetNode(addr string) *coredbpb.NodeInfo {
-	n, ok := db.mapNodes[addr]
+	var cni *coredbpb.NodeInfo
+	ifcni, ok := db.mapNodes.Load(addr)
 	if ok {
-		return n
+		cni, ok = ifcni.(*coredbpb.NodeInfo)
 	}
 
-	return nil
+	if !ok {
+		return nil
+	}
+
+	return cni
 }
 
 // FindNodeWithServAddr - get node
 func (db *CoreDB) FindNodeWithServAddr(servaddr string) *coredbpb.NodeInfo {
-	for _, v := range db.mapNodes {
-		if v.ServAddr == servaddr {
-			return v
-		}
-	}
+	var curnode *coredbpb.NodeInfo
 
-	return nil
+	db.mapNodes.Range(func(key, value interface{}) bool {
+		cni, ok := value.(*coredbpb.NodeInfo)
+		if ok && cni.ServAddr == servaddr {
+			curnode = cni
+
+			return false
+		}
+
+		return true
+	})
+
+	return curnode
 }
 
 // Start - start
@@ -554,25 +561,42 @@ func (db *CoreDB) Start(ctx context.Context) error {
 
 // ForEachMapNodes - foreach mapNodes
 func (db *CoreDB) ForEachMapNodes(oneach func(string, *coredbpb.NodeInfo) error) error {
-	for k, v := range db.mapNodes {
-		err := oneach(k, v)
-		if err != nil {
-			return err
-		}
-	}
+	var curerr error
 
-	return nil
+	db.mapNodes.Range(func(key, value interface{}) bool {
+		curaddr, addrok := key.(string)
+		curnode, nodeok := value.(*coredbpb.NodeInfo)
+		if addrok && nodeok {
+			err := oneach(curaddr, curnode)
+			if err != nil {
+				curerr = err
+
+				return false
+			}
+		}
+
+		return true
+	})
+
+	return curerr
 }
 
 // FindMapNode - find node in mapNodes
 func (db *CoreDB) FindMapNode(name string) *coredbpb.NodeInfo {
-	for _, v := range db.mapNodes {
-		if v.Name == name {
-			return v
-		}
-	}
+	var curnode *coredbpb.NodeInfo
 
-	return nil
+	db.mapNodes.Range(func(key, value interface{}) bool {
+		cni, ok := value.(*coredbpb.NodeInfo)
+		if ok && cni.Name == name {
+			curnode = cni
+
+			return false
+		}
+
+		return true
+	})
+
+	return curnode
 }
 
 // Close - close database
@@ -582,13 +606,13 @@ func (db *CoreDB) Close() {
 
 // GetNewSendMsgID - get msgid
 func (db *CoreDB) GetNewSendMsgID(addr string) int64 {
-	v, ok := db.mapNodes[addr]
-	if ok {
-		v.LastSendMsgID = v.LastSendMsgID + 1
+	curnode := db.GetNode(addr)
+	if curnode != nil {
+		curnode.LastSendMsgID = curnode.LastSendMsgID + 1
 
 		db.UpdNodeInfo(addr)
 
-		return v.LastSendMsgID
+		return curnode.LastSendMsgID
 	}
 
 	return 0
@@ -596,9 +620,9 @@ func (db *CoreDB) GetNewSendMsgID(addr string) int64 {
 
 // GetCurRecvMsgID - get msgid
 func (db *CoreDB) GetCurRecvMsgID(addr string) int64 {
-	v, ok := db.mapNodes[addr]
-	if ok {
-		return v.LastRecvMsgID
+	curnode := db.GetNode(addr)
+	if curnode != nil {
+		return curnode.LastRecvMsgID
 	}
 
 	return 1
@@ -606,9 +630,9 @@ func (db *CoreDB) GetCurRecvMsgID(addr string) int64 {
 
 // UpdSendMsgID - update msgid
 func (db *CoreDB) UpdSendMsgID(addr string, msgid int64) {
-	v, ok := db.mapNodes[addr]
-	if ok {
-		v.LastSendMsgID = msgid
+	curnode := db.GetNode(addr)
+	if curnode != nil {
+		curnode.LastSendMsgID = msgid
 
 		db.UpdNodeInfo(addr)
 	}
@@ -616,9 +640,9 @@ func (db *CoreDB) UpdSendMsgID(addr string, msgid int64) {
 
 // UpdRecvMsgID - update msgid
 func (db *CoreDB) UpdRecvMsgID(addr string, msgid int64) {
-	v, ok := db.mapNodes[addr]
-	if ok {
-		v.LastRecvMsgID = msgid
+	curnode := db.GetNode(addr)
+	if curnode != nil {
+		curnode.LastRecvMsgID = msgid
 
 		db.UpdNodeInfo(addr)
 	}
@@ -626,11 +650,26 @@ func (db *CoreDB) UpdRecvMsgID(addr string, msgid int64) {
 
 // UpdMsgID - update msgid
 func (db *CoreDB) UpdMsgID(addr string, sendmsgid int64, recvmsgid int64) {
-	v, ok := db.mapNodes[addr]
-	if ok {
-		v.LastSendMsgID = sendmsgid
-		v.LastRecvMsgID = recvmsgid
+	curnode := db.GetNode(addr)
+	if curnode != nil {
+		curnode.LastSendMsgID = sendmsgid
+		curnode.LastRecvMsgID = recvmsgid
 
 		db.UpdNodeInfo(addr)
 	}
+}
+
+// CountNodeNums - count all node nums
+func (db *CoreDB) CountNodeNums() int {
+	nums := 0
+	db.mapNodes.Range(func(key, value interface{}) bool {
+		_, ok := value.(*coredbpb.NodeInfo)
+		if ok {
+			nums++
+		}
+
+		return true
+	})
+
+	return nums
 }

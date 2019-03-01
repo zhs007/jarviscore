@@ -723,9 +723,6 @@ func (n *jarvisNode) onMsgRequestNodes(ctx context.Context, msg *pb.JarvisMsg, s
 
 // FindNodeWithName - find node with name
 func (n *jarvisNode) FindNodeWithName(name string) *coredbpb.NodeInfo {
-	n.coredb.Lock()
-	defer n.coredb.Unlock()
-
 	return n.coredb.FindMapNode(name)
 }
 

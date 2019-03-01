@@ -1,0 +1,932 @@
+=============== Nov 25, 2018 (UTC) ===============
+12:35:41.749421 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+12:35:41.754681 db@open opening
+12:35:41.756283 version@stat F·[] S·0B[] Sc·[]
+12:35:41.758430 db@janitor F·2 G·0
+12:35:41.758755 db@open done T·3.806402ms
+=============== Nov 28, 2018 (UTC) ===============
+09:52:36.058713 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+09:52:36.066816 version@stat F·[] S·0B[] Sc·[]
+09:52:36.066843 db@open opening
+09:52:36.067051 journal@recovery F·1
+09:52:36.068052 journal@recovery recovering @1
+09:52:36.094466 memdb@flush created L0@2 N·18 S·1KiB "ank..t:2,v3":"ni:..mRb,v11"
+09:52:36.095317 version@stat F·[1] S·1KiB[1KiB] Sc·[0.25]
+09:52:36.100754 db@janitor F·3 G·0
+09:52:36.100829 db@open done T·33.949652ms
+=============== Nov 30, 2018 (UTC) ===============
+13:52:22.878439 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+13:52:22.878763 version@stat F·[1] S·1KiB[1KiB] Sc·[0.25]
+13:52:22.878779 db@open opening
+13:52:22.878828 journal@recovery F·1
+13:52:22.879575 journal@recovery recovering @3
+13:52:22.882790 memdb@flush created L0@5 N·9 S·1KiB "ank..t:2,v20":"ni:..zWJ,v24"
+13:52:22.883686 version@stat F·[2] S·2KiB[2KiB] Sc·[0.50]
+13:52:22.889269 db@janitor F·4 G·0
+13:52:22.889336 db@open done T·10.541805ms
+=============== Dec 1, 2018 (UTC) ===============
+01:47:50.664292 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+01:47:50.664752 version@stat F·[2] S·2KiB[2KiB] Sc·[0.50]
+01:47:50.664770 db@open opening
+01:47:50.664848 journal@recovery F·1
+01:47:50.665807 journal@recovery recovering @6
+01:47:50.668629 memdb@flush created L0@8 N·4 S·991B "ank..t:2,v30":"ni:..4yw,v33"
+01:47:50.669322 version@stat F·[3] S·3KiB[3KiB] Sc·[0.75]
+01:47:50.675144 db@janitor F·5 G·0
+01:47:50.675233 db@open done T·10.430597ms
+=============== Dec 6, 2018 (UTC) ===============
+22:52:52.447756 memdb@flush N·32260 S·3MiB
+22:52:52.574658 memdb@flush created L0@12 N·32260 S·407KiB "ank..t:2,v35":"ni:..p9a,v37"
+22:52:52.575826 version@stat F·[4] S·410KiB[410KiB] Sc·[1.00]
+22:52:52.665777 memdb@flush committed F·1 T·195.67979ms
+22:52:52.671893 journal@remove removed @9
+22:52:52.672032 table@compaction L0·4 -> L1·0 S·410KiB Q·32317
+22:52:52.742623 table@build created L1@13 N·23 S·1KiB "ank..t:2,v35":"ni:..mRb,v11"
+22:52:52.742714 version@stat F·[0 1] S·1KiB[0B 1KiB] Sc·[0.00 0.00]
+22:52:52.747767 table@compaction committed F-3 S-409KiB Ke·0 D·32268 T·75.685321ms
+22:52:52.748180 table@remove removed @12
+22:52:52.748240 table@remove removed @8
+22:52:52.748294 table@remove removed @5
+22:52:52.748340 table@remove removed @2
+=============== Dec 8, 2018 (UTC) ===============
+09:22:52.724423 memdb@flush N·32263 S·3MiB
+09:22:52.785268 memdb@flush created L0@15 N·32263 S·406KiB "ni:..zzm,v64557":"ni:..zzm,v32295"
+09:22:52.785396 version@stat F·[1 1] S·408KiB[406KiB 1KiB] Sc·[0.25 0.00]
+09:22:52.789907 memdb@flush committed F·1 T·65.209674ms
+09:22:52.796929 journal@remove removed @11
+=============== Dec 9, 2018 (UTC) ===============
+19:47:52.583550 memdb@flush N·32263 S·3MiB
+19:47:52.624741 memdb@flush created L0@17 N·32263 S·407KiB "ni:..zzm,v96820":"ni:..zzm,v64558"
+19:47:52.624865 version@stat F·[2 1] S·816KiB[814KiB 1KiB] Sc·[0.50 0.00]
+19:47:52.633256 memdb@flush committed F·1 T·49.374935ms
+19:47:52.641007 journal@remove removed @14
+=============== Dec 11, 2018 (UTC) ===============
+06:17:53.062169 memdb@flush N·32263 S·3MiB
+06:17:53.131436 memdb@flush created L0@19 N·32263 S·407KiB "ni:..zzm,v129083":"ni:..zzm,v96821"
+06:17:53.131560 version@stat F·[3 1] S·1MiB[1MiB 1KiB] Sc·[0.75 0.00]
+06:17:53.146520 memdb@flush committed F·1 T·69.696945ms
+06:17:53.151374 journal@remove removed @16
+=============== Dec 12, 2018 (UTC) ===============
+16:47:52.884685 memdb@flush N·32263 S·3MiB
+16:47:52.964904 memdb@flush created L0@21 N·32263 S·407KiB "ni:..zzm,v161346":"ni:..zzm,v129084"
+16:47:52.965061 version@stat F·[4 1] S·1MiB[1MiB 1KiB] Sc·[1.00 0.00]
+16:47:52.997488 memdb@flush committed F·1 T·112.603719ms
+16:47:53.003009 journal@remove removed @18
+16:47:53.003333 table@compaction L0·4 -> L1·1 S·1MiB Q·161357
+16:47:53.278411 table@build created L1@22 N·23 S·1KiB "ank..t:2,v35":"ni:..mRb,v11"
+16:47:53.278476 version@stat F·[0 1] S·1KiB[0B 1KiB] Sc·[0.00 0.00]
+16:47:53.297407 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·294.036377ms
+16:47:53.297684 table@remove removed @21
+16:47:53.297983 table@remove removed @19
+16:47:53.298138 table@remove removed @17
+16:47:53.298366 table@remove removed @15
+16:47:53.298417 table@remove removed @13
+=============== Dec 14, 2018 (UTC) ===============
+03:12:53.139033 memdb@flush N·32263 S·3MiB
+03:12:53.189715 memdb@flush created L0@24 N·32263 S·407KiB "ni:..zzm,v193609":"ni:..zzm,v161347"
+03:12:53.189874 version@stat F·[1 1] S·409KiB[407KiB 1KiB] Sc·[0.25 0.00]
+03:12:53.191628 memdb@flush committed F·1 T·52.372688ms
+03:12:53.199031 journal@remove removed @20
+=============== Dec 15, 2018 (UTC) ===============
+13:42:52.897220 memdb@flush N·32263 S·3MiB
+13:42:52.943540 memdb@flush created L0@26 N·32263 S·407KiB "ni:..zzm,v225872":"ni:..zzm,v193610"
+13:42:52.943719 version@stat F·[2 1] S·817KiB[815KiB 1KiB] Sc·[0.50 0.00]
+13:42:52.945369 memdb@flush committed F·1 T·47.964571ms
+13:42:52.951057 journal@remove removed @23
+=============== Dec 16, 2018 (UTC) ===============
+03:50:15.890605 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+03:50:15.901928 version@stat F·[2 1] S·817KiB[815KiB 1KiB] Sc·[0.50 0.00]
+03:50:15.901952 db@open opening
+03:50:15.902038 journal@recovery F·1
+03:50:15.903627 journal@recovery recovering @25
+03:50:15.949676 memdb@flush created L0@27 N·13255 S·167KiB "ni:..zzm,v239127":"ni:..NGe,v238708"
+03:50:15.950345 version@stat F·[3 1] S·984KiB[983KiB 1KiB] Sc·[0.75 0.00]
+03:50:15.968039 db@janitor F·6 G·0
+03:50:15.968093 db@open done T·66.130573ms
+=============== Dec 16, 2018 (UTC) ===============
+12:06:39.908630 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+12:06:39.908838 version@stat F·[3 1] S·984KiB[983KiB 1KiB] Sc·[0.75 0.00]
+12:06:39.908850 db@open opening
+12:06:39.908898 journal@recovery F·1
+12:06:39.909862 journal@recovery recovering @28
+12:06:39.939489 memdb@flush created L0@30 N·10923 S·139KiB "ank..t:2,v239129":"ni:..p9a,v239133"
+12:06:39.940310 version@stat F·[4 1] S·1MiB[1MiB 1KiB] Sc·[1.00 0.00]
+12:06:39.947244 db@janitor F·7 G·0
+12:06:39.947351 db@open done T·38.488862ms
+12:06:39.947516 table@compaction L0·4 -> L1·1 S·1MiB Q·250052
+12:06:40.003238 table@build created L1@33 N·27 S·1KiB "ank..t:2,v239129":"ni:..mRb,v11"
+12:06:40.003363 version@stat F·[0 1] S·1KiB[0B 1KiB] Sc·[0.00 0.00]
+12:06:40.005108 table@compaction committed F-4 S-1MiB Ke·0 D·88700 T·57.526368ms
+12:06:40.012610 table@remove removed @30
+12:06:40.012789 table@remove removed @27
+12:06:40.013002 table@remove removed @26
+12:06:40.013208 table@remove removed @24
+12:06:40.013242 table@remove removed @22
+=============== Dec 17, 2018 (UTC) ===============
+10:31:42.449544 memdb@flush N·32259 S·3MiB
+10:31:42.501162 memdb@flush created L0@35 N·32259 S·408KiB "ank..t:2,v250053":"ni:..p9a,v250070"
+10:31:42.501320 version@stat F·[1 1] S·410KiB[408KiB 1KiB] Sc·[0.25 0.00]
+10:31:42.503004 memdb@flush committed F·1 T·53.276884ms
+10:31:42.508994 journal@remove removed @31
+=============== Dec 18, 2018 (UTC) ===============
+08:56:42.544383 memdb@flush N·32263 S·3MiB
+08:56:42.657680 memdb@flush created L0@37 N·32263 S·407KiB "ni:..zzm,v314574":"ni:..zzm,v282312"
+08:56:42.657818 version@stat F·[2 1] S·818KiB[816KiB 1KiB] Sc·[0.50 0.00]
+08:56:42.673756 memdb@flush committed F·1 T·129.181323ms
+08:56:42.678720 journal@remove removed @34
+=============== Dec 19, 2018 (UTC) ===============
+07:21:42.773373 memdb@flush N·32263 S·3MiB
+07:21:42.820784 memdb@flush created L0@39 N·32263 S·407KiB "ni:..zzm,v346837":"ni:..zzm,v314575"
+07:21:42.820912 version@stat F·[3 1] S·1MiB[1MiB 1KiB] Sc·[0.75 0.00]
+07:21:42.822536 memdb@flush committed F·1 T·48.961442ms
+07:21:42.828514 journal@remove removed @36
+=============== Dec 20, 2018 (UTC) ===============
+02:26:43.602625 memdb@flush N·32264 S·3MiB
+02:26:43.720639 memdb@flush created L0@41 N·32264 S·407KiB "ni:..VJq,v349910":"ni:..zzm,v346838"
+02:26:43.720793 version@stat F·[4 1] S·1MiB[1MiB 1KiB] Sc·[1.00 0.00]
+02:26:43.737595 memdb@flush committed F·1 T·134.737103ms
+02:26:43.744118 journal@remove removed @38
+02:26:43.744580 table@compaction L0·4 -> L1·1 S·1MiB Q·379108
+02:26:43.963662 table@build created L1@42 N·31 S·2KiB "ank..t:2,v250053":"ni:..mRb,v11"
+02:26:43.963812 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+02:26:43.981403 table@compaction committed F-4 S-1MiB Ke·0 D·129045 T·236.757497ms
+02:26:43.981780 table@remove removed @41
+02:26:43.982105 table@remove removed @39
+02:26:43.982369 table@remove removed @37
+02:26:43.982647 table@remove removed @35
+02:26:43.982796 table@remove removed @33
+21:06:42.997737 memdb@flush N·32263 S·3MiB
+21:06:43.088460 memdb@flush created L0@44 N·32263 S·407KiB "ni:..zzm,v411364":"ni:..zzm,v379102"
+21:06:43.088590 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+21:06:43.090570 memdb@flush committed F·1 T·92.667096ms
+21:06:43.095828 journal@remove removed @40
+=============== Dec 21, 2018 (UTC) ===============
+15:46:43.711311 memdb@flush N·32263 S·3MiB
+15:46:43.757426 memdb@flush created L0@46 N·32263 S·407KiB "ni:..zzm,v443627":"ni:..zzm,v411365"
+15:46:43.757603 version@stat F·[2 1] S·817KiB[815KiB 2KiB] Sc·[0.50 0.00]
+15:46:43.759040 memdb@flush committed F·1 T·47.562158ms
+15:46:43.764610 journal@remove removed @43
+=============== Dec 22, 2018 (UTC) ===============
+10:26:43.443583 memdb@flush N·32263 S·3MiB
+10:26:43.560630 memdb@flush created L0@48 N·32263 S·407KiB "ni:..zzm,v475890":"ni:..zzm,v443628"
+10:26:43.560795 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+10:26:43.579410 memdb@flush committed F·1 T·135.683924ms
+10:26:43.586483 journal@remove removed @45
+=============== Dec 23, 2018 (UTC) ===============
+05:06:42.948831 memdb@flush N·32263 S·3MiB
+05:06:42.994955 memdb@flush created L0@50 N·32263 S·407KiB "ni:..zzm,v508153":"ni:..zzm,v475891"
+05:06:42.995107 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+05:06:42.996547 memdb@flush committed F·1 T·47.542403ms
+05:06:43.002335 journal@remove removed @47
+05:06:43.005592 table@compaction L0·4 -> L1·1 S·1MiB Q·508158
+05:06:43.123230 table@build created L1@51 N·31 S·2KiB "ank..t:2,v250053":"ni:..mRb,v11"
+05:06:43.123375 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+05:06:43.128095 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·122.443913ms
+05:06:43.128386 table@remove removed @50
+05:06:43.128959 table@remove removed @48
+05:06:43.129379 table@remove removed @46
+05:06:43.129715 table@remove removed @44
+05:06:43.129800 table@remove removed @42
+23:46:43.485196 memdb@flush N·32263 S·3MiB
+23:46:43.530534 memdb@flush created L0@53 N·32263 S·407KiB "ni:..zzm,v540416":"ni:..zzm,v508154"
+23:46:43.530694 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+23:46:43.532290 memdb@flush committed F·1 T·46.886789ms
+23:46:43.537550 journal@remove removed @49
+=============== Dec 24, 2018 (UTC) ===============
+18:26:43.791441 memdb@flush N·32263 S·3MiB
+18:26:43.864398 memdb@flush created L0@55 N·32263 S·407KiB "ni:..zzm,v572679":"ni:..zzm,v540417"
+18:26:43.864573 version@stat F·[2 1] S·817KiB[815KiB 2KiB] Sc·[0.50 0.00]
+18:26:43.887736 memdb@flush committed F·1 T·96.034392ms
+18:26:43.893411 journal@remove removed @52
+=============== Dec 25, 2018 (UTC) ===============
+13:06:43.824906 memdb@flush N·32263 S·3MiB
+13:06:43.869379 memdb@flush created L0@57 N·32263 S·407KiB "ni:..zzm,v604942":"ni:..zzm,v572680"
+13:06:43.869573 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+13:06:43.871098 memdb@flush committed F·1 T·46.031684ms
+13:06:43.876136 journal@remove removed @54
+=============== Dec 26, 2018 (UTC) ===============
+07:46:43.405062 memdb@flush N·32263 S·3MiB
+07:46:43.457746 memdb@flush created L0@59 N·32263 S·407KiB "ni:..zzm,v637205":"ni:..zzm,v604943"
+07:46:43.457913 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+07:46:43.459212 memdb@flush committed F·1 T·53.991265ms
+07:46:43.464696 journal@remove removed @56
+07:46:43.464958 table@compaction L0·4 -> L1·1 S·1MiB Q·637211
+07:46:43.541541 table@build created L1@60 N·31 S·2KiB "ank..t:2,v250053":"ni:..mRb,v11"
+07:46:43.541667 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+07:46:43.543044 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·77.949545ms
+07:46:43.543303 table@remove removed @59
+07:46:43.543712 table@remove removed @57
+07:46:43.544030 table@remove removed @55
+07:46:43.544361 table@remove removed @53
+07:46:43.544476 table@remove removed @51
+=============== Dec 27, 2018 (UTC) ===============
+02:26:45.531782 memdb@flush N·32263 S·3MiB
+02:26:45.618598 memdb@flush created L0@62 N·32263 S·407KiB "ni:..zzm,v669468":"ni:..zzm,v637206"
+02:26:45.618801 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+02:26:45.624628 memdb@flush committed F·1 T·92.631664ms
+02:26:45.630275 journal@remove removed @58
+19:46:42.023427 memdb@flush N·32263 S·3MiB
+19:46:42.078159 memdb@flush created L0@64 N·32263 S·407KiB "ni:..gqY,v677254":"ni:..zzm,v669469"
+19:46:42.078328 version@stat F·[2 1] S·817KiB[815KiB 2KiB] Sc·[0.50 0.00]
+19:46:42.093448 memdb@flush committed F·1 T·69.839868ms
+19:46:42.098088 journal@remove removed @61
+=============== Dec 28, 2018 (UTC) ===============
+12:31:43.507886 memdb@flush N·32263 S·3MiB
+12:31:43.559482 memdb@flush created L0@66 N·32263 S·407KiB "ni:..zzm,v733994":"ni:..zzm,v701732"
+12:31:43.559637 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+12:31:43.561165 memdb@flush committed F·1 T·52.978439ms
+12:31:43.567403 journal@remove removed @63
+=============== Dec 29, 2018 (UTC) ===============
+05:21:44.059074 memdb@flush N·32263 S·3MiB
+05:21:44.101508 memdb@flush created L0@68 N·32263 S·407KiB "ni:..zzm,v766257":"ni:..zzm,v733995"
+05:21:44.101687 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+05:21:44.103130 memdb@flush committed F·1 T·41.470411ms
+05:21:44.108531 journal@remove removed @65
+05:21:44.137628 table@compaction L0·4 -> L1·1 S·1MiB Q·766267
+05:21:44.269506 table@build created L1@69 N·32 S·2KiB "ank..t:2,v250053":"ni:..mRb,v11"
+05:21:44.269644 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+05:21:44.271137 table@compaction committed F-4 S-1MiB Ke·0 D·129051 T·122.396467ms
+05:21:44.271384 table@remove removed @68
+05:21:44.271650 table@remove removed @66
+05:21:44.271840 table@remove removed @64
+05:21:44.272041 table@remove removed @62
+05:21:44.272079 table@remove removed @60
+=============== Dec 30, 2018 (UTC) ===============
+02:41:43.965556 memdb@flush N·32263 S·3MiB
+02:41:44.085530 memdb@flush created L0@71 N·32263 S·407KiB "ni:..zzm,v798520":"ni:..zzm,v766258"
+02:41:44.085708 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+02:41:44.091339 memdb@flush committed F·1 T·125.600241ms
+02:41:44.095428 journal@remove removed @67
+20:51:42.859639 memdb@flush N·32263 S·3MiB
+20:51:42.916642 memdb@flush created L0@73 N·32263 S·407KiB "ni:..zzm,v830783":"ni:..zzm,v798521"
+20:51:42.916816 version@stat F·[2 1] S·817KiB[815KiB 2KiB] Sc·[0.50 0.00]
+20:51:42.925971 memdb@flush committed F·1 T·66.167691ms
+20:51:42.930797 journal@remove removed @70
+=============== Dec 31, 2018 (UTC) ===============
+14:31:43.349638 memdb@flush N·32263 S·3MiB
+14:31:43.394400 memdb@flush created L0@75 N·32263 S·407KiB "ni:..zzm,v863046":"ni:..zzm,v830784"
+14:31:43.394608 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+14:31:43.396182 memdb@flush committed F·1 T·46.356035ms
+14:31:43.400920 journal@remove removed @72
+=============== Jan 1, 2019 (UTC) ===============
+07:51:43.218723 memdb@flush N·32263 S·3MiB
+07:51:43.280565 memdb@flush created L0@77 N·32263 S·407KiB "ni:..zzm,v895309":"ni:..zzm,v863047"
+07:51:43.280740 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+07:51:43.285339 memdb@flush committed F·1 T·66.420612ms
+07:51:43.291824 journal@remove removed @74
+07:51:43.292102 table@compaction L0·4 -> L1·1 S·1MiB Q·895315
+07:51:43.363345 table@build created L1@78 N·32 S·2KiB "ank..t:2,v250053":"ni:..mRb,v11"
+07:51:43.363476 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+07:51:43.364917 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·72.747663ms
+07:51:43.365190 table@remove removed @77
+07:51:43.365506 table@remove removed @75
+07:51:43.365752 table@remove removed @73
+07:51:43.366064 table@remove removed @71
+07:51:43.366105 table@remove removed @69
+=============== Jan 2, 2019 (UTC) ===============
+00:56:43.235401 memdb@flush N·32263 S·3MiB
+00:56:43.352578 memdb@flush created L0@80 N·32263 S·407KiB "ni:..zzm,v927572":"ni:..zzm,v895310"
+00:56:43.352765 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+00:56:43.368281 memdb@flush committed F·1 T·132.667222ms
+00:56:43.373183 journal@remove removed @76
+17:41:45.514100 memdb@flush N·32263 S·3MiB
+17:41:45.564554 memdb@flush created L0@82 N·32263 S·407KiB "ni:..zzm,v959835":"ni:..zzm,v927573"
+17:41:45.564738 version@stat F·[2 1] S·817KiB[815KiB 2KiB] Sc·[0.50 0.00]
+17:41:45.578181 memdb@flush committed F·1 T·63.926805ms
+17:41:45.582844 journal@remove removed @79
+=============== Jan 3, 2019 (UTC) ===============
+10:31:43.231671 memdb@flush N·32263 S·3MiB
+10:31:43.320326 memdb@flush created L0@84 N·32263 S·407KiB "ni:..zzm,v992098":"ni:..zzm,v959836"
+10:31:43.320516 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+10:31:43.321967 memdb@flush committed F·1 T·90.116206ms
+10:31:43.329599 journal@remove removed @81
+=============== Jan 4, 2019 (UTC) ===============
+04:16:41.120409 memdb@flush N·32263 S·3MiB
+04:16:41.156686 memdb@flush created L0@86 N·32263 S·407KiB "ni:..zzm,v1024361":"ni:..zzm,v992099"
+04:16:41.156823 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+04:16:41.163345 memdb@flush committed F·1 T·42.753605ms
+04:16:41.167751 journal@remove removed @83
+04:16:41.168001 table@compaction L0·4 -> L1·1 S·1MiB Q·1024362
+04:16:41.404550 table@build created L1@87 N·32 S·2KiB "ank..t:2,v250053":"ni:..mRb,v11"
+04:16:41.404700 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+04:16:41.413039 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·213.366014ms
+04:16:41.413344 table@remove removed @86
+04:16:41.413694 table@remove removed @84
+04:16:41.414041 table@remove removed @82
+04:16:41.414189 table@remove removed @80
+04:16:41.414287 table@remove removed @78
+21:31:43.116777 memdb@flush N·32263 S·3MiB
+21:31:43.289147 memdb@flush created L0@89 N·32263 S·407KiB "ni:..zzm,v1056624":"ni:..zzm,v1024362"
+21:31:43.289347 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+21:31:43.290675 memdb@flush committed F·1 T·108.595297ms
+21:31:43.296850 journal@remove removed @85
+=============== Jan 5, 2019 (UTC) ===============
+02:42:38.705657 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+02:42:38.758994 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+02:42:38.759029 db@open opening
+02:42:38.759115 journal@recovery F·1
+02:42:38.760767 journal@recovery recovering @88
+02:42:38.819879 memdb@flush created L0@90 N·5558 S·70KiB "ni:..zzm,v1062182":"ni:..zzm,v1056625"
+02:42:38.822014 version@stat F·[2 1] S·480KiB[478KiB 2KiB] Sc·[0.50 0.00]
+02:42:38.842158 db@janitor F·5 G·0
+02:42:38.842223 db@open done T·83.175529ms
+19:32:42.128678 memdb@flush N·32257 S·3MiB
+19:32:42.165868 memdb@flush created L0@94 N·32257 S·409KiB "ank..t:2,v1062184":"ni:..p9a,v1062187"
+19:32:42.165914 version@stat F·[3 1] S·889KiB[887KiB 2KiB] Sc·[0.75 0.00]
+19:32:42.173862 memdb@flush committed F·1 T·45.138569ms
+19:32:42.176756 journal@remove removed @91
+=============== Jan 6, 2019 (UTC) ===============
+13:22:43.082240 memdb@flush N·32263 S·3MiB
+13:22:43.121413 memdb@flush created L0@96 N·32263 S·407KiB "ni:..zzm,v1126703":"ni:..zzm,v1094441"
+13:22:43.121476 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+13:22:43.122839 memdb@flush committed F·1 T·40.537423ms
+13:22:43.125736 journal@remove removed @93
+13:22:43.125848 table@compaction L0·4 -> L1·1 S·1MiB Q·1126707
+13:22:43.165646 table@build created L1@97 N·32 S·2KiB "ank..t:2,v1062184":"ni:..mRb,v11"
+13:22:43.165715 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+13:22:43.167030 table@compaction committed F-4 S-1MiB Ke·0 D·102341 T·41.150559ms
+13:22:43.167276 table@remove removed @96
+13:22:43.167472 table@remove removed @94
+13:22:43.167529 table@remove removed @90
+13:22:43.167609 table@remove removed @89
+13:22:43.167636 table@remove removed @87
+=============== Jan 7, 2019 (UTC) ===============
+08:07:41.879651 memdb@flush N·32263 S·3MiB
+08:07:41.926681 memdb@flush created L0@99 N·32263 S·407KiB "ni:..zzm,v1158966":"ni:..zzm,v1126704"
+08:07:41.926732 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+08:07:41.933650 memdb@flush committed F·1 T·53.955382ms
+08:07:41.938924 journal@remove removed @95
+=============== Jan 8, 2019 (UTC) ===============
+02:47:42.721141 memdb@flush N·32263 S·3MiB
+02:47:42.773889 memdb@flush created L0@101 N·32263 S·407KiB "ni:..zzm,v1191229":"ni:..zzm,v1158967"
+02:47:42.773936 version@stat F·[2 1] S·817KiB[815KiB 2KiB] Sc·[0.50 0.00]
+02:47:42.778526 memdb@flush committed F·1 T·57.336177ms
+02:47:42.782759 journal@remove removed @98
+21:02:40.089967 memdb@flush N·32263 S·3MiB
+21:02:40.205863 memdb@flush created L0@103 N·32263 S·407KiB "ni:..zzm,v1223492":"ni:..zzm,v1191230"
+21:02:40.206013 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+21:02:40.217942 memdb@flush committed F·1 T·127.867085ms
+21:02:40.225955 journal@remove removed @100
+=============== Jan 9, 2019 (UTC) ===============
+14:12:41.844351 memdb@flush N·32263 S·3MiB
+14:12:41.902356 memdb@flush created L0@105 N·32263 S·407KiB "ni:..zzm,v1255755":"ni:..zzm,v1223493"
+14:12:41.902463 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+14:12:41.903925 memdb@flush committed F·1 T·59.485411ms
+14:12:41.909848 journal@remove removed @102
+14:12:41.909972 table@compaction L0·4 -> L1·1 S·1MiB Q·1255762
+14:12:42.010943 table@build created L1@106 N·32 S·2KiB "ank..t:2,v1062184":"ni:..mRb,v11"
+14:12:42.011004 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+14:12:42.012278 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·102.284946ms
+14:12:42.012529 table@remove removed @105
+14:12:42.012838 table@remove removed @103
+14:12:42.013116 table@remove removed @101
+14:12:42.013376 table@remove removed @99
+14:12:42.013459 table@remove removed @97
+=============== Jan 10, 2019 (UTC) ===============
+07:27:43.355301 memdb@flush N·32263 S·3MiB
+07:27:43.389491 memdb@flush created L0@108 N·32263 S·407KiB "ni:..zzm,v1288018":"ni:..zzm,v1255756"
+07:27:43.389642 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+07:27:43.390963 memdb@flush committed F·1 T·35.555251ms
+07:27:43.395889 journal@remove removed @104
+=============== Jan 11, 2019 (UTC) ===============
+01:37:42.765298 memdb@flush N·32263 S·3MiB
+01:37:42.815135 memdb@flush created L0@110 N·32263 S·407KiB "ni:..zzm,v1320281":"ni:..zzm,v1288019"
+01:37:42.815252 version@stat F·[2 1] S·817KiB[815KiB 2KiB] Sc·[0.50 0.00]
+01:37:42.826147 memdb@flush committed F·1 T·59.199963ms
+01:37:42.834453 journal@remove removed @107
+19:32:42.133199 memdb@flush N·32263 S·3MiB
+19:32:42.180683 memdb@flush created L0@112 N·32263 S·407KiB "ni:..zzm,v1352544":"ni:..zzm,v1320282"
+19:32:42.180822 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+19:32:42.182120 memdb@flush committed F·1 T·48.838797ms
+19:32:42.191912 journal@remove removed @109
+=============== Jan 12, 2019 (UTC) ===============
+12:22:42.824855 memdb@flush N·32263 S·3MiB
+12:22:42.873735 memdb@flush created L0@114 N·32263 S·407KiB "ni:..zzm,v1384807":"ni:..zzm,v1352545"
+12:22:42.873861 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+12:22:42.877517 memdb@flush committed F·1 T·52.524405ms
+12:22:42.885365 journal@remove removed @111
+12:22:42.885487 table@compaction L0·4 -> L1·1 S·1MiB Q·1384814
+12:22:42.988609 table@build created L1@115 N·32 S·2KiB "ank..t:2,v1062184":"ni:..mRb,v11"
+12:22:42.988678 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+12:22:42.995607 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·110.098839ms
+12:22:42.995863 table@remove removed @114
+12:22:42.996391 table@remove removed @112
+12:22:42.996758 table@remove removed @110
+12:22:42.997301 table@remove removed @108
+12:22:42.997351 table@remove removed @106
+=============== Jan 13, 2019 (UTC) ===============
+05:12:41.056058 memdb@flush N·32263 S·3MiB
+05:12:41.157937 memdb@flush created L0@117 N·32263 S·407KiB "ni:..zzm,v1417070":"ni:..zzm,v1384808"
+05:12:41.158065 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+05:12:41.174907 memdb@flush committed F·1 T·118.611945ms
+05:12:41.183577 journal@remove removed @113
+21:57:42.675589 memdb@flush N·32263 S·3MiB
+21:57:42.725972 memdb@flush created L0@119 N·32263 S·407KiB "ni:..zzm,v1449333":"ni:..zzm,v1417071"
+21:57:42.726068 version@stat F·[2 1] S·817KiB[815KiB 2KiB] Sc·[0.50 0.00]
+21:57:42.727195 memdb@flush committed F·1 T·48.29381ms
+21:57:42.737959 journal@remove removed @116
+=============== Jan 14, 2019 (UTC) ===============
+14:52:41.040911 memdb@flush N·32263 S·3MiB
+14:52:41.075411 memdb@flush created L0@121 N·32263 S·407KiB "ni:..zzm,v1481596":"ni:..zzm,v1449334"
+14:52:41.075545 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+14:52:41.089058 memdb@flush committed F·1 T·47.93943ms
+14:52:41.095920 journal@remove removed @118
+=============== Jan 15, 2019 (UTC) ===============
+07:37:42.575589 memdb@flush N·32263 S·3MiB
+07:37:42.628036 memdb@flush created L0@123 N·32263 S·407KiB "ni:..zzm,v1513859":"ni:..zzm,v1481597"
+07:37:42.628161 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+07:37:42.629530 memdb@flush committed F·1 T·52.272192ms
+07:37:42.637520 journal@remove removed @120
+07:37:42.637668 table@compaction L0·4 -> L1·1 S·1MiB Q·1513866
+07:37:42.756568 table@build created L1@124 N·32 S·2KiB "ank..t:2,v1062184":"ni:..mRb,v11"
+07:37:42.756642 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+07:37:42.763668 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·125.973553ms
+07:37:42.763975 table@remove removed @123
+07:37:42.764344 table@remove removed @121
+07:37:42.764835 table@remove removed @119
+07:37:42.765201 table@remove removed @117
+07:37:42.765265 table@remove removed @115
+=============== Jan 16, 2019 (UTC) ===============
+00:32:42.151784 memdb@flush N·32263 S·3MiB
+00:32:42.201768 memdb@flush created L0@126 N·32263 S·407KiB "ni:..zzm,v1546122":"ni:..zzm,v1513860"
+00:32:42.201880 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+00:32:42.206584 memdb@flush committed F·1 T·54.583325ms
+00:32:42.213828 journal@remove removed @122
+17:27:42.390974 memdb@flush N·32263 S·3MiB
+17:27:42.448409 memdb@flush created L0@128 N·32263 S·407KiB "ni:..zzm,v1578385":"ni:..zzm,v1546123"
+17:27:42.448912 version@stat F·[2 1] S·817KiB[815KiB 2KiB] Sc·[0.50 0.00]
+17:27:42.459840 memdb@flush committed F·1 T·68.71559ms
+17:27:42.468913 journal@remove removed @125
+=============== Jan 17, 2019 (UTC) ===============
+10:12:43.300448 memdb@flush N·32263 S·3MiB
+10:12:43.346325 memdb@flush created L0@130 N·32263 S·407KiB "ni:..zzm,v1610648":"ni:..zzm,v1578386"
+10:12:43.346462 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+10:12:43.347942 memdb@flush committed F·1 T·47.341367ms
+10:12:43.353004 journal@remove removed @127
+=============== Jan 18, 2019 (UTC) ===============
+03:02:42.949232 memdb@flush N·32263 S·3MiB
+03:02:42.994773 memdb@flush created L0@132 N·32263 S·407KiB "ni:..zzm,v1642911":"ni:..zzm,v1610649"
+03:02:42.994883 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+03:02:42.996003 memdb@flush committed F·1 T·44.913002ms
+03:02:43.004779 journal@remove removed @129
+03:02:43.004861 table@compaction L0·4 -> L1·1 S·1MiB Q·1642917
+03:02:43.134812 table@build created L1@133 N·32 S·2KiB "ank..t:2,v1062184":"ni:..mRb,v11"
+03:02:43.134881 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+03:02:43.146821 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·141.933373ms
+03:02:43.147103 table@remove removed @132
+03:02:43.147968 table@remove removed @130
+03:02:43.148382 table@remove removed @128
+03:02:43.148989 table@remove removed @126
+03:02:43.149085 table@remove removed @124
+20:02:40.910771 memdb@flush N·32263 S·3MiB
+20:02:40.954665 memdb@flush created L0@135 N·32263 S·407KiB "ni:..zzm,v1675174":"ni:..zzm,v1642912"
+20:02:40.954811 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+20:02:40.981852 memdb@flush committed F·1 T·70.920567ms
+20:02:40.988875 journal@remove removed @131
+=============== Jan 19, 2019 (UTC) ===============
+12:52:43.009507 memdb@flush N·32263 S·3MiB
+12:52:43.057819 memdb@flush created L0@137 N·32263 S·407KiB "ni:..zzm,v1707437":"ni:..zzm,v1675175"
+12:52:43.057941 version@stat F·[2 1] S·817KiB[815KiB 2KiB] Sc·[0.50 0.00]
+12:52:43.064646 memdb@flush committed F·1 T·54.996184ms
+12:52:43.072562 journal@remove removed @134
+=============== Jan 20, 2019 (UTC) ===============
+05:42:42.203140 memdb@flush N·32263 S·3MiB
+05:42:42.249662 memdb@flush created L0@139 N·32263 S·407KiB "ni:..zzm,v1739700":"ni:..zzm,v1707438"
+05:42:42.249797 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+05:42:42.256733 memdb@flush committed F·1 T·53.444696ms
+05:42:42.263202 journal@remove removed @136
+22:32:43.200198 memdb@flush N·32263 S·3MiB
+22:32:43.248216 memdb@flush created L0@141 N·32263 S·407KiB "ni:..zzm,v1771963":"ni:..zzm,v1739701"
+22:32:43.248351 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+22:32:43.260060 memdb@flush committed F·1 T·59.405124ms
+22:32:43.267590 journal@remove removed @138
+22:32:43.267726 table@compaction L0·4 -> L1·1 S·1MiB Q·1771970
+22:32:43.370559 table@build created L1@142 N·32 S·2KiB "ank..t:2,v1062184":"ni:..mRb,v11"
+22:32:43.370617 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+22:32:43.371994 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·104.246535ms
+22:32:43.372230 table@remove removed @141
+22:32:43.372686 table@remove removed @139
+22:32:43.373258 table@remove removed @137
+22:32:43.373675 table@remove removed @135
+22:32:43.373724 table@remove removed @133
+=============== Jan 21, 2019 (UTC) ===============
+15:27:42.085770 memdb@flush N·32263 S·3MiB
+15:27:42.135894 memdb@flush created L0@144 N·32263 S·407KiB "ni:..zzm,v1804226":"ni:..zzm,v1771964"
+15:27:42.136015 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+15:27:42.137261 memdb@flush committed F·1 T·51.342887ms
+15:27:42.144065 journal@remove removed @140
+=============== Jan 22, 2019 (UTC) ===============
+08:17:42.647366 memdb@flush N·32263 S·3MiB
+08:17:42.735071 memdb@flush created L0@146 N·32263 S·407KiB "ni:..zzm,v1836489":"ni:..zzm,v1804227"
+08:17:42.735230 version@stat F·[2 1] S·817KiB[815KiB 2KiB] Sc·[0.50 0.00]
+08:17:42.756982 memdb@flush committed F·1 T·109.476328ms
+08:17:42.763680 journal@remove removed @143
+=============== Jan 23, 2019 (UTC) ===============
+01:07:42.652482 memdb@flush N·32263 S·3MiB
+01:07:42.708874 memdb@flush created L0@148 N·32263 S·407KiB "ni:..zzm,v1868752":"ni:..zzm,v1836490"
+01:07:42.709018 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+01:07:42.710497 memdb@flush committed F·1 T·57.847025ms
+01:07:42.716797 journal@remove removed @145
+17:57:40.040838 memdb@flush N·32263 S·3MiB
+17:57:40.092761 memdb@flush created L0@150 N·32263 S·407KiB "ni:..zzm,v1901015":"ni:..zzm,v1868753"
+17:57:40.092874 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+17:57:40.104591 memdb@flush committed F·1 T·63.643211ms
+17:57:40.111169 journal@remove removed @147
+17:57:40.111309 table@compaction L0·4 -> L1·1 S·1MiB Q·1901016
+17:57:40.275231 table@build created L1@151 N·32 S·2KiB "ank..t:2,v1062184":"ni:..mRb,v11"
+17:57:40.275375 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+17:57:40.299986 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·188.621762ms
+17:57:40.300209 table@remove removed @150
+17:57:40.300440 table@remove removed @148
+17:57:40.300978 table@remove removed @146
+17:57:40.301286 table@remove removed @144
+17:57:40.301326 table@remove removed @142
+=============== Jan 24, 2019 (UTC) ===============
+11:07:42.898491 memdb@flush N·32263 S·3MiB
+11:07:42.953596 memdb@flush created L0@153 N·32263 S·407KiB "ni:..zzm,v1933278":"ni:..zzm,v1901016"
+11:07:42.953725 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+11:07:42.955226 memdb@flush committed F·1 T·56.620972ms
+11:07:42.961992 journal@remove removed @149
+=============== Jan 25, 2019 (UTC) ===============
+04:22:42.483360 memdb@flush N·32263 S·3MiB
+04:22:42.541691 memdb@flush created L0@155 N·32263 S·407KiB "ni:..zzm,v1965541":"ni:..zzm,v1933279"
+04:22:42.541831 version@stat F·[2 1] S·817KiB[815KiB 2KiB] Sc·[0.50 0.00]
+04:22:42.543345 memdb@flush committed F·1 T·59.846183ms
+04:22:42.549932 journal@remove removed @152
+21:12:43.161412 memdb@flush N·32263 S·3MiB
+21:12:43.222589 memdb@flush created L0@157 N·32263 S·407KiB "ni:..zzm,v1997804":"ni:..zzm,v1965542"
+21:12:43.222709 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+21:12:43.224151 memdb@flush committed F·1 T·62.647513ms
+21:12:43.230488 journal@remove removed @154
+=============== Jan 26, 2019 (UTC) ===============
+14:32:42.916359 memdb@flush N·32263 S·3MiB
+14:32:42.979545 memdb@flush created L0@159 N·32263 S·407KiB "ni:..zzm,v2030067":"ni:..zzm,v1997805"
+14:32:42.979685 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+14:32:42.981234 memdb@flush committed F·1 T·64.740642ms
+14:32:42.988802 journal@remove removed @156
+14:32:42.988960 table@compaction L0·4 -> L1·1 S·1MiB Q·2030075
+14:32:43.091294 table@build created L1@160 N·32 S·2KiB "ank..t:2,v1062184":"ni:..mRb,v11"
+14:32:43.091401 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+14:32:43.092890 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·103.880855ms
+14:32:43.093531 table@remove removed @159
+14:32:43.093944 table@remove removed @157
+14:32:43.094297 table@remove removed @155
+14:32:43.094778 table@remove removed @153
+14:32:43.094837 table@remove removed @151
+=============== Jan 27, 2019 (UTC) ===============
+07:47:43.003619 memdb@flush N·32263 S·3MiB
+07:47:43.052069 memdb@flush created L0@162 N·32263 S·407KiB "ni:..zzm,v2062330":"ni:..zzm,v2030068"
+07:47:43.052216 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+07:47:43.056696 memdb@flush committed F·1 T·52.936672ms
+07:47:43.064225 journal@remove removed @158
+=============== Jan 28, 2019 (UTC) ===============
+01:17:40.435933 memdb@flush N·32263 S·3MiB
+01:17:40.546815 memdb@flush created L0@164 N·32263 S·407KiB "ni:..zzm,v2094593":"ni:..zzm,v2062331"
+01:17:40.546952 version@stat F·[2 1] S·817KiB[815KiB 2KiB] Sc·[0.50 0.00]
+01:17:40.553884 memdb@flush committed F·1 T·117.808818ms
+01:17:40.562035 journal@remove removed @161
+18:42:43.350863 memdb@flush N·32263 S·3MiB
+18:42:43.399722 memdb@flush created L0@166 N·32263 S·407KiB "ni:..zzm,v2126856":"ni:..zzm,v2094594"
+18:42:43.399866 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+18:42:43.406898 memdb@flush committed F·1 T·55.884457ms
+18:42:43.414099 journal@remove removed @163
+=============== Jan 29, 2019 (UTC) ===============
+11:32:43.184845 memdb@flush N·32263 S·3MiB
+11:32:43.273863 memdb@flush created L0@168 N·32263 S·407KiB "ni:..zzm,v2159119":"ni:..zzm,v2126857"
+11:32:43.273986 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+11:32:43.287643 memdb@flush committed F·1 T·102.642042ms
+11:32:43.296846 journal@remove removed @165
+11:32:43.371717 table@compaction L0·4 -> L1·1 S·1MiB Q·2159126
+11:32:43.475709 table@build created L1@169 N·32 S·2KiB "ank..t:2,v1062184":"ni:..mRb,v11"
+11:32:43.475811 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+11:32:43.480564 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·108.743089ms
+11:32:43.480833 table@remove removed @168
+11:32:43.481259 table@remove removed @166
+11:32:43.481629 table@remove removed @164
+11:32:43.482007 table@remove removed @162
+11:32:43.482120 table@remove removed @160
+=============== Jan 30, 2019 (UTC) ===============
+04:22:43.161965 memdb@flush N·32263 S·3MiB
+04:22:43.218657 memdb@flush created L0@171 N·32263 S·407KiB "ni:..zzm,v2191382":"ni:..zzm,v2159120"
+04:22:43.218792 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+04:22:43.220280 memdb@flush committed F·1 T·58.13353ms
+04:22:43.226311 journal@remove removed @167
+20:02:42.493764 memdb@flush N·32264 S·3MiB
+20:02:42.548836 memdb@flush created L0@173 N·32264 S·407KiB "ni:..S52,v2198908":"ni:..zzm,v2191383"
+20:02:42.548959 version@stat F·[2 1] S·818KiB[815KiB 2KiB] Sc·[0.50 0.00]
+20:02:42.550575 memdb@flush committed F·1 T·56.673657ms
+20:02:42.558235 journal@remove removed @170
+=============== Jan 31, 2019 (UTC) ===============
+11:17:42.497983 memdb@flush N·32263 S·3MiB
+11:17:42.588312 memdb@flush created L0@175 N·32263 S·407KiB "ni:..zzm,v2255909":"ni:..zzm,v2223647"
+11:17:42.588450 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+11:17:42.602644 memdb@flush committed F·1 T·104.505949ms
+11:17:42.609059 journal@remove removed @172
+=============== Feb 1, 2019 (UTC) ===============
+02:32:43.020770 memdb@flush N·32263 S·3MiB
+02:32:43.068095 memdb@flush created L0@177 N·32263 S·407KiB "ni:..zzm,v2288172":"ni:..zzm,v2255910"
+02:32:43.068208 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+02:32:43.069343 memdb@flush committed F·1 T·48.418642ms
+02:32:43.076439 journal@remove removed @174
+02:32:43.076591 table@compaction L0·4 -> L1·1 S·1MiB Q·2288178
+02:32:43.209334 table@build created L1@178 N·33 S·2KiB "ank..t:2,v1062184":"ni:..mRb,v11"
+02:32:43.209440 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+02:32:43.210814 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·134.172071ms
+02:32:43.211108 table@remove removed @177
+02:32:43.211663 table@remove removed @175
+02:32:43.211949 table@remove removed @173
+02:32:43.212400 table@remove removed @171
+02:32:43.212459 table@remove removed @169
+17:52:40.737062 memdb@flush N·32263 S·3MiB
+17:52:40.791831 memdb@flush created L0@180 N·32263 S·408KiB "ni:..zzm,v2320435":"ni:..zzm,v2288173"
+17:52:40.791942 version@stat F·[1 1] S·410KiB[408KiB 2KiB] Sc·[0.25 0.00]
+17:52:40.813068 memdb@flush committed F·1 T·75.842877ms
+17:52:40.827756 journal@remove removed @176
+=============== Feb 2, 2019 (UTC) ===============
+09:07:43.159067 memdb@flush N·32263 S·3MiB
+09:07:43.212953 memdb@flush created L0@182 N·32263 S·407KiB "ni:..zzm,v2352698":"ni:..zzm,v2320436"
+09:07:43.213085 version@stat F·[2 1] S·818KiB[815KiB 2KiB] Sc·[0.50 0.00]
+09:07:43.228430 memdb@flush committed F·1 T·69.12838ms
+09:07:43.234398 journal@remove removed @179
+=============== Feb 3, 2019 (UTC) ===============
+00:22:42.836375 memdb@flush N·32263 S·3MiB
+00:22:42.882807 memdb@flush created L0@184 N·32263 S·407KiB "ni:..zzm,v2384961":"ni:..zzm,v2352699"
+00:22:42.882921 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+00:22:42.884351 memdb@flush committed F·1 T·47.831667ms
+00:22:42.890174 journal@remove removed @181
+15:37:44.220533 memdb@flush N·32263 S·3MiB
+15:37:44.268876 memdb@flush created L0@186 N·32263 S·407KiB "ni:..zzm,v2417224":"ni:..zzm,v2384962"
+15:37:44.268994 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+15:37:44.270353 memdb@flush committed F·1 T·49.677079ms
+15:37:44.276600 journal@remove removed @183
+15:37:44.307389 table@compaction L0·4 -> L1·1 S·1MiB Q·2417233
+15:37:44.374212 table@build created L1@187 N·33 S·2KiB "ank..t:2,v1062184":"ni:..mRb,v11"
+15:37:44.374312 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+15:37:44.376156 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·68.688196ms
+15:37:44.376369 table@remove removed @186
+15:37:44.376813 table@remove removed @184
+15:37:44.377286 table@remove removed @182
+15:37:44.377699 table@remove removed @180
+15:37:44.377795 table@remove removed @178
+=============== Feb 4, 2019 (UTC) ===============
+06:57:43.236417 memdb@flush N·32263 S·3MiB
+06:57:43.328904 memdb@flush created L0@189 N·32263 S·407KiB "ni:..zzm,v2449487":"ni:..zzm,v2417225"
+06:57:43.329041 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+06:57:43.352951 memdb@flush committed F·1 T·116.315044ms
+06:57:43.358153 journal@remove removed @185
+22:12:43.245592 memdb@flush N·32263 S·3MiB
+22:12:43.299993 memdb@flush created L0@191 N·32263 S·407KiB "ni:..zzm,v2481750":"ni:..zzm,v2449488"
+22:12:43.300104 version@stat F·[2 1] S·818KiB[815KiB 2KiB] Sc·[0.50 0.00]
+22:12:43.307580 memdb@flush committed F·1 T·61.805406ms
+22:12:43.315882 journal@remove removed @188
+=============== Feb 5, 2019 (UTC) ===============
+13:27:43.744805 memdb@flush N·32263 S·3MiB
+13:27:43.803230 memdb@flush created L0@193 N·32263 S·407KiB "ni:..zzm,v2514013":"ni:..zzm,v2481751"
+13:27:43.803425 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+13:27:43.811190 memdb@flush committed F·1 T·66.187234ms
+13:27:43.818512 journal@remove removed @190
+=============== Feb 6, 2019 (UTC) ===============
+04:47:43.149780 memdb@flush N·32263 S·3MiB
+04:47:43.222994 memdb@flush created L0@195 N·32263 S·407KiB "ni:..zzm,v2546276":"ni:..zzm,v2514014"
+04:47:43.223135 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+04:47:43.225866 memdb@flush committed F·1 T·75.908009ms
+04:47:43.230586 journal@remove removed @192
+04:47:43.230690 table@compaction L0·4 -> L1·1 S·1MiB Q·2546285
+04:47:43.351818 table@build created L1@196 N·33 S·2KiB "ank..t:2,v1062184":"ni:..mRb,v11"
+04:47:43.351924 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+04:47:43.354270 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·123.531799ms
+04:47:43.354596 table@remove removed @195
+04:47:43.354880 table@remove removed @193
+04:47:43.355290 table@remove removed @191
+04:47:43.355581 table@remove removed @189
+04:47:43.355640 table@remove removed @187
+20:22:42.765106 memdb@flush N·32263 S·3MiB
+20:22:42.820200 memdb@flush created L0@198 N·32263 S·407KiB "ni:..zzm,v2578539":"ni:..zzm,v2546277"
+20:22:42.820363 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+20:22:42.824008 memdb@flush committed F·1 T·58.726862ms
+20:22:42.830719 journal@remove removed @194
+=============== Feb 7, 2019 (UTC) ===============
+13:12:42.838562 memdb@flush N·32263 S·3MiB
+13:12:42.885261 memdb@flush created L0@200 N·32263 S·407KiB "ni:..zzm,v2610802":"ni:..zzm,v2578540"
+13:12:42.885380 version@stat F·[2 1] S·818KiB[815KiB 2KiB] Sc·[0.50 0.00]
+13:12:42.886822 memdb@flush committed F·1 T·48.108573ms
+13:12:42.893106 journal@remove removed @197
+=============== Feb 8, 2019 (UTC) ===============
+06:02:42.691767 memdb@flush N·32263 S·3MiB
+06:02:42.740030 memdb@flush created L0@202 N·32263 S·407KiB "ni:..zzm,v2643065":"ni:..zzm,v2610803"
+06:02:42.740153 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+06:02:42.742786 memdb@flush committed F·1 T·50.845722ms
+06:02:42.748420 journal@remove removed @199
+22:47:43.545897 memdb@flush N·32263 S·3MiB
+22:47:43.587802 memdb@flush created L0@204 N·32263 S·407KiB "ni:..zzm,v2675328":"ni:..zzm,v2643066"
+22:47:43.587929 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+22:47:43.594884 memdb@flush committed F·1 T·48.82543ms
+22:47:43.600013 journal@remove removed @201
+22:47:43.600123 table@compaction L0·4 -> L1·1 S·1MiB Q·2675335
+22:47:43.707066 table@build created L1@205 N·33 S·2KiB "ank..t:2,v1062184":"ni:..mRb,v11"
+22:47:43.707184 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+22:47:43.708808 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·108.6381ms
+22:47:43.709035 table@remove removed @204
+22:47:43.709208 table@remove removed @202
+22:47:43.709453 table@remove removed @200
+22:47:43.709628 table@remove removed @198
+22:47:43.709659 table@remove removed @196
+=============== Feb 9, 2019 (UTC) ===============
+15:37:42.521867 memdb@flush N·32263 S·3MiB
+15:37:42.579877 memdb@flush created L0@207 N·32263 S·407KiB "ni:..zzm,v2707591":"ni:..zzm,v2675329"
+15:37:42.580016 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+15:37:42.586635 memdb@flush committed F·1 T·64.555981ms
+15:37:42.592218 journal@remove removed @203
+=============== Feb 10, 2019 (UTC) ===============
+08:22:43.442483 memdb@flush N·32263 S·3MiB
+08:22:43.494810 memdb@flush created L0@209 N·32263 S·407KiB "ni:..zzm,v2739854":"ni:..zzm,v2707592"
+08:22:43.494940 version@stat F·[2 1] S·818KiB[815KiB 2KiB] Sc·[0.50 0.00]
+08:22:43.496455 memdb@flush committed F·1 T·53.770804ms
+08:22:43.502661 journal@remove removed @206
+=============== Feb 11, 2019 (UTC) ===============
+01:12:43.387902 memdb@flush N·32263 S·3MiB
+01:12:43.446811 memdb@flush created L0@211 N·32263 S·407KiB "ni:..zzm,v2772117":"ni:..zzm,v2739855"
+01:12:43.446943 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+01:12:43.448481 memdb@flush committed F·1 T·60.411474ms
+01:12:43.454342 journal@remove removed @208
+18:02:42.977824 memdb@flush N·32263 S·3MiB
+18:02:43.024647 memdb@flush created L0@213 N·32263 S·407KiB "ni:..zzm,v2804380":"ni:..zzm,v2772118"
+18:02:43.024782 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+18:02:43.030672 memdb@flush committed F·1 T·52.689426ms
+18:02:43.038556 journal@remove removed @210
+18:02:43.038688 table@compaction L0·4 -> L1·1 S·1MiB Q·2804387
+18:02:43.199885 table@build created L1@214 N·33 S·2KiB "ank..t:2,v1062184":"ni:..mRb,v11"
+18:02:43.200006 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+18:02:43.235947 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·197.194956ms
+18:02:43.236188 table@remove removed @213
+18:02:43.236651 table@remove removed @211
+18:02:43.237332 table@remove removed @209
+18:02:43.238063 table@remove removed @207
+18:02:43.238127 table@remove removed @205
+=============== Feb 13, 2019 (UTC) ===============
+11:42:40.091166 memdb@flush N·32263 S·3MiB
+11:42:40.163161 memdb@flush created L0@216 N·32263 S·407KiB "ni:..zzm,v2836643":"ni:..zzm,v2804381"
+11:42:40.163278 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+11:42:40.165783 memdb@flush committed F·1 T·74.47088ms
+11:42:40.170049 journal@remove removed @212
+=============== Feb 14, 2019 (UTC) ===============
+06:22:41.049913 memdb@flush N·32263 S·3MiB
+06:22:41.134470 memdb@flush created L0@218 N·32263 S·407KiB "ni:..zzm,v2868906":"ni:..zzm,v2836644"
+06:22:41.134613 version@stat F·[2 1] S·818KiB[815KiB 2KiB] Sc·[0.50 0.00]
+06:22:41.139889 memdb@flush committed F·1 T·89.784499ms
+06:22:41.145408 journal@remove removed @215
+=============== Feb 15, 2019 (UTC) ===============
+01:02:42.898946 memdb@flush N·32263 S·3MiB
+01:02:42.949423 memdb@flush created L0@220 N·32263 S·407KiB "ni:..zzm,v2901169":"ni:..zzm,v2868907"
+01:02:42.949546 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+01:02:42.951156 memdb@flush committed F·1 T·52.051234ms
+01:02:42.955625 journal@remove removed @217
+19:42:42.388713 memdb@flush N·32263 S·3MiB
+19:42:42.448553 memdb@flush created L0@222 N·32263 S·407KiB "ni:..zzm,v2933432":"ni:..zzm,v2901170"
+19:42:42.448693 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+19:42:42.450135 memdb@flush committed F·1 T·61.274725ms
+19:42:42.458223 journal@remove removed @219
+19:42:42.458339 table@compaction L0·4 -> L1·1 S·1MiB Q·2933440
+19:42:42.584065 table@build created L1@223 N·33 S·2KiB "ank..t:2,v1062184":"ni:..mRb,v11"
+19:42:42.584218 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+19:42:42.588647 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·130.255889ms
+19:42:42.593486 table@remove removed @222
+19:42:42.593921 table@remove removed @220
+19:42:42.594230 table@remove removed @218
+19:42:42.594532 table@remove removed @216
+19:42:42.594610 table@remove removed @214
+=============== Feb 16, 2019 (UTC) ===============
+14:22:42.213234 memdb@flush N·32263 S·3MiB
+14:22:42.259524 memdb@flush created L0@225 N·32263 S·407KiB "ni:..zzm,v2965695":"ni:..zzm,v2933433"
+14:22:42.259640 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+14:22:42.261365 memdb@flush committed F·1 T·47.937974ms
+14:22:42.268401 journal@remove removed @221
+=============== Feb 17, 2019 (UTC) ===============
+09:02:42.804697 memdb@flush N·32263 S·3MiB
+09:02:42.856650 memdb@flush created L0@227 N·32263 S·407KiB "ni:..zzm,v2997958":"ni:..zzm,v2965696"
+09:02:42.856801 version@stat F·[2 1] S·818KiB[815KiB 2KiB] Sc·[0.50 0.00]
+09:02:42.858546 memdb@flush committed F·1 T·52.23691ms
+09:02:42.867323 journal@remove removed @224
+=============== Feb 18, 2019 (UTC) ===============
+03:42:42.676190 memdb@flush N·32263 S·3MiB
+03:42:42.722041 memdb@flush created L0@229 N·32263 S·407KiB "ni:..zzm,v3030221":"ni:..zzm,v2997959"
+03:42:42.722162 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+03:42:42.723597 memdb@flush committed F·1 T·47.251724ms
+03:42:42.730800 journal@remove removed @226
+22:22:42.367553 memdb@flush N·32263 S·3MiB
+22:22:42.415114 memdb@flush created L0@231 N·32263 S·407KiB "ni:..zzm,v3062484":"ni:..zzm,v3030222"
+22:22:42.415259 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+22:22:42.416878 memdb@flush committed F·1 T·49.183217ms
+22:22:42.425246 journal@remove removed @228
+22:22:42.425352 table@compaction L0·4 -> L1·1 S·1MiB Q·3062489
+22:22:42.525815 table@build created L1@232 N·33 S·2KiB "ank..t:2,v1062184":"ni:..mRb,v11"
+22:22:42.525922 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+22:22:42.527085 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·101.688542ms
+22:22:42.527336 table@remove removed @231
+22:22:42.527776 table@remove removed @229
+22:22:42.528303 table@remove removed @227
+22:22:42.528757 table@remove removed @225
+22:22:42.528836 table@remove removed @223
+=============== Feb 19, 2019 (UTC) ===============
+17:02:42.948462 memdb@flush N·32263 S·3MiB
+17:02:42.992863 memdb@flush created L0@234 N·32263 S·407KiB "ni:..zzm,v3094747":"ni:..zzm,v3062485"
+17:02:42.992985 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+17:02:42.997766 memdb@flush committed F·1 T·49.09261ms
+17:02:43.003706 journal@remove removed @230
+=============== Feb 20, 2019 (UTC) ===============
+11:42:41.888666 memdb@flush N·32263 S·3MiB
+11:42:41.941932 memdb@flush created L0@236 N·32263 S·407KiB "ni:..zzm,v3127010":"ni:..zzm,v3094748"
+11:42:41.942062 version@stat F·[2 1] S·818KiB[815KiB 2KiB] Sc·[0.50 0.00]
+11:42:41.984136 memdb@flush committed F·1 T·95.262597ms
+11:42:41.991381 journal@remove removed @233
+=============== Feb 21, 2019 (UTC) ===============
+06:52:42.137838 memdb@flush N·32263 S·3MiB
+06:52:42.220197 memdb@flush created L0@238 N·32263 S·407KiB "ni:..zzm,v3159273":"ni:..zzm,v3127011"
+06:52:42.220384 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+06:52:42.261953 memdb@flush committed F·1 T·123.889464ms
+06:52:42.269082 journal@remove removed @235
+=============== Feb 22, 2019 (UTC) ===============
+03:47:43.549334 memdb@flush N·32263 S·3MiB
+03:47:43.593228 memdb@flush created L0@240 N·32263 S·407KiB "ni:..zzm,v3191536":"ni:..zzm,v3159274"
+03:47:43.593389 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+03:47:43.594807 memdb@flush committed F·1 T·45.313028ms
+03:47:43.600918 journal@remove removed @237
+03:47:43.601006 table@compaction L0·4 -> L1·1 S·1MiB Q·3191537
+03:47:43.657469 table@build created L1@241 N·33 S·2KiB "ank..t:2,v1062184":"ni:..mRb,v11"
+03:47:43.657588 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+03:47:43.658987 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·57.906932ms
+03:47:43.659407 table@remove removed @240
+03:47:43.659677 table@remove removed @238
+03:47:43.660088 table@remove removed @236
+03:47:43.660438 table@remove removed @234
+03:47:43.660497 table@remove removed @232
+22:32:41.531771 memdb@flush N·32263 S·3MiB
+22:32:41.598066 memdb@flush created L0@243 N·32263 S·407KiB "ni:..zzm,v3223799":"ni:..zzm,v3191537"
+22:32:41.598206 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+22:32:41.602884 memdb@flush committed F·1 T·70.949592ms
+22:32:41.607674 journal@remove removed @239
+=============== Feb 23, 2019 (UTC) ===============
+17:12:41.075787 memdb@flush N·32263 S·3MiB
+17:12:41.152508 memdb@flush created L0@245 N·32263 S·407KiB "ni:..zzm,v3256062":"ni:..zzm,v3223800"
+17:12:41.152668 version@stat F·[2 1] S·818KiB[815KiB 2KiB] Sc·[0.50 0.00]
+17:12:41.174012 memdb@flush committed F·1 T·98.088977ms
+17:12:41.183190 journal@remove removed @242
+=============== Feb 24, 2019 (UTC) ===============
+11:52:42.563529 memdb@flush N·32263 S·3MiB
+11:52:42.614811 memdb@flush created L0@247 N·32263 S·407KiB "ni:..zzm,v3288325":"ni:..zzm,v3256063"
+11:52:42.614950 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+11:52:42.616647 memdb@flush committed F·1 T·53.00005ms
+11:52:42.621379 journal@remove removed @244
+=============== Feb 25, 2019 (UTC) ===============
+06:32:42.756145 memdb@flush N·32263 S·3MiB
+06:32:42.802737 memdb@flush created L0@249 N·32263 S·407KiB "ni:..zzm,v3320588":"ni:..zzm,v3288326"
+06:32:42.802881 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+06:32:42.805121 memdb@flush committed F·1 T·48.864548ms
+06:32:42.811445 journal@remove removed @246
+06:32:42.811593 table@compaction L0·4 -> L1·1 S·1MiB Q·3320595
+06:32:42.917363 table@build created L1@250 N·33 S·2KiB "ank..t:2,v1062184":"ni:..mRb,v11"
+06:32:42.917480 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+06:32:42.919078 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·107.432425ms
+06:32:42.919359 table@remove removed @249
+06:32:42.919690 table@remove removed @247
+06:32:42.920117 table@remove removed @245
+06:32:42.920434 table@remove removed @243
+06:32:42.920482 table@remove removed @241
+=============== Feb 26, 2019 (UTC) ===============
+01:12:41.688721 memdb@flush N·32263 S·3MiB
+01:12:41.739872 memdb@flush created L0@252 N·32263 S·407KiB "ni:..zzm,v3352851":"ni:..zzm,v3320589"
+01:12:41.740005 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+01:12:41.741864 memdb@flush committed F·1 T·53.010436ms
+01:12:41.747774 journal@remove removed @248
+19:52:42.417784 memdb@flush N·32263 S·3MiB
+19:52:42.462062 memdb@flush created L0@254 N·32263 S·407KiB "ni:..zzm,v3385114":"ni:..zzm,v3352852"
+19:52:42.462206 version@stat F·[2 1] S·818KiB[815KiB 2KiB] Sc·[0.50 0.00]
+19:52:42.469682 memdb@flush committed F·1 T·51.793729ms
+19:52:42.475329 journal@remove removed @251
+=============== Feb 27, 2019 (UTC) ===============
+14:32:42.914371 memdb@flush N·32263 S·3MiB
+14:32:42.978011 memdb@flush created L0@256 N·32263 S·407KiB "ni:..zzm,v3417377":"ni:..zzm,v3385115"
+14:32:42.978158 version@stat F·[3 1] S·1MiB[1MiB 2KiB] Sc·[0.75 0.00]
+14:32:42.979631 memdb@flush committed F·1 T·65.130002ms
+14:32:42.988496 journal@remove removed @253
+=============== Feb 28, 2019 (UTC) ===============
+09:12:42.767127 memdb@flush N·32263 S·3MiB
+09:12:42.822969 memdb@flush created L0@258 N·32263 S·407KiB "ni:..zzm,v3449640":"ni:..zzm,v3417378"
+09:12:42.823110 version@stat F·[4 1] S·1MiB[1MiB 2KiB] Sc·[1.00 0.00]
+09:12:42.824946 memdb@flush committed F·1 T·57.642606ms
+09:12:42.830589 journal@remove removed @255
+09:12:42.830776 table@compaction L0·4 -> L1·1 S·1MiB Q·3449647
+09:12:42.946445 table@build created L1@259 N·33 S·2KiB "ank..t:2,v1062184":"ni:..mRb,v11"
+09:12:42.946572 version@stat F·[0 1] S·2KiB[0B 2KiB] Sc·[0.00 0.00]
+09:12:42.948479 table@compaction committed F-4 S-1MiB Ke·0 D·129052 T·117.647868ms
+09:12:42.948773 table@remove removed @258
+09:12:42.949203 table@remove removed @256
+09:12:42.949657 table@remove removed @254
+09:12:42.949920 table@remove removed @252
+09:12:42.949975 table@remove removed @250
+=============== Mar 1, 2019 (UTC) ===============
+03:52:42.920566 memdb@flush N·32263 S·3MiB
+03:52:42.969381 memdb@flush created L0@261 N·32263 S·407KiB "ni:..zzm,v3481903":"ni:..zzm,v3449641"
+03:52:42.969547 version@stat F·[1 1] S·410KiB[407KiB 2KiB] Sc·[0.25 0.00]
+03:52:42.975984 memdb@flush committed F·1 T·55.22318ms
+03:52:42.981564 journal@remove removed @257

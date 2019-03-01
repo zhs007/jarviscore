@@ -77,7 +77,7 @@
     "graphqlext",
     "proto"
   ]
-  revision = "6ff2cf208f8c4fd0ef4e36d44fba0052a235edaa"
+  revision = "22b9fe97cdd7a80a183d867aefd6158a4b4d4b9b"
 
 [[projects]]
   name = "go.uber.org/atomic"
@@ -108,7 +108,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ripemd160"]
-  revision = "31a38585487a4b1fd6ff4f8f3db26f1fb296ac82"
+  revision = "8dd112bcdc25174059e45e07517d9fc663123347"
 
 [[projects]]
   branch = "master"
@@ -122,13 +122,13 @@
     "internal/timeseries",
     "trace"
   ]
-  revision = "c95aed5357e77a4bf7d3955c46740000a17adee1"
+  revision = "92fc7df08ae7536330f5a21328292abfa70520a8"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "92a0ff1e1e2f61773648454ec71ec0c0f1c700a2"
+  revision = "a34e9553db1e492c9a76e60db2296ae7e5fbb772"
 
 [[projects]]
   name = "golang.org/x/text"
