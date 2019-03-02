@@ -124,14 +124,12 @@ func NewNode(cfg *Config) JarvisNode {
 	node.mgrEvent.regNodeEventFunc(EventOnIConnectNode, onIConnectNode)
 	node.mgrEvent.regNodeEventFunc(EventOnDeprecateNode, onDeprecateNode)
 
-	err = node.coredb.LoadPrivateKeyEx()
+	err = node.coredb.Init()
 	if err != nil {
-		jarvisbase.Error("NewNode:loadPrivateKey", zap.Error(err))
+		jarvisbase.Error("NewNode:Init", zap.Error(err))
 
 		return nil
 	}
-
-	node.coredb.LoadAllNodes()
 
 	node.myinfo.Addr = node.coredb.GetPrivateKey().ToAddress()
 	node.myinfo.Name = cfg.BaseNodeInfo.NodeName
@@ -725,9 +723,6 @@ func (n *jarvisNode) onMsgRequestNodes(ctx context.Context, msg *pb.JarvisMsg, s
 
 // FindNodeWithName - find node with name
 func (n *jarvisNode) FindNodeWithName(name string) *coredbpb.NodeInfo {
-	n.coredb.Lock()
-	defer n.coredb.Unlock()
-
 	return n.coredb.FindMapNode(name)
 }
 

@@ -1,2 +1,0 @@
-echo "hey, jarvis!"
-whoami
