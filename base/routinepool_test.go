@@ -69,7 +69,7 @@ func makeTask(mgr *taskMgr, pool RoutinePool, cancel context.CancelFunc) {
 	cancel()
 }
 
-func Test_RountinePool(t *testing.T) {
+func TestRountinePool(t *testing.T) {
 	InitLogger(zap.InfoLevel, true, "")
 	Debug("start...")
 	// fmt.Print("haha\n")
