@@ -26,10 +26,22 @@ func initLogger(level zapcore.Level, isConsole bool, logpath string) *zap.Logger
 
 		cl := zap.New(core)
 		// defer cl.Sync()
+
 		return cl
 	}
 
-	return nil
+	cfg := &zap.Config{}
+
+	cfg.Level = zap.NewAtomicLevelAt(level)
+	cfg.OutputPaths = []string{logpath}
+	cfg.ErrorOutputPaths = []string{logpath}
+
+	cl, err := cfg.Build()
+	if err != nil {
+		return nil
+	}
+
+	return cl
 }
 
 // InitLogger - initializes a thread-safe singleton logger
