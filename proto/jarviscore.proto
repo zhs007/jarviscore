@@ -46,6 +46,8 @@ enum MSGTYPE {
     REPLY_TRANSFER_FILE = 19;
     // reply2 msg
     REPLY2 = 20;
+    // update node
+    UPDATENODE = 21;
 }
 
 // REPLYTYPE - reply type
@@ -149,6 +151,14 @@ message MultiMsgData {
     bytes buf = 3;
 }
 
+// UpdateNode - for UPDATENODE
+message UpdateNode {
+    // nodetype version
+    string nodeTypeVersion = 1;
+    // node type
+    string nodeType = 2;
+}
+
 // JarvisMsg - jarvis base msg
 //      sign(msgID + msgType + destAddr + curTime + srcAddr + data)
 message JarvisMsg {
@@ -177,6 +187,7 @@ message JarvisMsg {
         MultiMsgData multiMsgData = 107;
         ReplyConnect2 replyConn2 = 108 [deprecated = true];
         ReplyTransferFile replyTransferFile = 109;
+        UpdateNode updateNode = 110;
     }
 }
 

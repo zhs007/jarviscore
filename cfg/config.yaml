@@ -39,3 +39,16 @@ basenodeinfo:
   bindaddr: ':7788'
   # servaddr - other node connct me
   servaddr: '127.0.0.1:7788'
+
+# autoupdate - enable automatic update  
+autoupdate: true
+# updatescript - If automatic updates are enabled, the script will run when the update was starting.  
+#     There are some variables that can be used in this script.
+#       - newversion: new version
+updatescript: |
+  rm -rf jarvissh.tar.gz
+  wget https://github.com/zhs007/jarvissh/releases/download/{{.newversion}}/jarvissh.tar.gz
+  tar zxvf jarvissh.tar.gz
+  cd jarvissh
+  ./jarvissh stop
+  ./jarvissh start -d
