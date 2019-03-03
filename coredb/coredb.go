@@ -50,7 +50,8 @@ const queryNodeInfos = `query NodeInfos($snapshotID: Int64!, $beginIndex: Int!, 
 	nodeInfos(snapshotID: $snapshotID, beginIndex: $beginIndex, nums: $nums) {
 		snapshotID, endIndex, maxIndex, 
 		nodes {
-			addr, servAddr, name, connectNums, connectedNums, ctrlID, lstClientAddr, addTime
+			addr, servAddr, name, connectNums, connectedNums, ctrlID, lstClientAddr, addTime, 
+			nodeType, coreVersion, nodeTypeVersion, lastSendMsgID, lastRecvMsgID
 		}
 	}
 }`
