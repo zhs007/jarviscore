@@ -1,0 +1,21 @@
+@startuml 
+
+title New node joins Jarvis
+
+NewNodeDB <- NewNode: Load database
+NewNodeDB -> NewNode: If database is empty
+NewNodeDB <- NewNode: Initial my database and generate a private key
+NewNode -> JarvisRootNode: CONNECT_NODE - Connect root node
+NewNode <- JarvisRootNode: REPLY_CONNECT - Send my base information
+NewNodeDB <- NewNode: Update root node
+NewNode -> JarvisRootNode: REQUEST_NODES - Request all the node information
+NewNode <- JarvisRootNode: NODE_INFOs - Send all the node information
+NewNodeDB <- NewNode: Update all the node information
+NewNode -> Node001: CONNECT_NODE - Connect the node001
+NewNode <- Node001: REPLY_CONNECT - Send my base information
+NewNodeDB <- NewNode: Update the node001 information
+NewNode -> Node001: REQUEST_NODES - Request all the node information
+NewNode <- Node001: NODE_INFOs - Send all the node information
+NewNodeDB <- NewNode: Update all the node information
+
+@enduml
