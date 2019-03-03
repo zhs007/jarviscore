@@ -2,6 +2,7 @@ package jarviscore
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -70,11 +71,17 @@ func TestCheckNode(t *testing.T) {
 			if addr2 != node.Addr {
 				errstr = "TestCheckNode node1 EventOnIConnectNode addr fail"
 				cancel()
+
+				return nil
 			}
 
-			if !node.ConnectNode {
-				errstr = "TestCheckNode node1 EventOnIConnectNode node.ConnectNode"
+			if node.ConnType != coredbpb.CONNECTTYPE_DIRECT_CONN {
+				errstr = fmt.Sprintf("TestCheckNode node1 EventOnIConnectNode node.ConnType %v %v",
+					node.ConnType, coredbpb.CONNECTTYPE_DIRECT_CONN)
+
 				cancel()
+
+				return nil
 			}
 
 			_, ok := mapICN1[node.Addr]
@@ -85,6 +92,8 @@ func TestCheckNode(t *testing.T) {
 
 				if cp == 4 {
 					cancel()
+
+					return nil
 				}
 			}
 
@@ -96,11 +105,15 @@ func TestCheckNode(t *testing.T) {
 			if addr2 != node.Addr {
 				errstr = "TestCheckNode node1 EventOnNodeConnected addr fail"
 				cancel()
+
+				return nil
 			}
 
 			if !node.ConnectMe {
 				errstr = "TestCheckNode node1 EventOnNodeConnected node.ConnectMe"
 				cancel()
+
+				return nil
 			}
 
 			_, ok := mapNC1[node.Addr]
@@ -122,11 +135,17 @@ func TestCheckNode(t *testing.T) {
 			if addr1 != node.Addr {
 				errstr = "TestCheckNode node2 EventOnIConnectNode addr fail"
 				cancel()
+
+				return nil
 			}
 
-			if !node.ConnectNode {
-				errstr = "TestCheckNode node2 EventOnIConnectNode node.ConnectNode"
+			if node.ConnType != coredbpb.CONNECTTYPE_DIRECT_CONN {
+				errstr = fmt.Sprintf("TestCheckNode node2 EventOnIConnectNode node.ConnType %v %v",
+					node.ConnType, coredbpb.CONNECTTYPE_DIRECT_CONN)
+
 				cancel()
+
+				return nil
 			}
 
 			_, ok := mapICN2[node.Addr]
@@ -137,6 +156,8 @@ func TestCheckNode(t *testing.T) {
 
 				if cp == 4 {
 					cancel()
+
+					return nil
 				}
 			}
 
@@ -148,11 +169,15 @@ func TestCheckNode(t *testing.T) {
 			if addr1 != node.Addr {
 				errstr = "TestCheckNode node2 EventOnNodeConnected addr fail"
 				cancel()
+
+				return nil
 			}
 
 			if !node.ConnectMe {
 				errstr = "TestCheckNode node2 EventOnNodeConnected node.ConnectMe"
 				cancel()
+
+				return nil
 			}
 
 			_, ok := mapNC2[node.Addr]
@@ -294,11 +319,18 @@ func TestRequestNodes(t *testing.T) {
 			if addr2 != node.Addr {
 				errstr = "TestRequestNodes node1 EventOnIConnectNode addr fail"
 				cancel()
+
+				return nil
 			}
 
-			if !node.ConnectNode {
-				errstr = "TestRequestNodes node1 EventOnIConnectNode node.ConnectNode"
+			if node.ConnType != coredbpb.CONNECTTYPE_DIRECT_CONN {
+
+				errstr = fmt.Sprintf("TestCheckNode node1 EventOnIConnectNode node.ConnType %v %v",
+					node.ConnType, coredbpb.CONNECTTYPE_DIRECT_CONN)
+
 				cancel()
+
+				return nil
 			}
 
 			_, ok := mapICN1[node.Addr]
@@ -320,11 +352,15 @@ func TestRequestNodes(t *testing.T) {
 			if addr2 != node.Addr {
 				errstr = "TestRequestNodes node1 EventOnNodeConnected addr fail"
 				cancel()
+
+				return nil
 			}
 
 			if !node.ConnectMe {
 				errstr = "TestRequestNodes node1 EventOnNodeConnected node.ConnectMe"
 				cancel()
+
+				return nil
 			}
 
 			_, ok := mapNC1[node.Addr]
@@ -346,6 +382,8 @@ func TestRequestNodes(t *testing.T) {
 			if addr2 != node.Addr {
 				errstr = "TestRequestNodes node1 EventOnRequestNode addr fail"
 				cancel()
+
+				return nil
 			}
 
 			rn = rn + 1
@@ -358,11 +396,15 @@ func TestRequestNodes(t *testing.T) {
 			if addr2 != node.Addr {
 				errstr = "TestRequestNodes node1 EventOnEndRequestNode addr fail"
 				cancel()
+
+				return nil
 			}
 
 			rne = rne + 1
 			if rne == rn {
 				cancel()
+
+				return nil
 			}
 
 			return nil
@@ -373,11 +415,17 @@ func TestRequestNodes(t *testing.T) {
 			if addr1 != node.Addr {
 				errstr = "TestRequestNodes node2 EventOnIConnectNode addr fail"
 				cancel()
+
+				return nil
 			}
 
-			if !node.ConnectNode {
-				errstr = "TestRequestNodes node2 EventOnIConnectNode node.ConnectNode"
+			if node.ConnType != coredbpb.CONNECTTYPE_DIRECT_CONN {
+				errstr = fmt.Sprintf("TestCheckNode node2 EventOnIConnectNode node.ConnType %v %v",
+					node.ConnType, coredbpb.CONNECTTYPE_DIRECT_CONN)
+
 				cancel()
+
+				return nil
 			}
 
 			_, ok := mapICN2[node.Addr]
@@ -399,11 +447,15 @@ func TestRequestNodes(t *testing.T) {
 			if addr1 != node.Addr {
 				errstr = "TestRequestNodes node2 EventOnNodeConnected addr fail"
 				cancel()
+
+				return nil
 			}
 
 			if !node.ConnectMe {
 				errstr = "TestRequestNodes node2 EventOnNodeConnected node.ConnectMe"
 				cancel()
+
+				return nil
 			}
 
 			_, ok := mapNC2[node.Addr]

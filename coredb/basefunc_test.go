@@ -151,11 +151,11 @@ func TestBaseFunc(t *testing.T) {
 		LstClientAddr:   nil,
 		AddTime:         time.Now().Unix(),
 		ConnectMe:       false,
-		ConnectNode:     false,
 		NodeTypeVersion: "0.1.0",
 		NodeType:        "normal",
 		CoreVersion:     "0.1.0",
 		LastRecvMsgID:   1,
+		ConnType:        coredbpb.CONNECTTYPE_UNKNOWN_CONN,
 	}
 
 	cn1, err := updNodeInfo(ankaDB, cni1)
@@ -219,8 +219,8 @@ func TestBaseFunc(t *testing.T) {
 		return
 	}
 
-	if cni1.ConnectNode != cn1.ConnectNode {
-		t.Fatalf("TestBaseFunc updNodeInfo return ConnectNode fail! (%v - %v)", cni1.ConnectNode, cn1.ConnectNode)
+	if cni1.ConnType != cn1.ConnType {
+		t.Fatalf("TestBaseFunc updNodeInfo return ConnType fail! (%v - %v)", cni1.ConnType, cn1.ConnType)
 
 		return
 	}
@@ -264,11 +264,11 @@ func TestBaseFunc(t *testing.T) {
 		LstClientAddr:   nil,
 		AddTime:         time.Now().Unix(),
 		ConnectMe:       false,
-		ConnectNode:     false,
 		NodeTypeVersion: "0.1.0",
 		NodeType:        "normal",
 		CoreVersion:     "0.1.0",
 		LastRecvMsgID:   1,
+		ConnType:        coredbpb.CONNECTTYPE_UNKNOWN_CONN,
 	}
 
 	cn2, err := updNodeInfo(ankaDB, cni2)
@@ -332,8 +332,8 @@ func TestBaseFunc(t *testing.T) {
 		return
 	}
 
-	if cni2.ConnectNode != cn2.ConnectNode {
-		t.Fatalf("TestBaseFunc updNodeInfo return ConnectNode fail! (%v - %v)", cni2.ConnectNode, cn2.ConnectNode)
+	if cni2.ConnType != cn2.ConnType {
+		t.Fatalf("TestBaseFunc updNodeInfo return ConnType fail! (%v - %v)", cni2.ConnType, cn2.ConnType)
 
 		return
 	}
@@ -448,8 +448,8 @@ func TestBaseFunc(t *testing.T) {
 		return
 	}
 
-	if cni1.ConnectNode != cn1.ConnectNode {
-		t.Fatalf("TestBaseFunc getNodeInfo return ConnectNode fail! (%v - %v)", cni1.ConnectNode, cn1.ConnectNode)
+	if cni1.ConnType != cn1.ConnType {
+		t.Fatalf("TestBaseFunc getNodeInfo return ConnType fail! (%v - %v)", cni1.ConnType, cn1.ConnType)
 
 		return
 	}
@@ -542,8 +542,8 @@ func TestBaseFunc(t *testing.T) {
 		return
 	}
 
-	if cni2.ConnectNode != cn2.ConnectNode {
-		t.Fatalf("TestBaseFunc getNodeInfo return ConnectNode fail! (%v - %v)", cni2.ConnectNode, cn2.ConnectNode)
+	if cni2.ConnType != cn2.ConnType {
+		t.Fatalf("TestBaseFunc getNodeInfo return ConnType fail! (%v - %v)", cni2.ConnType, cn2.ConnType)
 
 		return
 	}
@@ -640,8 +640,8 @@ func TestBaseFunc(t *testing.T) {
 				return
 			}
 
-			if cni1.ConnectNode != cn1.ConnectNode {
-				t.Fatalf("TestBaseFunc getNodeInfos return ConnectNode fail! (%v - %v)", cni1.ConnectNode, cn1.ConnectNode)
+			if cni1.ConnType != cn1.ConnType {
+				t.Fatalf("TestBaseFunc getNodeInfos return ConnType fail! (%v - %v)", cni1.ConnType, cn1.ConnType)
 
 				return
 			}
@@ -726,8 +726,8 @@ func TestBaseFunc(t *testing.T) {
 				return
 			}
 
-			if cni2.ConnectNode != cn2.ConnectNode {
-				t.Fatalf("TestBaseFunc getNodeInfos return ConnectNode fail! (%v - %v)", cni2.ConnectNode, cn2.ConnectNode)
+			if cni2.ConnType != cn2.ConnType {
+				t.Fatalf("TestBaseFunc getNodeInfos return ConnType fail! (%v - %v)", cni2.ConnType, cn2.ConnType)
 
 				return
 			}

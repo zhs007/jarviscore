@@ -315,7 +315,7 @@ func (n *jarvisNode) onMsgLocalConnect(ctx context.Context, msg *pb.JarvisMsg) e
 		return nil
 	}
 
-	if !cn.ConnectNode {
+	if cn.ConnType != coredbpb.CONNECTTYPE_UNKNOWN_CONN {
 		n.mgrClient2.addTask(nil, cn.ServAddr, cn)
 
 		return nil
@@ -538,7 +538,7 @@ func onNodeConnected(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.
 
 	node.ConnectMe = true
 
-	if !node.ConnectNode {
+	if node.ConnType == coredbpb.CONNECTTYPE_UNKNOWN_CONN {
 		msg, err := BuildLocalConnectOther(jarvisnode, jarvisnode.GetMyInfo().Addr, node.Addr,
 			node.ServAddr, GetNodeBaseInfo(node))
 		if err != nil {
@@ -572,7 +572,7 @@ func onIConnectNode(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.N
 
 	node.ConnectedNums++
 	node.LastConnectedTime = time.Now().Unix()
-	node.ConnectNode = true
+	node.ConnType = coredbpb.CONNECTTYPE_DIRECT_CONN
 
 	err := jarvisnode.GetCoreDB().UpdNodeInfo(node.Addr)
 	if err != nil {
@@ -954,7 +954,7 @@ func (n *jarvisNode) AddNodeBaseInfo(nbi *pb.NodeBaseInfo) error {
 		n.mgrClient2.addTask(nil, nbi.ServAddr, n.coredb.GetNode(nbi.Addr))
 
 		return nil
-	} else if !cn.ConnectNode {
+	} else if cn.ConnType == coredbpb.CONNECTTYPE_UNKNOWN_CONN {
 		n.mgrClient2.addTask(nil, nbi.ServAddr, cn)
 
 		return nil

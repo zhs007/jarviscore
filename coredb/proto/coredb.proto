@@ -2,6 +2,18 @@ syntax = "proto3";
 
 package coredbpb;
 
+// CONNECTTYPE - connect type
+enum CONNECTTYPE {
+    // unknown connection
+    UNKNOWN_CONN = 0;    
+    // direct connection
+    DIRECT_CONN = 1;
+    // forward once
+    FORWARD_ONCE = 2;
+    // forward multiple times
+    FORWARD_MULTIPLE = 3;
+}
+
 // private data
 message PrivateData {
     bytes priKey = 1;
@@ -25,7 +37,7 @@ message NodeInfo {
     repeated string lstClientAddr = 7;
     int64 addTime = 8;
     bool connectMe = 9;
-    bool connectNode = 10;
+    bool connectNode = 10 [deprecated = true];
     // nodetype version
     string nodeTypeVersion = 11;
     // node type
@@ -47,6 +59,11 @@ message NodeInfo {
     bool deprecated = 19;
     // last receive message id
     int64 lastRecvMsgID = 20;
+    // connection type
+    CONNECTTYPE connType = 21;
+    // When I can't connect directly to this node, this is the list of nodes I know 
+    // that can be directly connected to this node.
+    repeated string validConnNodes = 22;
 }
 
 // node info list

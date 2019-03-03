@@ -64,6 +64,10 @@ func TestCheckNodeCtrl(t *testing.T) {
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 			if addr2 != node.Addr {
 				t.Fatalf("TestCheckNodeCtrl node addr fail")
+
+				cancel()
+
+				return nil
 			}
 
 			_, ok := mapICN1[node.Addr]
@@ -73,6 +77,10 @@ func TestCheckNodeCtrl(t *testing.T) {
 				err := sendCtrl(ctx, jarvisnode, node)
 				if err != nil {
 					t.Fatalf("TestCheckNodeCtrl sendctrl err %v", err)
+
+					cancel()
+
+					return nil
 				}
 
 				ctrlp++
@@ -81,6 +89,8 @@ func TestCheckNodeCtrl(t *testing.T) {
 
 				if cp == 4 && ctrlp == 3 {
 					cancel()
+
+					return nil
 				}
 			}
 
@@ -91,6 +101,10 @@ func TestCheckNodeCtrl(t *testing.T) {
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 			if addr2 != node.Addr {
 				t.Fatalf("TestCheckNodeCtrl node addr fail")
+
+				cancel()
+
+				return nil
 			}
 
 			_, ok := mapNC1[node.Addr]
@@ -101,6 +115,8 @@ func TestCheckNodeCtrl(t *testing.T) {
 
 				if cp == 4 && ctrlp == 3 {
 					cancel()
+
+					return nil
 				}
 			}
 
@@ -113,6 +129,8 @@ func TestCheckNodeCtrl(t *testing.T) {
 
 			if cp == 4 && ctrlp == 3 {
 				cancel()
+
+				return nil
 			}
 
 			return nil
@@ -122,6 +140,10 @@ func TestCheckNodeCtrl(t *testing.T) {
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 			if addr1 != node.Addr {
 				t.Fatalf("TestCheckNodeCtrl node addr fail")
+
+				cancel()
+
+				return nil
 			}
 
 			_, ok := mapICN2[node.Addr]
@@ -132,6 +154,8 @@ func TestCheckNodeCtrl(t *testing.T) {
 
 				if cp == 4 && ctrlp == 3 {
 					cancel()
+
+					return nil
 				}
 			}
 
@@ -142,6 +166,10 @@ func TestCheckNodeCtrl(t *testing.T) {
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 			if addr1 != node.Addr {
 				t.Fatalf("TestCheckNodeCtrl node addr fail")
+
+				cancel()
+
+				return nil
 			}
 
 			_, ok := mapNC2[node.Addr]
@@ -152,6 +180,8 @@ func TestCheckNodeCtrl(t *testing.T) {
 
 				if cp == 4 && ctrlp == 3 {
 					cancel()
+
+					return nil
 				}
 			}
 
@@ -164,6 +194,8 @@ func TestCheckNodeCtrl(t *testing.T) {
 
 			if cp == 4 && ctrlp == 3 {
 				cancel()
+
+				return nil
 			}
 
 			return nil
