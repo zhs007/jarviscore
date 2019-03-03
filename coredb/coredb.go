@@ -57,7 +57,8 @@ const queryNodeInfos = `query NodeInfos($snapshotID: Int64!, $beginIndex: Int!, 
 
 const queryUpdNodeInfo = `mutation UpdNodeInfo($nodeInfo: NodeInfoInput!) {
 	updNodeInfo(nodeInfo: $nodeInfo) {
-		addr, servAddr, name, connectNums, connectedNums, ctrlID, lstClientAddr, addTime, connectMe, connectNode
+		addr, servAddr, name, connectNums, connectedNums, ctrlID, lstClientAddr, addTime, 
+		connectMe, connectNode, nodeType, coreVersion, nodeTypeVersion, lastSendMsgID, lastRecvMsgID
 	}
 }`
 
