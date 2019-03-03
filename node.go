@@ -506,6 +506,30 @@ func (n *jarvisNode) onMsgLocalSendMsg(ctx context.Context, msg *pb.JarvisMsg) e
 	return nil
 }
 
+// onMsgUpdateNode
+func (n *jarvisNode) onMsgUpdateNode(ctx context.Context, msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer) error {
+
+	if n.cfg.AutoUpdate {
+		n.replyStream2(msg, stream, pb.REPLYTYPE_ISME, "")
+
+		n.mgrEvent.onMsgEvent(ctx, EventOnUpdateNode, msg)
+
+		curscript, outstring, err := updateNode(&UpdateNodeParam{
+			NewVersion: msg.GetUpdateNode().NodeTypeVersion,
+		}, n.cfg.UpdateScript)
+		if err != nil {
+			n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
+
+			return err
+		}
+
+		n.replyStream2(msg, stream, pb.REPLYTYPE_OK, curscript)
+		n.replyStream2(msg, stream, pb.REPLYTYPE_OK, outstring)
+	}
+
+	return nil
+}
+
 // onNodeConnected - func event
 func onNodeConnected(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 
@@ -961,6 +985,33 @@ func (n *jarvisNode) checkMsgID(ctx context.Context, msg *pb.JarvisMsg) error {
 	} else {
 		n.GetCoreDB().UpdRecvMsgID(msg.SrcAddr, msg.MsgID)
 	}
+
+	return nil
+}
+
+// UpdateNode - update node
+func (n *jarvisNode) UpdateNode(ctx context.Context, addr string, nodetype string, nodetypever string,
+	funcReply FuncReplyRequest) error {
+
+	sendmsg, err := BuildUpdateNode(n, n.myinfo.Addr, addr, nodetype, nodetypever)
+	if err != nil {
+		jarvisbase.Warn("jarvisNode.RequestFile", zap.Error(err))
+
+		return err
+	}
+
+	msg, err := BuildLocalSendMsg(n, n.myinfo.Addr, "", sendmsg)
+	if err != nil {
+		jarvisbase.Warn("jarvisNode.RequestFile:BuildLocalSendMsg", zap.Error(err))
+
+		return err
+	}
+
+	if funcReply != nil {
+		n.mgrRequest.addRequestData(msg, funcReply)
+	}
+
+	n.PostMsg(msg, nil, nil)
 
 	return nil
 }
