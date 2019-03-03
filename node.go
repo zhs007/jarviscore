@@ -587,11 +587,16 @@ func onDeprecateNode(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.
 	jarvisbase.Debug("onDeprecateNode")
 
 	if !node.Deprecated {
+		jarvisbase.Info("onDeprecateNode",
+			zap.String("addr", node.Addr),
+			zap.String("servaddr", node.ServAddr))
+
 		node.Deprecated = true
 
 		err := jarvisnode.GetCoreDB().UpdNodeInfo(node.Addr)
 		if err != nil {
-			jarvisbase.Warn("jarvisNode.onDeprecateNode:UpdNodeInfo", zap.Error(err))
+			jarvisbase.Warn("jarvisNode.onDeprecateNode:UpdNodeInfo",
+				zap.Error(err))
 		}
 	}
 
