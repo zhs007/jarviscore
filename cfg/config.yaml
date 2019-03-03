@@ -44,10 +44,10 @@ basenodeinfo:
 autoupdate: true
 # updatescript - If automatic updates are enabled, the script will run when the update was starting.  
 #     There are some variables that can be used in this script.
-#       - newversion: new version
+#       - NewVersion: new version
 updatescript: |
   rm -rf jarvissh.tar.gz
-  wget https://github.com/zhs007/jarvissh/releases/download/{{.newversion}}/jarvissh.tar.gz
+  wget https://github.com/zhs007/jarvissh/releases/download/{{.NewVersion}}/jarvissh.tar.gz
   tar zxvf jarvissh.tar.gz
   cd jarvissh
   ./jarvissh stop
