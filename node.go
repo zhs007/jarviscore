@@ -30,6 +30,9 @@ type JarvisNode interface {
 	RequestFile(ctx context.Context, addr string, rf *pb.RequestFile, funcReply FuncReplyRequest) error
 	// RequestNodes - request nodes
 	RequestNodes() error
+	// UpdateAllNodes - update all nodes
+	UpdateAllNodes(ctx context.Context, nodetype string, nodetypever string,
+		funcReply FuncReplyRequest) error
 
 	// AddNodeBaseInfo - add nodeinfo
 	AddNodeBaseInfo(nbi *pb.NodeBaseInfo) error
