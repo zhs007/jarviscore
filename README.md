@@ -10,6 +10,11 @@ Jarvis includes a chatbot for everyone to control web services.
 
 Jarviscore is the golang implementation of the Jarvis network kernel.
 
+---
+### Jarvis Development Log
+
+[``Come Here``](https://github.com/zhs007/jarviscore/blob/master/blog.md)
+
 ### Update
 
 #### **v0.7**
