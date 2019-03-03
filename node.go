@@ -977,6 +977,7 @@ func (n *jarvisNode) checkMsgID(ctx context.Context, msg *pb.JarvisMsg) error {
 
 	if msg.MsgID <= cn.LastRecvMsgID {
 		jarvisbase.Warn("jarvisNode.checkMsgID",
+			zap.String("srcaddr", msg.SrcAddr),
 			zap.Int64("msgid", msg.MsgID),
 			zap.Int64("lasrrevmsgid", cn.LastRecvMsgID))
 

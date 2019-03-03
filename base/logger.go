@@ -38,6 +38,12 @@ func initLogger(level zapcore.Level, isConsole bool, logpath string) (*zap.Logge
 	cfg.OutputPaths = []string{path.Join(logpath, "output.log")}
 	cfg.ErrorOutputPaths = []string{path.Join(logpath, "error.log")}
 	cfg.Encoding = "json"
+	cfg.EncoderConfig = zapcore.EncoderConfig{
+		TimeKey:     "T",
+		LevelKey:    "L",
+		EncodeLevel: zapcore.CapitalLevelEncoder,
+		EncodeTime:  zapcore.ISO8601TimeEncoder,
+	}
 
 	cl, err := cfg.Build()
 	if err != nil {
