@@ -1015,3 +1015,18 @@ func (n *jarvisNode) UpdateNode(ctx context.Context, addr string, nodetype strin
 
 	return nil
 }
+
+// UpdateAllNodes - update all nodes
+func (n *jarvisNode) UpdateAllNodes(ctx context.Context, nodetype string, nodetypever string,
+	funcReply FuncReplyRequest) error {
+
+	n.coredb.ForEachMapNodes(func(addr string, ni *coredbpb.NodeInfo) error {
+		if ni.NodeType == nodetype && ni.NodeTypeVersion != nodetypever {
+			n.UpdateNode(ctx, addr, nodetype, nodetypever, funcReply)
+		}
+
+		return nil
+	})
+
+	return nil
+}
