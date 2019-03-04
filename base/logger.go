@@ -7,6 +7,7 @@ import (
 	"path"
 	"sync"
 
+	"github.com/zhs007/jarviscore/basedef"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -35,8 +36,8 @@ func initLogger(level zapcore.Level, isConsole bool, logpath string) (*zap.Logge
 	cfg := &zap.Config{}
 
 	cfg.Level = zap.NewAtomicLevelAt(level)
-	cfg.OutputPaths = []string{path.Join(logpath, "output.log")}
-	cfg.ErrorOutputPaths = []string{path.Join(logpath, "error.log")}
+	cfg.OutputPaths = []string{path.Join(logpath, fmt.Sprintf("output.%v.log", basedef.VERSION))}
+	cfg.ErrorOutputPaths = []string{path.Join(logpath, fmt.Sprintf("error.%v.log", basedef.VERSION))}
 	cfg.Encoding = "json"
 	cfg.EncoderConfig = zapcore.EncoderConfig{
 		TimeKey:     "T",

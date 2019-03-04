@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/zhs007/jarviscore/base"
+	"github.com/zhs007/jarviscore/basedef"
 	"github.com/zhs007/jarviscore/coredb"
 	"github.com/zhs007/jarviscore/coredb/proto"
 	pb "github.com/zhs007/jarviscore/proto"
@@ -87,7 +88,7 @@ const (
 
 // NewNode -
 func NewNode(cfg *Config) JarvisNode {
-	jarvisbase.Info("jarviscore version is " + VERSION)
+	jarvisbase.Info("jarviscore version is " + basedef.VERSION)
 
 	if !IsValidNodeName(cfg.BaseNodeInfo.NodeName) {
 		jarvisbase.Error("NewNode:IsValidNodeName", zap.Error(ErrInvalidNodeName))
@@ -107,7 +108,7 @@ func NewNode(cfg *Config) JarvisNode {
 			Name:        cfg.BaseNodeInfo.NodeName,
 			BindAddr:    cfg.BaseNodeInfo.BindAddr,
 			ServAddr:    cfg.BaseNodeInfo.ServAddr,
-			CoreVersion: VERSION,
+			CoreVersion: basedef.VERSION,
 		},
 		coredb: db,
 		cfg:    cfg,
