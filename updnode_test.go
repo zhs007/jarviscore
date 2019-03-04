@@ -129,9 +129,16 @@ func (obj *updnodeobj) onIConn(ctx context.Context) error {
 					return fmt.Errorf("UpdateAllNodes:len %v", len(lstResult))
 				}
 
-				obj.endupdnodes = true
+				if (len(lstResult[0].Msgs) == 1 && len(lstResult[1].Msgs) == 3) ||
+					(len(lstResult[1].Msgs) == 1 && len(lstResult[0].Msgs) == 3) {
 
-				return nil
+					obj.endupdnodes = true
+
+					return nil
+				}
+
+				return fmt.Errorf("UpdateAllNodes:arr len is %v %v",
+					len(lstResult[0].Msgs), len(lstResult[1].Msgs))
 			})
 		if err != nil {
 			return err
