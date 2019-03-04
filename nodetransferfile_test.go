@@ -42,10 +42,22 @@ func TestCheckNodeTransferFile(t *testing.T) {
 	InitJarvisCore(cfg1)
 	defer ReleaseJarvisCore()
 
-	node1 := NewNode(cfg1)
+	node1, err := NewNode(cfg1)
+	if err != nil {
+		t.Fatalf("TestCheckNodeTransferFile NewNode node1 %v", err)
+
+		return
+	}
+
 	addr1 := node1.GetCoreDB().GetPrivateKey().ToAddress()
 
-	node2 := NewNode(cfg2)
+	node2, err := NewNode(cfg2)
+	if err != nil {
+		t.Fatalf("TestCheckNodeTransferFile NewNode node2 %v", err)
+
+		return
+	}
+
 	addr2 := node2.GetCoreDB().GetPrivateKey().ToAddress()
 
 	cp := 0

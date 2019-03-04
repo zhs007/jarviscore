@@ -14,16 +14,30 @@ func TestCheckPrivateKey(t *testing.T) {
 	cfg, err := LoadConfig("./test/node1.yaml")
 	if err != nil {
 		t.Fatalf("TestCheckPrivateKey load config %v", err)
+
+		return
 	}
 
 	InitJarvisCore(cfg)
 	defer ReleaseJarvisCore()
 
-	node1 := NewNode(cfg)
+	node1, err := NewNode(cfg)
+	if err != nil {
+		t.Fatalf("TestCheckPrivateKey NewNode node1 %v", err)
+
+		return
+	}
+
 	addr1 := node1.GetCoreDB().GetPrivateKey().ToAddress()
 	node1.GetCoreDB().Close()
 
-	node2 := NewNode(cfg)
+	node2, err := NewNode(cfg)
+	if err != nil {
+		t.Fatalf("TestCheckPrivateKey NewNode node2 %v", err)
+
+		return
+	}
+
 	addr2 := node2.GetCoreDB().GetPrivateKey().ToAddress()
 	node2.GetCoreDB().Close()
 
@@ -48,10 +62,22 @@ func TestCheckNode(t *testing.T) {
 	InitJarvisCore(cfg1)
 	defer ReleaseJarvisCore()
 
-	node1 := NewNode(cfg1)
+	node1, err := NewNode(cfg1)
+	if err != nil {
+		t.Fatalf("TestCheckNode NewNode node1 %v", err)
+
+		return
+	}
+
 	addr1 := node1.GetCoreDB().GetPrivateKey().ToAddress()
 
-	node2 := NewNode(cfg2)
+	node2, err := NewNode(cfg2)
+	if err != nil {
+		t.Fatalf("TestCheckNode NewNode node2 %v", err)
+
+		return
+	}
+
 	addr2 := node2.GetCoreDB().GetPrivateKey().ToAddress()
 
 	cp := 0
@@ -222,7 +248,13 @@ func TestConnectNodeFail(t *testing.T) {
 	InitJarvisCore(cfg1)
 	defer ReleaseJarvisCore()
 
-	node1 := NewNode(cfg1)
+	node1, err := NewNode(cfg1)
+	if err != nil {
+		t.Fatalf("TestConnectNodeFail NewNode node1 %v", err)
+
+		return
+	}
+
 	nbi := &jarviscorepb.NodeBaseInfo{
 		ServAddr:        "127.0.0.1:7898",
 		Addr:            "1JJaKpZGhYPuVHc1EKiiHZEswPAB5SybW5",
@@ -293,10 +325,22 @@ func TestRequestNodes(t *testing.T) {
 	InitJarvisCore(cfg1)
 	defer ReleaseJarvisCore()
 
-	node1 := NewNode(cfg1)
+	node1, err := NewNode(cfg1)
+	if err != nil {
+		t.Fatalf("TestRequestNodes NewNode node1 %v", err)
+
+		return
+	}
+
 	addr1 := node1.GetCoreDB().GetPrivateKey().ToAddress()
 
-	node2 := NewNode(cfg2)
+	node2, err := NewNode(cfg2)
+	if err != nil {
+		t.Fatalf("TestRequestNodes NewNode node2 %v", err)
+
+		return
+	}
+
 	addr2 := node2.GetCoreDB().GetPrivateKey().ToAddress()
 
 	cp := 0
