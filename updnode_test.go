@@ -79,13 +79,15 @@ func (ni *updnodenodeinfo) onNodeConnected(node *coredbpb.NodeInfo) error {
 }
 
 type updnodeobj struct {
-	root         JarvisNode
-	node1        JarvisNode
-	node2        JarvisNode
-	rootni       updnodenodeinfo
-	node1ni      updnodenodeinfo
-	node2ni      updnodenodeinfo
-	requestnodes bool
+	root             JarvisNode
+	node1            JarvisNode
+	node2            JarvisNode
+	rootni           updnodenodeinfo
+	node1ni          updnodenodeinfo
+	node2ni          updnodenodeinfo
+	requestnodes     bool
+	updnodefromnode1 bool
+	endupdnodes      bool
 }
 
 func newUpdNodeObj() *updnodeobj {
@@ -102,10 +104,10 @@ func (obj *updnodeobj) isDone() bool {
 		return false
 	}
 
-	return true
+	return obj.endupdnodes
 }
 
-func (obj *updnodeobj) onIConn() error {
+func (obj *updnodeobj) onIConn(ctx context.Context) error {
 	if obj.rootni.numsConnMe == 2 && !obj.requestnodes {
 		err := obj.node1.RequestNodes(nil)
 		if err != nil {
@@ -120,10 +122,28 @@ func (obj *updnodeobj) onIConn() error {
 		obj.requestnodes = true
 	}
 
+	if obj.node1ni.numsConnMe == 2 && obj.node2ni.numsConnMe == 2 && !obj.updnodefromnode1 {
+		err := obj.node1.UpdateAllNodes(ctx, "testupdnode", "0.7.25", nil,
+			func(ctx context.Context, jarvisnode JarvisNode, lstResult []*ResultSendMsg) error {
+				if len(lstResult) != 2 {
+					return fmt.Errorf("UpdateAllNodes:len %v", len(lstResult))
+				}
+
+				obj.endupdnodes = true
+
+				return nil
+			})
+		if err != nil {
+			return err
+		}
+
+		obj.updnodefromnode1 = true
+	}
+
 	return nil
 }
 
-func (obj *updnodeobj) onConnMe() error {
+func (obj *updnodeobj) onConnMe(ctx context.Context) error {
 	return nil
 }
 
@@ -144,6 +164,8 @@ func startTestNode(ctx context.Context, cfgfilename string, ni *updnodenodeinfo,
 	if err != nil {
 		return nil, fmt.Errorf("startTestNode NewNode node %v", err)
 	}
+
+	curnode.SetNodeTypeInfo("testupdnode", "0.7.22")
 
 	curnode.RegNodeEventFunc(EventOnIConnectNode,
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
@@ -193,7 +215,7 @@ func TestUpdNode(t *testing.T) {
 			return nil
 		}
 
-		err1 := obj.onIConn()
+		err1 := obj.onIConn(ctx)
 		if err1 != nil {
 			errobj = err1
 
@@ -220,7 +242,7 @@ func TestUpdNode(t *testing.T) {
 			return nil
 		}
 
-		err1 := obj.onConnMe()
+		err1 := obj.onConnMe(ctx)
 		if err1 != nil {
 			errobj = err1
 

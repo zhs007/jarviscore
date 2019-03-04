@@ -57,4 +57,6 @@ var (
 	ErrInvalidRequestNodeData = errors.New("invalid requestNodeData")
 	// ErrFuncOnSendMsgResultLength - FuncOnSendMsgResult length err
 	ErrFuncOnSendMsgResultLength = errors.New("FuncOnSendMsgResult length err")
+	// ErrAutoUpdateClosed - auto update closed
+	ErrAutoUpdateClosed = errors.New("auto update closed")
 )

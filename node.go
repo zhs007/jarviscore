@@ -39,7 +39,7 @@ type JarvisNode interface {
 		funcReply FuncReplyRequest, funcOnResult FuncOnSendMsgResult) error
 	// UpdateAllNodes - update all nodes
 	UpdateAllNodes(ctx context.Context, nodetype string, nodetypever string,
-		funcReply FuncReplyRequest) error
+		funcReply FuncReplyRequest, funcOnResult FuncOnSendMsgResult) error
 
 	// AddNodeBaseInfo - add nodeinfo
 	AddNodeBaseInfo(nbi *pb.NodeBaseInfo) error
@@ -304,6 +304,8 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 			return n.onMsgReplyTransferFile(ctx, msg)
 		} else if msg.MsgType == pb.MSGTYPE_REPLY2 {
 			return n.onMsgReply2(ctx, msg)
+		} else if msg.MsgType == pb.MSGTYPE_UPDATENODE {
+			return n.onMsgUpdateNode(ctx, msg, stream)
 		}
 
 	}
@@ -547,6 +549,8 @@ func (n *jarvisNode) onMsgUpdateNode(ctx context.Context, msg *pb.JarvisMsg, str
 
 		n.replyStream2(msg, stream, pb.REPLYTYPE_OK, curscript)
 		n.replyStream2(msg, stream, pb.REPLYTYPE_OK, outstring)
+	} else {
+		n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, ErrAutoUpdateClosed.Error())
 	}
 
 	return nil
@@ -679,6 +683,9 @@ func (n *jarvisNode) onMsgLocalRequesrNodes(ctx context.Context, msg *pb.JarvisM
 						totalResults = append(totalResults, lstResult[0])
 					}
 
+					//!!! maybe bugs
+					// 在网络IO很快的时候，假设一共有2个节点，但第一个节点很快返回的话，
+					// 可能在foreach还没结束就到这一步，导致回调
 					if funcOnResult != nil && numsSend == numsRecv {
 						funcOnResult(ctx, jarvisnode, totalResults)
 					}
@@ -1090,11 +1097,49 @@ func (n *jarvisNode) UpdateNode(ctx context.Context, addr string, nodetype strin
 
 // UpdateAllNodes - update all nodes
 func (n *jarvisNode) UpdateAllNodes(ctx context.Context, nodetype string, nodetypever string,
-	funcReply FuncReplyRequest) error {
+	funcReply FuncReplyRequest, funcOnResult FuncOnSendMsgResult) error {
+
+	numsSend := 0
+	numsRecv := 0
+	var totalResults []*ResultSendMsg
 
 	n.coredb.ForEachMapNodes(func(addr string, ni *coredbpb.NodeInfo) error {
 		if ni.NodeType == nodetype && ni.NodeTypeVersion != nodetypever {
-			n.UpdateNode(ctx, addr, nodetype, nodetypever, funcReply, nil)
+
+			numsSend++
+
+			err := n.UpdateNode(ctx, addr, nodetype, nodetypever, funcReply,
+				func(ctx context.Context, jarvisnode JarvisNode, lstResult []*ResultSendMsg) error {
+					numsRecv++
+
+					jarvisbase.Debug("jarvisNode.UpdateAllNodes:FuncOnSendMsgResult",
+						zap.Int("numsRecv", numsRecv),
+						zap.Int("numsSend", numsSend))
+
+					if len(lstResult) != 1 {
+						jarvisbase.Error("jarvisNode.UpdateAllNodes:FuncOnSendMsgResult", zap.Int("len", len(lstResult)))
+
+						totalResults = append(totalResults,
+							&ResultSendMsg{
+								Err: ErrFuncOnSendMsgResultLength,
+							})
+					} else {
+						totalResults = append(totalResults, lstResult[0])
+					}
+
+					//!!! maybe bugs
+					// 在网络IO很快的时候，假设一共有2个节点，但第一个节点很快返回的话，
+					// 可能在foreach还没结束就到这一步，导致回调
+					if funcOnResult != nil && numsSend == numsRecv {
+						funcOnResult(ctx, jarvisnode, totalResults)
+					}
+
+					return nil
+				})
+
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil
