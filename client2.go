@@ -15,16 +15,26 @@ import (
 	"google.golang.org/grpc"
 )
 
+// ResultSendMsg - result for FuncOnSendMsgResult
+type ResultSendMsg struct {
+	Msgs []*pb.JarvisMsg
+	Err  error
+}
+
+// FuncOnSendMsgResult - on sendmsg recv all the messages
+type FuncOnSendMsgResult func(ctx context.Context, jarvisnode JarvisNode, lstResult []*ResultSendMsg) error
+
 type clientTask struct {
-	client   *jarvisClient2
-	msg      *pb.JarvisMsg
-	servaddr string
-	node     *coredbpb.NodeInfo
+	client       *jarvisClient2
+	msg          *pb.JarvisMsg
+	servaddr     string
+	node         *coredbpb.NodeInfo
+	funcOnResult FuncOnSendMsgResult
 }
 
 func (task *clientTask) Run(ctx context.Context) error {
 	if task.msg == nil {
-		err := task.client._connectNode(ctx, task.servaddr)
+		err := task.client._connectNode(ctx, task.servaddr, task.funcOnResult)
 		if err != nil && task.node != nil {
 			if err == ErrServAddrIsMe || err == ErrInvalidServAddr {
 				task.client.node.mgrEvent.onNodeEvent(ctx, EventOnDeprecateNode, task.node)
@@ -36,7 +46,7 @@ func (task *clientTask) Run(ctx context.Context) error {
 		return err
 	}
 
-	return task.client._sendMsg(ctx, task.msg)
+	return task.client._sendMsg(ctx, task.msg, task.funcOnResult)
 }
 
 type clientInfo2 struct {
@@ -65,12 +75,13 @@ func (c *jarvisClient2) start(ctx context.Context) error {
 }
 
 // addTask - add a client task
-func (c *jarvisClient2) addTask(msg *pb.JarvisMsg, servaddr string, node *coredbpb.NodeInfo) {
+func (c *jarvisClient2) addTask(msg *pb.JarvisMsg, servaddr string, node *coredbpb.NodeInfo, funcOnResult FuncOnSendMsgResult) {
 	task := &clientTask{
-		msg:      msg,
-		servaddr: servaddr,
-		client:   c,
-		node:     node,
+		msg:          msg,
+		servaddr:     servaddr,
+		client:       c,
+		node:         node,
+		funcOnResult: funcOnResult,
 	}
 
 	c.pool.SendTask(task)
@@ -118,7 +129,7 @@ func (c *jarvisClient2) _getValidClientConn(addr string) (*clientInfo2, error) {
 	return nci, nil
 }
 
-func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg) error {
+func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOnResult FuncOnSendMsgResult) error {
 	_, ok := c.mapClient.Load(smsg.DestAddr)
 
 	if !ok {
@@ -141,12 +152,22 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg) error 
 		return err
 	}
 
+	var lstMsg []*pb.JarvisMsg
+
 	for {
 		getmsg, err := stream.Recv()
 		if err == io.EOF {
 			jarvisbase.Debug("jarvisClient2._sendMsg:stream eof")
 
-			c.node.mgrEvent.onNodeEvent(ctx, EventOnEndRequestNode, c.node.GetCoreDB().GetNode(smsg.DestAddr))
+			if funcOnResult != nil {
+				funcOnResult(ctx, c.node, []*ResultSendMsg{
+					&ResultSendMsg{
+						Msgs: lstMsg,
+						Err:  nil,
+					},
+				})
+			}
+			// c.node.mgrEvent.onNodeEvent(ctx, EventOnEndRequestNode, c.node.GetCoreDB().GetNode(smsg.DestAddr))
 
 			break
 		}
@@ -154,11 +175,22 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg) error 
 		if err != nil {
 			jarvisbase.Warn("jarvisClient2._sendMsg:stream", zap.Error(err))
 
+			if funcOnResult != nil {
+				funcOnResult(ctx, c.node, []*ResultSendMsg{
+					&ResultSendMsg{
+						Msgs: lstMsg,
+						Err:  err,
+					},
+				})
+			}
+
 			break
 		} else {
 			jarvisbase.Debug("jarvisClient2._sendMsg:stream", jarvisbase.JSON("msg", getmsg))
 
-			c.node.PostMsg(getmsg, nil, nil)
+			lstMsg = append(lstMsg, getmsg)
+
+			c.node.PostMsg(getmsg, nil, nil, funcOnResult)
 		}
 	}
 
@@ -204,7 +236,7 @@ func (c *jarvisClient2) _broadCastMsg(ctx context.Context, msg *pb.JarvisMsg) er
 	return nil
 }
 
-func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string) error {
+func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, funcOnResult FuncOnSendMsgResult) error {
 	_, _, err := net.SplitHostPort(servaddr)
 	if err != nil {
 		jarvisbase.Warn("jarvisClient2._connectNode:checkServAddr", zap.Error(err))
@@ -264,10 +296,21 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string) error
 		return err1
 	}
 
+	var lstMsg []*pb.JarvisMsg
+
 	for {
 		msg, err := stream.Recv()
 		if err == io.EOF {
 			jarvisbase.Debug("jarvisClient2._connectNode:stream eof")
+
+			if funcOnResult != nil {
+				funcOnResult(ctx, c.node, []*ResultSendMsg{
+					&ResultSendMsg{
+						Msgs: lstMsg,
+						Err:  nil,
+					},
+				})
+			}
 
 			break
 		}
@@ -275,9 +318,20 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string) error
 		if err != nil {
 			jarvisbase.Warn("jarvisClient2._connectNode:stream", zap.Error(err))
 
+			if funcOnResult != nil {
+				funcOnResult(ctx, c.node, []*ResultSendMsg{
+					&ResultSendMsg{
+						Msgs: lstMsg,
+						Err:  err,
+					},
+				})
+			}
+
 			break
 		} else {
 			jarvisbase.Debug("jarvisClient2._connectNode:stream", jarvisbase.JSON("msg", msg))
+
+			lstMsg = append(lstMsg, msg)
 
 			if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT {
 				ni := msg.GetNodeInfo()
@@ -285,7 +339,7 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string) error
 				c.mapClient.Store(ni.Addr, ci)
 			}
 
-			c.node.PostMsg(msg, nil, nil)
+			c.node.PostMsg(msg, nil, nil, funcOnResult)
 		}
 	}
 

@@ -107,12 +107,12 @@ func (obj *updnodeobj) isDone() bool {
 
 func (obj *updnodeobj) onIConn() error {
 	if obj.rootni.numsConnMe == 2 && !obj.requestnodes {
-		err := obj.node1.RequestNodes()
+		err := obj.node1.RequestNodes(nil)
 		if err != nil {
 			return err
 		}
 
-		err = obj.node2.RequestNodes()
+		err = obj.node2.RequestNodes(nil)
 		if err != nil {
 			return err
 		}

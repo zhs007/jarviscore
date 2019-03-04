@@ -308,7 +308,7 @@ func TestConnectNodeFail(t *testing.T) {
 }
 
 func _requestNode(jarvisnode JarvisNode) {
-	jarvisnode.RequestNodes()
+	jarvisnode.RequestNodes(nil)
 }
 
 func TestRequestNodes(t *testing.T) {
@@ -358,6 +358,24 @@ func TestRequestNodes(t *testing.T) {
 
 	errstr := ""
 
+	funcOnRequestNodes := func(ctx context.Context, jarvisnode JarvisNode, lstResult []*ResultSendMsg) error {
+		if len(lstResult) != 1 {
+			errstr = "TestRequestNodes node1 funcOnRequestNodes addr fail"
+			cancel()
+
+			return nil
+		}
+
+		rne = rne + 1
+		if rne == rn {
+			cancel()
+
+			return nil
+		}
+
+		return nil
+	}
+
 	node1.RegNodeEventFunc(EventOnIConnectNode,
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 			if addr2 != node.Addr {
@@ -384,7 +402,7 @@ func TestRequestNodes(t *testing.T) {
 				cp++
 
 				if cp == 4 {
-					node1.RequestNodes()
+					node1.RequestNodes(funcOnRequestNodes)
 				}
 			}
 
@@ -414,7 +432,7 @@ func TestRequestNodes(t *testing.T) {
 				cp++
 
 				if cp == 4 {
-					node1.RequestNodes()
+					node1.RequestNodes(funcOnRequestNodes)
 				}
 			}
 
@@ -435,24 +453,24 @@ func TestRequestNodes(t *testing.T) {
 			return nil
 		})
 
-	node1.RegNodeEventFunc(EventOnEndRequestNode,
-		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
-			if addr2 != node.Addr {
-				errstr = "TestRequestNodes node1 EventOnEndRequestNode addr fail"
-				cancel()
+	// node1.RegNodeEventFunc(EventOnEndRequestNode,
+	// 	func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
+	// 		if addr2 != node.Addr {
+	// 			errstr = "TestRequestNodes node1 EventOnEndRequestNode addr fail"
+	// 			cancel()
 
-				return nil
-			}
+	// 			return nil
+	// 		}
 
-			rne = rne + 1
-			if rne == rn {
-				cancel()
+	// 		rne = rne + 1
+	// 		if rne == rn {
+	// 			cancel()
 
-				return nil
-			}
+	// 			return nil
+	// 		}
 
-			return nil
-		})
+	// 		return nil
+	// 	})
 
 	node2.RegNodeEventFunc(EventOnIConnectNode,
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
@@ -479,7 +497,7 @@ func TestRequestNodes(t *testing.T) {
 				cp++
 
 				if cp == 4 {
-					node1.RequestNodes()
+					node1.RequestNodes(funcOnRequestNodes)
 				}
 			}
 
@@ -509,7 +527,7 @@ func TestRequestNodes(t *testing.T) {
 				cp++
 
 				if cp == 4 {
-					node1.RequestNodes()
+					node1.RequestNodes(funcOnRequestNodes)
 				}
 			}
 

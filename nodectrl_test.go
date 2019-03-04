@@ -21,7 +21,7 @@ func sendCtrl(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInf
 		return err
 	}
 
-	err = jarvisnode.RequestCtrl(ctx, node.Addr, ci, nil)
+	err = jarvisnode.RequestCtrl(ctx, node.Addr, ci, nil, nil)
 	if err != nil {
 		return err
 	}
