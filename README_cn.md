@@ -8,7 +8,7 @@ Jarvis可以用于小型公司或团体的服务器管理，可以配合GitLab�
 
 Jarvis提供一个chatbot，供大家控制网络服务。
 
-jarviscore是Jarvis网络节点内核的golang实现。
+jarviscore是Jarvis网络内核的golang实现。
 
 ### 版本更新
 
