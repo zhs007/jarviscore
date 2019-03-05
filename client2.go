@@ -17,8 +17,8 @@ import (
 
 // ResultSendMsg - result for FuncOnSendMsgResult
 type ResultSendMsg struct {
-	Msgs []*pb.JarvisMsg
-	Err  error
+	Msgs []*pb.JarvisMsg `json:"msgs"`
+	Err  error           `json:"err"`
 }
 
 // FuncOnSendMsgResult - on sendmsg recv all the messages
