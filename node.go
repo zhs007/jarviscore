@@ -392,6 +392,13 @@ func (n *jarvisNode) onMsgConnectNode(ctx context.Context, msg *pb.JarvisMsg, st
 		}
 
 		cn = n.coredb.GetNode(ci.MyInfo.Addr)
+	} else {
+		err := n.coredb.UpdNodeBaseInfo(ci.MyInfo)
+		if err != nil {
+			jarvisbase.Warn("jarvisNode.onMsgConnectNode:UpdNodeBaseInfo", zap.Error(err))
+
+			return err
+		}
 	}
 
 	n.mgrEvent.onNodeEvent(ctx, EventOnNodeConnected, cn)
