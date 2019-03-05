@@ -546,7 +546,7 @@ func (n *jarvisNode) onMsgUpdateNode(ctx context.Context, msg *pb.JarvisMsg, str
 		n.mgrEvent.onMsgEvent(ctx, EventOnUpdateNode, msg)
 
 		curscript, outstring, err := updateNode(&UpdateNodeParam{
-			NewVersion: msg.GetUpdateNode().NodeTypeVersion,
+			NewVersion: "v" + msg.GetUpdateNode().NodeTypeVersion,
 		}, n.cfg.UpdateScript)
 		if err != nil {
 			n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
