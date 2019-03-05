@@ -50,14 +50,16 @@ const queryNodeInfos = `query NodeInfos($snapshotID: Int64!, $beginIndex: Int!, 
 	nodeInfos(snapshotID: $snapshotID, beginIndex: $beginIndex, nums: $nums) {
 		snapshotID, endIndex, maxIndex, 
 		nodes {
-			addr, servAddr, name, connectNums, connectedNums, ctrlID, lstClientAddr, addTime
+			addr, servAddr, name, connectNums, connectedNums, ctrlID, lstClientAddr, addTime, 
+			nodeType, coreVersion, nodeTypeVersion, lastSendMsgID, lastRecvMsgID
 		}
 	}
 }`
 
 const queryUpdNodeInfo = `mutation UpdNodeInfo($nodeInfo: NodeInfoInput!) {
 	updNodeInfo(nodeInfo: $nodeInfo) {
-		addr, servAddr, name, connectNums, connectedNums, ctrlID, lstClientAddr, addTime, connectMe, connectNode
+		addr, servAddr, name, connectNums, connectedNums, ctrlID, lstClientAddr, addTime, 
+		connectMe, connType, nodeType, coreVersion, nodeTypeVersion, lastSendMsgID, lastRecvMsgID
 	}
 }`
 
@@ -302,7 +304,7 @@ func (db *CoreDB) loadAllNodes() error {
 
 	err := db.foreachNodeEx(func(key string, val *coredbpb.NodeInfo) {
 		val.ConnectMe = false
-		val.ConnectNode = false
+		val.ConnType = coredbpb.CONNECTTYPE_UNKNOWN_CONN
 		val.Deprecated = false
 		if val.LastRecvMsgID <= 0 {
 			val.LastRecvMsgID = 1
@@ -336,11 +338,11 @@ func (db *CoreDB) UpdNodeBaseInfo(ni *jarviscorepb.NodeBaseInfo) error {
 			LstClientAddr:   nil,
 			AddTime:         time.Now().Unix(),
 			ConnectMe:       false,
-			ConnectNode:     false,
 			NodeTypeVersion: ni.NodeTypeVersion,
 			NodeType:        ni.NodeType,
 			CoreVersion:     ni.CoreVersion,
 			LastRecvMsgID:   1,
+			ConnType:        coredbpb.CONNECTTYPE_UNKNOWN_CONN,
 		}
 	} else {
 		cni.ServAddr = ni.ServAddr

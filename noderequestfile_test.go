@@ -12,7 +12,7 @@ import (
 func requestFile(ctx context.Context, jarvisnode JarvisNode, destaddr string, fn string) error {
 	jarvisnode.RequestFile(ctx, destaddr, &pb.RequestFile{
 		Filename: fn,
-	}, nil)
+	}, nil, nil)
 
 	return nil
 }
@@ -31,10 +31,22 @@ func TestCheckNodeRequestFile(t *testing.T) {
 	InitJarvisCore(cfg1)
 	defer ReleaseJarvisCore()
 
-	node1 := NewNode(cfg1)
+	node1, err := NewNode(cfg1)
+	if err != nil {
+		t.Fatalf("TestCheckNodeRequestFile NewNode node1 %v", err)
+
+		return
+	}
+
 	addr1 := node1.GetCoreDB().GetPrivateKey().ToAddress()
 
-	node2 := NewNode(cfg2)
+	node2, err := NewNode(cfg2)
+	if err != nil {
+		t.Fatalf("TestCheckNodeRequestFile NewNode node2 %v", err)
+
+		return
+	}
+
 	addr2 := node2.GetCoreDB().GetPrivateKey().ToAddress()
 
 	cp := 0

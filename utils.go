@@ -145,6 +145,17 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 			msg.ReplyType, msg.Err, msg.ReplyMsgID))
 
 		return str, nil
+	} else if msg.MsgType == pb.MSGTYPE_UPDATENODE {
+		rf := msg.GetUpdateNode()
+		if rf != nil {
+			str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
+			buf, err := proto.Marshal(rf)
+			if err != nil {
+				return nil, err
+			}
+
+			return append(str[:], buf[:]...), nil
+		}
 	}
 
 	return nil, ErrInvalidMsgType
@@ -615,6 +626,34 @@ func BuildReplyTransferFile(jarvisnode JarvisNode, srcAddr string, destAddr stri
 		Data: &pb.JarvisMsg_ReplyTransferFile{
 			ReplyTransferFile: &pb.ReplyTransferFile{
 				Md5String: md5str,
+			},
+		},
+	}
+
+	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg, nil
+}
+
+// BuildUpdateNode - build jarvismsg with UPDATENODE
+func BuildUpdateNode(jarvisnode JarvisNode, srcAddr string, destAddr string,
+	nodetype string, nodetypever string) (*pb.JarvisMsg, error) {
+
+	msg := &pb.JarvisMsg{
+		MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
+		CurTime:   time.Now().Unix(),
+		SrcAddr:   srcAddr,
+		MyAddr:    srcAddr,
+		DestAddr:  destAddr,
+		MsgType:   pb.MSGTYPE_UPDATENODE,
+		LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+		Data: &pb.JarvisMsg_UpdateNode{
+			UpdateNode: &pb.UpdateNode{
+				NodeType:        nodetype,
+				NodeTypeVersion: nodetypever,
 			},
 		},
 	}

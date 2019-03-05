@@ -16,8 +16,6 @@ var (
 	EventOnIConnectNodeFail = "connectnodefail"
 	// EventOnRequestNode - onRequestNode
 	EventOnRequestNode = "requestnode"
-	// EventOnEndRequestNode - onEndRequestNode
-	EventOnEndRequestNode = "endrequestnode"
 	// EventOnDeprecateNode - onDeprecateNode
 	EventOnDeprecateNode = "deprecatenode"
 
@@ -33,6 +31,8 @@ var (
 	EventOnReplyTransferFile = "replytransferfile"
 	// EventOnTransferFile - OnTransferFile
 	EventOnTransferFile = "ontransferfile"
+	// EventOnUpdateNode - OnUpdateNode
+	EventOnUpdateNode = "onupdatenode"
 
 	// EventOnPrivateKey - OnPrivateKey
 	EventOnPrivateKey = "privatekey"
@@ -71,7 +71,7 @@ func (mgr *eventMgr) checkNodeEvent(event string) bool {
 		event == EventOnIConnectNode ||
 		event == EventOnIConnectNodeFail ||
 		event == EventOnRequestNode ||
-		event == EventOnEndRequestNode ||
+		// event == EventOnEndRequestNode ||
 		event == EventOnDeprecateNode
 }
 
@@ -81,7 +81,8 @@ func (mgr *eventMgr) checkMsgEvent(event string) bool {
 		event == EventOnReplyRequestFile ||
 		event == EventOnRequestFile ||
 		event == EventOnReplyTransferFile ||
-		event == EventOnTransferFile
+		event == EventOnTransferFile ||
+		event == EventOnUpdateNode
 }
 
 func (mgr *eventMgr) checkStateEvent(event string) bool {

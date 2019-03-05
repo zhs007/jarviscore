@@ -27,7 +27,7 @@ log:
   # logpath - log path
   logpath: './test/logs1'
   # loglevel - log level, it can be debug, info, warn, error
-  loglevel: 'warn'
+  loglevel: 'debug'
   # logconsole - it can be output to console
   logconsole: true
 

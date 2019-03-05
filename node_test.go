@@ -2,6 +2,7 @@ package jarviscore
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -13,16 +14,30 @@ func TestCheckPrivateKey(t *testing.T) {
 	cfg, err := LoadConfig("./test/node1.yaml")
 	if err != nil {
 		t.Fatalf("TestCheckPrivateKey load config %v", err)
+
+		return
 	}
 
 	InitJarvisCore(cfg)
 	defer ReleaseJarvisCore()
 
-	node1 := NewNode(cfg)
+	node1, err := NewNode(cfg)
+	if err != nil {
+		t.Fatalf("TestCheckPrivateKey NewNode node1 %v", err)
+
+		return
+	}
+
 	addr1 := node1.GetCoreDB().GetPrivateKey().ToAddress()
 	node1.GetCoreDB().Close()
 
-	node2 := NewNode(cfg)
+	node2, err := NewNode(cfg)
+	if err != nil {
+		t.Fatalf("TestCheckPrivateKey NewNode node2 %v", err)
+
+		return
+	}
+
 	addr2 := node2.GetCoreDB().GetPrivateKey().ToAddress()
 	node2.GetCoreDB().Close()
 
@@ -47,10 +62,22 @@ func TestCheckNode(t *testing.T) {
 	InitJarvisCore(cfg1)
 	defer ReleaseJarvisCore()
 
-	node1 := NewNode(cfg1)
+	node1, err := NewNode(cfg1)
+	if err != nil {
+		t.Fatalf("TestCheckNode NewNode node1 %v", err)
+
+		return
+	}
+
 	addr1 := node1.GetCoreDB().GetPrivateKey().ToAddress()
 
-	node2 := NewNode(cfg2)
+	node2, err := NewNode(cfg2)
+	if err != nil {
+		t.Fatalf("TestCheckNode NewNode node2 %v", err)
+
+		return
+	}
+
 	addr2 := node2.GetCoreDB().GetPrivateKey().ToAddress()
 
 	cp := 0
@@ -70,11 +97,17 @@ func TestCheckNode(t *testing.T) {
 			if addr2 != node.Addr {
 				errstr = "TestCheckNode node1 EventOnIConnectNode addr fail"
 				cancel()
+
+				return nil
 			}
 
-			if !node.ConnectNode {
-				errstr = "TestCheckNode node1 EventOnIConnectNode node.ConnectNode"
+			if node.ConnType != coredbpb.CONNECTTYPE_DIRECT_CONN {
+				errstr = fmt.Sprintf("TestCheckNode node1 EventOnIConnectNode node.ConnType %v %v",
+					node.ConnType, coredbpb.CONNECTTYPE_DIRECT_CONN)
+
 				cancel()
+
+				return nil
 			}
 
 			_, ok := mapICN1[node.Addr]
@@ -85,6 +118,8 @@ func TestCheckNode(t *testing.T) {
 
 				if cp == 4 {
 					cancel()
+
+					return nil
 				}
 			}
 
@@ -96,11 +131,15 @@ func TestCheckNode(t *testing.T) {
 			if addr2 != node.Addr {
 				errstr = "TestCheckNode node1 EventOnNodeConnected addr fail"
 				cancel()
+
+				return nil
 			}
 
 			if !node.ConnectMe {
 				errstr = "TestCheckNode node1 EventOnNodeConnected node.ConnectMe"
 				cancel()
+
+				return nil
 			}
 
 			_, ok := mapNC1[node.Addr]
@@ -122,11 +161,17 @@ func TestCheckNode(t *testing.T) {
 			if addr1 != node.Addr {
 				errstr = "TestCheckNode node2 EventOnIConnectNode addr fail"
 				cancel()
+
+				return nil
 			}
 
-			if !node.ConnectNode {
-				errstr = "TestCheckNode node2 EventOnIConnectNode node.ConnectNode"
+			if node.ConnType != coredbpb.CONNECTTYPE_DIRECT_CONN {
+				errstr = fmt.Sprintf("TestCheckNode node2 EventOnIConnectNode node.ConnType %v %v",
+					node.ConnType, coredbpb.CONNECTTYPE_DIRECT_CONN)
+
 				cancel()
+
+				return nil
 			}
 
 			_, ok := mapICN2[node.Addr]
@@ -137,6 +182,8 @@ func TestCheckNode(t *testing.T) {
 
 				if cp == 4 {
 					cancel()
+
+					return nil
 				}
 			}
 
@@ -148,11 +195,15 @@ func TestCheckNode(t *testing.T) {
 			if addr1 != node.Addr {
 				errstr = "TestCheckNode node2 EventOnNodeConnected addr fail"
 				cancel()
+
+				return nil
 			}
 
 			if !node.ConnectMe {
 				errstr = "TestCheckNode node2 EventOnNodeConnected node.ConnectMe"
 				cancel()
+
+				return nil
 			}
 
 			_, ok := mapNC2[node.Addr]
@@ -197,7 +248,13 @@ func TestConnectNodeFail(t *testing.T) {
 	InitJarvisCore(cfg1)
 	defer ReleaseJarvisCore()
 
-	node1 := NewNode(cfg1)
+	node1, err := NewNode(cfg1)
+	if err != nil {
+		t.Fatalf("TestConnectNodeFail NewNode node1 %v", err)
+
+		return
+	}
+
 	nbi := &jarviscorepb.NodeBaseInfo{
 		ServAddr:        "127.0.0.1:7898",
 		Addr:            "1JJaKpZGhYPuVHc1EKiiHZEswPAB5SybW5",
@@ -251,7 +308,7 @@ func TestConnectNodeFail(t *testing.T) {
 }
 
 func _requestNode(jarvisnode JarvisNode) {
-	jarvisnode.RequestNodes()
+	jarvisnode.RequestNodes(nil)
 }
 
 func TestRequestNodes(t *testing.T) {
@@ -268,10 +325,22 @@ func TestRequestNodes(t *testing.T) {
 	InitJarvisCore(cfg1)
 	defer ReleaseJarvisCore()
 
-	node1 := NewNode(cfg1)
+	node1, err := NewNode(cfg1)
+	if err != nil {
+		t.Fatalf("TestRequestNodes NewNode node1 %v", err)
+
+		return
+	}
+
 	addr1 := node1.GetCoreDB().GetPrivateKey().ToAddress()
 
-	node2 := NewNode(cfg2)
+	node2, err := NewNode(cfg2)
+	if err != nil {
+		t.Fatalf("TestRequestNodes NewNode node2 %v", err)
+
+		return
+	}
+
 	addr2 := node2.GetCoreDB().GetPrivateKey().ToAddress()
 
 	cp := 0
@@ -289,16 +358,41 @@ func TestRequestNodes(t *testing.T) {
 
 	errstr := ""
 
+	funcOnRequestNodes := func(ctx context.Context, jarvisnode JarvisNode, lstResult []*ResultSendMsg) error {
+		if len(lstResult) != 1 {
+			errstr = "TestRequestNodes node1 funcOnRequestNodes addr fail"
+			cancel()
+
+			return nil
+		}
+
+		rne = rne + 1
+		if rne == rn {
+			cancel()
+
+			return nil
+		}
+
+		return nil
+	}
+
 	node1.RegNodeEventFunc(EventOnIConnectNode,
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 			if addr2 != node.Addr {
 				errstr = "TestRequestNodes node1 EventOnIConnectNode addr fail"
 				cancel()
+
+				return nil
 			}
 
-			if !node.ConnectNode {
-				errstr = "TestRequestNodes node1 EventOnIConnectNode node.ConnectNode"
+			if node.ConnType != coredbpb.CONNECTTYPE_DIRECT_CONN {
+
+				errstr = fmt.Sprintf("TestCheckNode node1 EventOnIConnectNode node.ConnType %v %v",
+					node.ConnType, coredbpb.CONNECTTYPE_DIRECT_CONN)
+
 				cancel()
+
+				return nil
 			}
 
 			_, ok := mapICN1[node.Addr]
@@ -308,7 +402,7 @@ func TestRequestNodes(t *testing.T) {
 				cp++
 
 				if cp == 4 {
-					node1.RequestNodes()
+					node1.RequestNodes(funcOnRequestNodes)
 				}
 			}
 
@@ -320,11 +414,15 @@ func TestRequestNodes(t *testing.T) {
 			if addr2 != node.Addr {
 				errstr = "TestRequestNodes node1 EventOnNodeConnected addr fail"
 				cancel()
+
+				return nil
 			}
 
 			if !node.ConnectMe {
 				errstr = "TestRequestNodes node1 EventOnNodeConnected node.ConnectMe"
 				cancel()
+
+				return nil
 			}
 
 			_, ok := mapNC1[node.Addr]
@@ -334,7 +432,7 @@ func TestRequestNodes(t *testing.T) {
 				cp++
 
 				if cp == 4 {
-					node1.RequestNodes()
+					node1.RequestNodes(funcOnRequestNodes)
 				}
 			}
 
@@ -346,6 +444,8 @@ func TestRequestNodes(t *testing.T) {
 			if addr2 != node.Addr {
 				errstr = "TestRequestNodes node1 EventOnRequestNode addr fail"
 				cancel()
+
+				return nil
 			}
 
 			rn = rn + 1
@@ -353,31 +453,41 @@ func TestRequestNodes(t *testing.T) {
 			return nil
 		})
 
-	node1.RegNodeEventFunc(EventOnEndRequestNode,
-		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
-			if addr2 != node.Addr {
-				errstr = "TestRequestNodes node1 EventOnEndRequestNode addr fail"
-				cancel()
-			}
+	// node1.RegNodeEventFunc(EventOnEndRequestNode,
+	// 	func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
+	// 		if addr2 != node.Addr {
+	// 			errstr = "TestRequestNodes node1 EventOnEndRequestNode addr fail"
+	// 			cancel()
 
-			rne = rne + 1
-			if rne == rn {
-				cancel()
-			}
+	// 			return nil
+	// 		}
 
-			return nil
-		})
+	// 		rne = rne + 1
+	// 		if rne == rn {
+	// 			cancel()
+
+	// 			return nil
+	// 		}
+
+	// 		return nil
+	// 	})
 
 	node2.RegNodeEventFunc(EventOnIConnectNode,
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 			if addr1 != node.Addr {
 				errstr = "TestRequestNodes node2 EventOnIConnectNode addr fail"
 				cancel()
+
+				return nil
 			}
 
-			if !node.ConnectNode {
-				errstr = "TestRequestNodes node2 EventOnIConnectNode node.ConnectNode"
+			if node.ConnType != coredbpb.CONNECTTYPE_DIRECT_CONN {
+				errstr = fmt.Sprintf("TestCheckNode node2 EventOnIConnectNode node.ConnType %v %v",
+					node.ConnType, coredbpb.CONNECTTYPE_DIRECT_CONN)
+
 				cancel()
+
+				return nil
 			}
 
 			_, ok := mapICN2[node.Addr]
@@ -387,7 +497,7 @@ func TestRequestNodes(t *testing.T) {
 				cp++
 
 				if cp == 4 {
-					node1.RequestNodes()
+					node1.RequestNodes(funcOnRequestNodes)
 				}
 			}
 
@@ -399,11 +509,15 @@ func TestRequestNodes(t *testing.T) {
 			if addr1 != node.Addr {
 				errstr = "TestRequestNodes node2 EventOnNodeConnected addr fail"
 				cancel()
+
+				return nil
 			}
 
 			if !node.ConnectMe {
 				errstr = "TestRequestNodes node2 EventOnNodeConnected node.ConnectMe"
 				cancel()
+
+				return nil
 			}
 
 			_, ok := mapNC2[node.Addr]
@@ -413,7 +527,7 @@ func TestRequestNodes(t *testing.T) {
 				cp++
 
 				if cp == 4 {
-					node1.RequestNodes()
+					node1.RequestNodes(funcOnRequestNodes)
 				}
 			}
 

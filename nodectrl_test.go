@@ -21,7 +21,7 @@ func sendCtrl(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInf
 		return err
 	}
 
-	err = jarvisnode.RequestCtrl(ctx, node.Addr, ci, nil)
+	err = jarvisnode.RequestCtrl(ctx, node.Addr, ci, nil, nil)
 	if err != nil {
 		return err
 	}
@@ -43,10 +43,22 @@ func TestCheckNodeCtrl(t *testing.T) {
 	InitJarvisCore(cfg1)
 	defer ReleaseJarvisCore()
 
-	node1 := NewNode(cfg1)
+	node1, err := NewNode(cfg1)
+	if err != nil {
+		t.Fatalf("TestCheckNodeCtrl NewNode node1 %v", err)
+
+		return
+	}
+
 	addr1 := node1.GetCoreDB().GetPrivateKey().ToAddress()
 
-	node2 := NewNode(cfg2)
+	node2, err := NewNode(cfg2)
+	if err != nil {
+		t.Fatalf("TestCheckNodeCtrl NewNode node2 %v", err)
+
+		return
+	}
+
 	addr2 := node2.GetCoreDB().GetPrivateKey().ToAddress()
 
 	cp := 0
@@ -64,6 +76,10 @@ func TestCheckNodeCtrl(t *testing.T) {
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 			if addr2 != node.Addr {
 				t.Fatalf("TestCheckNodeCtrl node addr fail")
+
+				cancel()
+
+				return nil
 			}
 
 			_, ok := mapICN1[node.Addr]
@@ -73,6 +89,10 @@ func TestCheckNodeCtrl(t *testing.T) {
 				err := sendCtrl(ctx, jarvisnode, node)
 				if err != nil {
 					t.Fatalf("TestCheckNodeCtrl sendctrl err %v", err)
+
+					cancel()
+
+					return nil
 				}
 
 				ctrlp++
@@ -81,6 +101,8 @@ func TestCheckNodeCtrl(t *testing.T) {
 
 				if cp == 4 && ctrlp == 3 {
 					cancel()
+
+					return nil
 				}
 			}
 
@@ -91,6 +113,10 @@ func TestCheckNodeCtrl(t *testing.T) {
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 			if addr2 != node.Addr {
 				t.Fatalf("TestCheckNodeCtrl node addr fail")
+
+				cancel()
+
+				return nil
 			}
 
 			_, ok := mapNC1[node.Addr]
@@ -101,6 +127,8 @@ func TestCheckNodeCtrl(t *testing.T) {
 
 				if cp == 4 && ctrlp == 3 {
 					cancel()
+
+					return nil
 				}
 			}
 
@@ -113,6 +141,8 @@ func TestCheckNodeCtrl(t *testing.T) {
 
 			if cp == 4 && ctrlp == 3 {
 				cancel()
+
+				return nil
 			}
 
 			return nil
@@ -122,6 +152,10 @@ func TestCheckNodeCtrl(t *testing.T) {
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 			if addr1 != node.Addr {
 				t.Fatalf("TestCheckNodeCtrl node addr fail")
+
+				cancel()
+
+				return nil
 			}
 
 			_, ok := mapICN2[node.Addr]
@@ -132,6 +166,8 @@ func TestCheckNodeCtrl(t *testing.T) {
 
 				if cp == 4 && ctrlp == 3 {
 					cancel()
+
+					return nil
 				}
 			}
 
@@ -142,6 +178,10 @@ func TestCheckNodeCtrl(t *testing.T) {
 		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 			if addr1 != node.Addr {
 				t.Fatalf("TestCheckNodeCtrl node addr fail")
+
+				cancel()
+
+				return nil
 			}
 
 			_, ok := mapNC2[node.Addr]
@@ -152,6 +192,8 @@ func TestCheckNodeCtrl(t *testing.T) {
 
 				if cp == 4 && ctrlp == 3 {
 					cancel()
+
+					return nil
 				}
 			}
 
@@ -164,6 +206,8 @@ func TestCheckNodeCtrl(t *testing.T) {
 
 			if cp == 4 && ctrlp == 3 {
 				cancel()
+
+				return nil
 			}
 
 			return nil

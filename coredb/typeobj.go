@@ -66,9 +66,6 @@ var typeNodeInfo = graphql.NewObject(
 			"connectMe": &graphql.Field{
 				Type: graphql.Boolean,
 			},
-			"connectNode": &graphql.Field{
-				Type: graphql.Boolean,
-			},
 			"nodeTypeVersion": &graphql.Field{
 				Type: graphql.String,
 			},
@@ -98,6 +95,12 @@ var typeNodeInfo = graphql.NewObject(
 			},
 			"deprecated": &graphql.Field{
 				Type: graphql.Boolean,
+			},
+			"connType": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"validConnNodes": &graphql.Field{
+				Type: graphql.NewList(graphql.String),
 			},
 		},
 	},

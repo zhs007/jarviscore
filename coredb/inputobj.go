@@ -38,9 +38,6 @@ var inputTypeNodeInfo = graphql.NewInputObject(
 			"connectMe": &graphql.InputObjectFieldConfig{
 				Type: graphql.Boolean,
 			},
-			"connectNode": &graphql.InputObjectFieldConfig{
-				Type: graphql.Boolean,
-			},
 			"nodeTypeVersion": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
 			},
@@ -70,6 +67,12 @@ var inputTypeNodeInfo = graphql.NewInputObject(
 			},
 			"deprecated": &graphql.InputObjectFieldConfig{
 				Type: graphql.Boolean,
+			},
+			"connType": &graphql.InputObjectFieldConfig{
+				Type: graphql.Int,
+			},
+			"validConnNodes": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewList(graphql.String),
 			},
 		},
 	},

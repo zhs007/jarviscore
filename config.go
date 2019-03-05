@@ -13,6 +13,10 @@ import (
 
 // Config - config
 type Config struct {
+
+	//------------------------------------------------------------------
+	// base configuration
+
 	RootServAddr string
 	LstTrustNode []string
 
@@ -23,11 +27,17 @@ type Config struct {
 	// MaxMsgLength - default 4mb
 	MaxMsgLength int32
 
+	//------------------------------------------------------------------
+	// ankadb configuration
+
 	AnkaDB struct {
 		DBPath   string
 		HTTPServ string
 		Engine   string
 	}
+
+	//------------------------------------------------------------------
+	// logger configuration
 
 	Log struct {
 		LogPath    string
@@ -35,11 +45,20 @@ type Config struct {
 		LogConsole bool
 	}
 
+	//------------------------------------------------------------------
+	// basenodeinfo configuration
+
 	BaseNodeInfo struct {
 		NodeName string
 		BindAddr string
 		ServAddr string
 	}
+
+	//------------------------------------------------------------------
+	// auto update
+
+	AutoUpdate   bool
+	UpdateScript string
 }
 
 // const normalLogFilename = "output.log"

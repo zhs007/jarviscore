@@ -55,4 +55,8 @@ var (
 	ErrInvalidRequestData4Node = errors.New("invalid requestData4Node")
 	// ErrInvalidRequestNodeData - invalid requestNodeData
 	ErrInvalidRequestNodeData = errors.New("invalid requestNodeData")
+	// ErrFuncOnSendMsgResultLength - FuncOnSendMsgResult length err
+	ErrFuncOnSendMsgResultLength = errors.New("FuncOnSendMsgResult length err")
+	// ErrAutoUpdateClosed - auto update closed
+	ErrAutoUpdateClosed = errors.New("auto update closed")
 )
