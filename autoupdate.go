@@ -27,7 +27,7 @@ func updateNode(params *UpdateNodeParam, scriptUpd string) (string, string, erro
 
 	jarvisbase.Info("updateNode script", zap.String("script", b.String()))
 
-	out, err := exec.Command("sh", "-c", b.String()).Output()
+	out, err := exec.Command("sh", "-c", b.String()).CombinedOutput()
 	if err != nil {
 		return "", "", err
 	}

@@ -78,26 +78,46 @@ func InitLogger(level zapcore.Level, isConsole bool, logpath string) {
 
 // Debug logs a debug message with the given fields
 func Debug(message string, fields ...zap.Field) {
+	if logger == nil {
+		return
+	}
+
 	logger.Debug(message, fields...)
 }
 
 // Info logs a debug message with the given fields
 func Info(message string, fields ...zap.Field) {
+	if logger == nil {
+		return
+	}
+
 	logger.Info(message, fields...)
 }
 
 // Warn logs a debug message with the given fields
 func Warn(message string, fields ...zap.Field) {
+	if logger == nil {
+		return
+	}
+
 	logger.Warn(message, fields...)
 }
 
 // Error logs a debug message with the given fields
 func Error(message string, fields ...zap.Field) {
+	if logger == nil {
+		return
+	}
+
 	logger.Error(message, fields...)
 }
 
 // Fatal logs a message than calls os.Exit(1)
 func Fatal(message string, fields ...zap.Field) {
+	if logger == nil {
+		return
+	}
+
 	logger.Fatal(message, fields...)
 }
 
