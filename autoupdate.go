@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"os/exec"
 	"text/template"
+
+	"go.uber.org/zap"
+
+	"github.com/zhs007/jarviscore/base"
 )
 
 // UpdateNodeParam - the parameter for update node
@@ -20,6 +24,8 @@ func updateNode(params *UpdateNodeParam, scriptUpd string) (string, string, erro
 
 	var b bytes.Buffer
 	tpl.Execute(&b, params)
+
+	jarvisbase.Info("updateNode script", zap.String("script", b.String()))
 
 	out, err := exec.Command("sh", "-c", b.String()).Output()
 	if err != nil {
