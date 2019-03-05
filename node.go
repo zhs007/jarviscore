@@ -654,6 +654,16 @@ func (n *jarvisNode) onMsgLocalRequesrNodes(ctx context.Context, msg *pb.JarvisM
 	numsRecv := 0
 	var totalResults []*ResultSendMsg
 
+	//!! 在网络IO很快的时候，假设一共有2个节点，但第一个节点很快返回的话，可能还没全部发送完成，就产生回调
+	//!! 所以这里分2次遍历
+	n.coredb.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
+		if !v.Deprecated && n.mgrClient2.isConnected(v.Addr) {
+			numsSend++
+		}
+
+		return nil
+	})
+
 	n.coredb.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
 		jarvisbase.Debug(fmt.Sprintf("jarvisNode.onMsgLocalRequesrNodes %v", v))
 
@@ -667,7 +677,6 @@ func (n *jarvisNode) onMsgLocalRequesrNodes(ctx context.Context, msg *pb.JarvisM
 
 			n.mgrEvent.onNodeEvent(ctx, EventOnRequestNode, v)
 
-			numsSend++
 			n.mgrClient2.addTask(sendmsg, "", nil,
 				func(ctx context.Context, jarvisnode JarvisNode, lstResult []*ResultSendMsg) error {
 					numsRecv++
@@ -683,9 +692,6 @@ func (n *jarvisNode) onMsgLocalRequesrNodes(ctx context.Context, msg *pb.JarvisM
 						totalResults = append(totalResults, lstResult[0])
 					}
 
-					//!!! maybe bugs
-					// 在网络IO很快的时候，假设一共有2个节点，但第一个节点很快返回的话，
-					// 可能在foreach还没结束就到这一步，导致回调
 					if funcOnResult != nil && numsSend == numsRecv {
 						funcOnResult(ctx, jarvisnode, totalResults)
 					}
@@ -1103,10 +1109,18 @@ func (n *jarvisNode) UpdateAllNodes(ctx context.Context, nodetype string, nodety
 	numsRecv := 0
 	var totalResults []*ResultSendMsg
 
+	//!! 在网络IO很快的时候，假设一共有2个节点，但第一个节点很快返回的话，可能还没全部发送完成，就产生回调
+	//!! 所以这里分2次遍历
 	n.coredb.ForEachMapNodes(func(addr string, ni *coredbpb.NodeInfo) error {
 		if ni.NodeType == nodetype && ni.NodeTypeVersion != nodetypever {
-
 			numsSend++
+		}
+
+		return nil
+	})
+
+	n.coredb.ForEachMapNodes(func(addr string, ni *coredbpb.NodeInfo) error {
+		if ni.NodeType == nodetype && ni.NodeTypeVersion != nodetypever {
 
 			err := n.UpdateNode(ctx, addr, nodetype, nodetypever, funcReply,
 				func(ctx context.Context, jarvisnode JarvisNode, lstResult []*ResultSendMsg) error {
@@ -1127,9 +1141,6 @@ func (n *jarvisNode) UpdateAllNodes(ctx context.Context, nodetype string, nodety
 						totalResults = append(totalResults, lstResult[0])
 					}
 
-					//!!! maybe bugs
-					// 在网络IO很快的时候，假设一共有2个节点，但第一个节点很快返回的话，
-					// 可能在foreach还没结束就到这一步，导致回调
 					if funcOnResult != nil && numsSend == numsRecv {
 						funcOnResult(ctx, jarvisnode, totalResults)
 					}

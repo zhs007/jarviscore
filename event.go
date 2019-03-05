@@ -16,8 +16,6 @@ var (
 	EventOnIConnectNodeFail = "connectnodefail"
 	// EventOnRequestNode - onRequestNode
 	EventOnRequestNode = "requestnode"
-	// // EventOnEndRequestNode - onEndRequestNode
-	// EventOnEndRequestNode = "endrequestnode"
 	// EventOnDeprecateNode - onDeprecateNode
 	EventOnDeprecateNode = "deprecatenode"
 
