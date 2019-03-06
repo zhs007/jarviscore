@@ -263,7 +263,8 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 
 	// if is not my msg, broadcast msg
 	if n.myinfo.Addr != msg.DestAddr {
-		n.mgrClient2.addTask(msg, "", nil, nil)
+		//!!! 先不考虑转发协议
+		// n.mgrClient2.addTask(msg, "", nil, nil)
 	} else {
 		// verify msg
 		err := VerifyJarvisMsg(msg)
