@@ -280,7 +280,11 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 		if err != nil {
 			jarvisbase.Warn("jarvisNode.OnMsg:checkMsgID", zap.Error(err))
 
-			n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
+			if err == ErrInvalidMsgID {
+				n.replyStream2(msg, stream, pb.REPLYTYPE_ERRMSGID, "")
+			} else {
+				n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
+			}
 
 			return nil
 		}
@@ -511,6 +515,10 @@ func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 func (n *jarvisNode) onMsgReply2(ctx context.Context, msg *pb.JarvisMsg) error {
 	if msg.ReplyMsgID > 0 {
 		n.mgrRequest.onReplyRequest(ctx, n, msg)
+	}
+
+	if msg.ReplyType == pb.REPLYTYPE_ERRMSGID {
+
 	}
 
 	return nil

@@ -49,13 +49,17 @@ func getGRPCClientIP(ctx context.Context) string {
 }
 
 // IsMyServAddr - check destaddr is same addr for me
-func IsMyServAddr(destaddr string, srcaddr string) bool {
+func IsMyServAddr(destaddr string, myaddr string) bool {
+	if destaddr == myaddr {
+		return true
+	}
+
 	dh, dp, err := net.SplitHostPort(destaddr)
 	if err != nil {
 		return false
 	}
 
-	sh, sp, err := net.SplitHostPort(srcaddr)
+	sh, sp, err := net.SplitHostPort(myaddr)
 	if err != nil {
 		return false
 	}

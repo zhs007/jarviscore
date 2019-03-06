@@ -107,7 +107,7 @@ func (obj *updnodeobj) isDone() bool {
 	return obj.endupdnodes
 }
 
-func (obj *updnodeobj) onIConn(ctx context.Context) error {
+func (obj *updnodeobj) onIConn(ctx context.Context, funcCancel context.CancelFunc) error {
 	if obj.rootni.numsConnMe == 2 && !obj.requestnodes {
 		err := obj.node1.RequestNodes(nil)
 		if err != nil {
@@ -133,6 +133,8 @@ func (obj *updnodeobj) onIConn(ctx context.Context) error {
 					(len(lstResult[1].Msgs) == 1 && len(lstResult[0].Msgs) == 3) {
 
 					obj.endupdnodes = true
+
+					funcCancel()
 
 					return nil
 				}
@@ -222,7 +224,7 @@ func TestUpdNode(t *testing.T) {
 			return nil
 		}
 
-		err1 := obj.onIConn(ctx)
+		err1 := obj.onIConn(ctx, cancel)
 		if err1 != nil {
 			errobj = err1
 
