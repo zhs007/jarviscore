@@ -335,6 +335,11 @@ func (n *jarvisNode) onMsgLocalConnect(ctx context.Context, msg *pb.JarvisMsg, f
 		return nil
 	}
 
+	// if it is deprecated, return
+	if cn.Deprecated {
+		return nil
+	}
+
 	if cn.ConnType == coredbpb.CONNECTTYPE_UNKNOWN_CONN {
 		n.mgrClient2.addTask(nil, cn.ServAddr, cn, funcOnResult)
 
