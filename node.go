@@ -230,8 +230,7 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 
 	// proc local msg
 	if msg.MsgType == pb.MSGTYPE_LOCAL_CONNECT_OTHER ||
-		msg.MsgType == pb.MSGTYPE_LOCAL_SENDMSG ||
-		msg.MsgType == pb.MSGTYPE_LOCAL_REQUEST_NODES {
+		msg.MsgType == pb.MSGTYPE_LOCAL_SENDMSG {
 
 		// verify msg
 		err := VerifyJarvisMsg(msg)
@@ -247,8 +246,6 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 			return n.onMsgLocalConnect(ctx, msg, funcOnResult)
 		} else if msg.MsgType == pb.MSGTYPE_LOCAL_SENDMSG {
 			return n.onMsgLocalSendMsg(ctx, msg, funcOnResult)
-		} else if msg.MsgType == pb.MSGTYPE_LOCAL_REQUEST_NODES {
-			return n.onMsgLocalRequesrNodes(ctx, msg, funcOnResult)
 		}
 	}
 
@@ -867,11 +864,12 @@ func (n *jarvisNode) RequestNodes(ctx context.Context, funcOnResult FuncOnGroupS
 		jarvisbase.Debug(fmt.Sprintf("jarvisNode.RequestNodes %v", v))
 
 		if !v.Deprecated && n.mgrClient2.isConnected(v.Addr) {
+			curResult := &ClientGroupProcMsgResults{}
+			totalResults = append(totalResults, curResult)
+
 			err := n.RequestNode(ctx, v.Addr,
 				func(ctx context.Context, jarvisnode JarvisNode, lstResult []*ClientProcMsgResult) error {
-					totalResults = append(totalResults, &ClientGroupProcMsgResults{
-						Results: lstResult,
-					})
+					curResult.Results = lstResult
 
 					if funcOnResult != nil {
 						funcOnResult(ctx, jarvisnode, numsSend, totalResults)
@@ -884,37 +882,6 @@ func (n *jarvisNode) RequestNodes(ctx context.Context, funcOnResult FuncOnGroupS
 
 				return nil
 			}
-
-			// sendmsg, err := BuildRequestNodes(n, n.myinfo.Addr, v.Addr)
-			// if err != nil {
-			// 	jarvisbase.Warn("jarvisNode.RequestNodes:BuildRequestNodes", zap.Error(err))
-
-			// 	return nil
-			// }
-
-			// n.mgrEvent.onNodeEvent(ctx, EventOnRequestNode, v)
-
-			// n.mgrClient2.addTask(sendmsg, "", nil,
-			// 	func(ctx context.Context, jarvisnode JarvisNode, lstResult []*ResultSendMsg) error {
-			// 		numsRecv++
-
-			// 		if len(lstResult) != 1 {
-			// 			jarvisbase.Error("jarvisNode.onMsgLocalRequesrNodes:FuncOnSendMsgResult", zap.Int("len", len(lstResult)))
-
-			// 			totalResults = append(totalResults,
-			// 				&ResultSendMsg{
-			// 					Err: ErrFuncOnSendMsgResultLength,
-			// 				})
-			// 		} else {
-			// 			totalResults = append(totalResults, lstResult[0])
-			// 		}
-
-			// 		if funcOnResult != nil && numsSend == numsRecv {
-			// 			funcOnResult(ctx, jarvisnode, totalResults)
-			// 		}
-
-			// 		return nil
-			// 	})
 		}
 
 		return nil

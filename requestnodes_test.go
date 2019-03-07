@@ -7,6 +7,10 @@ import (
 	"testing"
 	"time"
 
+	"go.uber.org/zap"
+
+	"github.com/zhs007/jarviscore/base"
+
 	"github.com/zhs007/jarviscore/coredb/proto"
 )
 
@@ -86,6 +90,8 @@ type objRN struct {
 	node1ni      nodeinfoRN
 	node2ni      nodeinfoRN
 	requestnodes bool
+	rqnodes1     bool
+	rqnodes2     bool
 }
 
 func newObjRN() *objRN {
@@ -102,13 +108,21 @@ func (obj *objRN) isDone() bool {
 		return false
 	}
 
-	return obj.requestnodes
+	return obj.requestnodes && obj.rqnodes1 && obj.rqnodes2
 }
 
 func (obj *objRN) onIConn(ctx context.Context, funcCancel context.CancelFunc) error {
 	if obj.rootni.numsConnMe == 2 && !obj.requestnodes {
 		err := obj.node1.RequestNodes(ctx, func(ctx context.Context, jarvisnode JarvisNode,
 			numsNode int, lstResult []*ClientGroupProcMsgResults) error {
+
+			jarvisbase.Info("objRN.onIConn:node1.RequestNodes",
+				zap.Int("numsNode", numsNode),
+				jarvisbase.JSON("lstResult", lstResult))
+
+			if numsNode == 1 && len(lstResult) == 1 && lstResult[0].Results[len(lstResult[0].Results)-1].Msg == nil {
+				obj.rqnodes1 = true
+			}
 
 			return nil
 		})
@@ -118,6 +132,14 @@ func (obj *objRN) onIConn(ctx context.Context, funcCancel context.CancelFunc) er
 
 		err = obj.node2.RequestNodes(ctx, func(ctx context.Context, jarvisnode JarvisNode,
 			numsNode int, lstResult []*ClientGroupProcMsgResults) error {
+
+			jarvisbase.Info("objRN.onIConn:node2.RequestNodes",
+				zap.Int("numsNode", numsNode),
+				jarvisbase.JSON("lstResult", lstResult))
+
+			if numsNode == 1 && len(lstResult) == 1 && lstResult[0].Results[len(lstResult[0].Results)-1].Msg == nil {
+				obj.rqnodes2 = true
+			}
 
 			return nil
 		})

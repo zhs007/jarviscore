@@ -31,7 +31,7 @@ enum MSGTYPE {
     // local sendmsg
     LOCAL_SENDMSG = 12;
     // local request nodes child
-    LOCAL_REQUEST_NODES = 13;
+    LOCAL_REQUEST_NODES = 13 [deprecated = true];
     // transfer file
     TRANSFER_FILE = 14;
     // request file

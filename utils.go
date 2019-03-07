@@ -96,10 +96,6 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 
 			return append(str[:], buf[:]...), nil
 		}
-	} else if msg.MsgType == pb.MSGTYPE_LOCAL_REQUEST_NODES {
-		str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
-
-		return str, nil
 	} else if msg.MsgType == pb.MSGTYPE_REQUEST_NODES {
 		str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
 
@@ -400,28 +396,6 @@ func BuildLocalSendMsg(jarvisnode JarvisNode, srcAddr string,
 		Data: &pb.JarvisMsg_Msg{
 			Msg: sendmsg,
 		},
-	}
-
-	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
-	if err != nil {
-		return nil, err
-	}
-
-	return msg, nil
-}
-
-// BuildLocalRequestNodes - build jarvismsg with LOCAL_REQUEST_NODES
-func BuildLocalRequestNodes(jarvisnode JarvisNode, srcAddr string,
-	destAddr string) (*pb.JarvisMsg, error) {
-
-	msg := &pb.JarvisMsg{
-		MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
-		CurTime:   time.Now().Unix(),
-		SrcAddr:   srcAddr,
-		MyAddr:    srcAddr,
-		DestAddr:  destAddr,
-		LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
-		MsgType:   pb.MSGTYPE_LOCAL_REQUEST_NODES,
 	}
 
 	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)

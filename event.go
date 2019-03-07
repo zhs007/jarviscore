@@ -14,8 +14,6 @@ var (
 	EventOnIConnectNode = "connectnode"
 	// EventOnIConnectNodeFail - onIConnectNodeFail
 	EventOnIConnectNodeFail = "connectnodefail"
-	// EventOnRequestNode - onRequestNode
-	EventOnRequestNode = "requestnode"
 	// EventOnDeprecateNode - onDeprecateNode
 	EventOnDeprecateNode = "deprecatenode"
 
@@ -70,8 +68,6 @@ func (mgr *eventMgr) checkNodeEvent(event string) bool {
 	return event == EventOnNodeConnected ||
 		event == EventOnIConnectNode ||
 		event == EventOnIConnectNodeFail ||
-		event == EventOnRequestNode ||
-		// event == EventOnEndRequestNode ||
 		event == EventOnDeprecateNode
 }
 
