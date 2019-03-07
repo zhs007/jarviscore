@@ -1231,17 +1231,21 @@ func (n *jarvisNode) UpdateAllNodes(ctx context.Context, nodetype string, nodety
 	n.coredb.ForEachMapNodes(func(addr string, ni *coredbpb.NodeInfo) error {
 		if ni.NodeType == nodetype && ni.NodeTypeVersion != nodetypever {
 
+			curResult := &ClientGroupProcMsgResults{}
+			totalResults = append(totalResults, curResult)
+
 			err := n.UpdateNode(ctx, addr, nodetype, nodetypever, funcReply,
 				func(ctx context.Context, jarvisnode JarvisNode, lstResult []*ClientProcMsgResult) error {
+					curResult.Results = lstResult
 					// numsRecv++
 
 					// jarvisbase.Debug("jarvisNode.UpdateAllNodes:FuncOnSendMsgResult",
 					// 	zap.Int("numsRecv", numsRecv),
 					// 	zap.Int("numsSend", numsSend))
 
-					totalResults = append(totalResults, &ClientGroupProcMsgResults{
-						Results: lstResult,
-					})
+					// totalResults = append(totalResults, &ClientGroupProcMsgResults{
+					// 	Results: lstResult,
+					// })
 
 					// if len(lstResult) != 1 {
 					// 	jarvisbase.Error("jarvisNode.UpdateAllNodes:FuncOnSendMsgResult", zap.Int("len", len(lstResult)))

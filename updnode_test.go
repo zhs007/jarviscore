@@ -7,7 +7,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/zhs007/jarviscore/base"
 	"github.com/zhs007/jarviscore/coredb/proto"
+
+	"go.uber.org/zap"
 )
 
 // funconcallUN
@@ -104,7 +107,7 @@ func (obj *objUN) isDone() bool {
 		return false
 	}
 
-	return true //obj.endupdnodes
+	return obj.endupdnodes
 }
 
 func (obj *objUN) onIConn(ctx context.Context, funcCancel context.CancelFunc) error {
@@ -123,32 +126,35 @@ func (obj *objUN) onIConn(ctx context.Context, funcCancel context.CancelFunc) er
 	}
 
 	if obj.node1ni.numsConnMe == 2 && obj.node2ni.numsConnMe == 2 && !obj.updnodefromnode1 {
-		// err := obj.node1.UpdateAllNodes(ctx, "testupdnode", "0.7.25", nil,
-		// 	func(ctx context.Context, jarvisnode JarvisNode, numsNode int, lstResult []*ClientGroupProcMsgResults) error {
-		// 		if len(lstResult) != 2 {
-		// 			return fmt.Errorf("UpdateAllNodes:len %v", len(lstResult))
-		// 		}
+		err := obj.node1.UpdateAllNodes(ctx, "testupdnode", "0.7.25", nil,
+			func(ctx context.Context, jarvisnode JarvisNode, numsNode int, lstResult []*ClientGroupProcMsgResults) error {
 
-		// 		if (len(lstResult[0].Msgs) == 1 && len(lstResult[1].Msgs) == 3) ||
-		// 			(len(lstResult[1].Msgs) == 1 && len(lstResult[0].Msgs) == 3) {
+				jarvisbase.Info("objUN.onIConn:node1.UpdateAllNodes",
+					zap.Int("numsNode", numsNode),
+					jarvisbase.JSON("lstResult", lstResult))
 
-		// 			obj.endupdnodes = true
+				if numsNode == 2 && len(lstResult) == 2 && len(lstResult[0].Results) > 0 && len(lstResult[1].Results) > 0 &&
+					lstResult[0].Results[len(lstResult[0].Results)-1].Msg == nil &&
+					lstResult[1].Results[len(lstResult[1].Results)-1].Msg == nil {
 
-		// 			funcCancel()
+					if (len(lstResult[0].Results) == 2 && len(lstResult[1].Results) == 4) ||
+						(len(lstResult[1].Results) == 2 && len(lstResult[0].Results) == 4) {
 
-		// 			return nil
-		// 		}
+						obj.endupdnodes = true
 
-		// 		return fmt.Errorf("UpdateAllNodes:arr len is %v %v",
-		// 			len(lstResult[0].Msgs), len(lstResult[1].Msgs))
-		// 	})
-		// if err != nil {
-		// 	return err
-		// }
+						funcCancel()
+
+						return nil
+					}
+				}
+
+				return nil
+			})
+		if err != nil {
+			return err
+		}
 
 		obj.updnodefromnode1 = true
-		obj.endupdnodes = true
-		funcCancel()
 	}
 
 	return nil
@@ -313,5 +319,5 @@ func TestUpdNode(t *testing.T) {
 		return
 	}
 
-	t.Logf("TestRequestNodes OK")
+	t.Logf("TestUpdNode OK")
 }
