@@ -14,6 +14,9 @@ type taskMgr struct {
 
 	finishTask int
 	sendTask   int
+	totalTask  int
+
+	cancel context.CancelFunc
 }
 
 func (mgr *taskMgr) send() {
@@ -34,7 +37,7 @@ func (mgr *taskMgr) isok() bool {
 	mgr.Lock()
 	defer mgr.Unlock()
 
-	return mgr.finishTask == mgr.sendTask
+	return mgr.finishTask == mgr.sendTask && mgr.finishTask == mgr.totalTask
 }
 
 type taskTest struct {
@@ -47,13 +50,21 @@ func (task *taskTest) Run(ctx context.Context) error {
 	Debug("run ", zap.Int("index", task.index))
 	task.mgr.finish()
 
+	if task.mgr.isok() {
+		task.mgr.cancel()
+
+		return nil
+	}
+
 	return nil
 }
 
-func makeTask(mgr *taskMgr, pool RoutinePool, cancel context.CancelFunc) {
+func makeTask(mgr *taskMgr, pool RoutinePool, maxtasks int) {
 	time.Sleep(3 * time.Second)
 
-	for i := 0; i < 10000; i++ {
+	mgr.totalTask = maxtasks
+
+	for i := 0; i < maxtasks; i++ {
 		task := &taskTest{
 			index: i,
 			mgr:   mgr,
@@ -63,10 +74,10 @@ func makeTask(mgr *taskMgr, pool RoutinePool, cancel context.CancelFunc) {
 		mgr.send()
 	}
 
-	time.Sleep(3 * time.Second)
-	Debug("end")
+	// time.Sleep(3 * time.Second)
+	// Debug("end")
 	// fmt.Print("end\n")
-	cancel()
+	// cancel()
 }
 
 func TestRountinePool(t *testing.T) {
@@ -76,11 +87,11 @@ func TestRountinePool(t *testing.T) {
 
 	pool := NewRoutinePool()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	mgr := &taskMgr{}
-	go makeTask(mgr, pool, cancel)
+	mgr := &taskMgr{cancel: cancel}
+	go makeTask(mgr, pool, 10000)
 
 	pool.Start(ctx, 128)
 
