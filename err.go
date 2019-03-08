@@ -59,4 +59,6 @@ var (
 	ErrFuncOnSendMsgResultLength = errors.New("FuncOnSendMsgResult length err")
 	// ErrAutoUpdateClosed - auto update closed
 	ErrAutoUpdateClosed = errors.New("auto update closed")
+	// ErrServAddrConnFail - the servaddr connect fail
+	ErrServAddrConnFail = errors.New("the servaddr connect fail")
 )

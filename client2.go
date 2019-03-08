@@ -83,6 +83,7 @@ type jarvisClient2 struct {
 	poolConn  jarvisbase.RoutinePool
 	node      *jarvisNode
 	mapClient sync.Map
+	fsa       *failservaddr
 }
 
 func newClient2(node *jarvisNode) *jarvisClient2 {
@@ -90,6 +91,7 @@ func newClient2(node *jarvisNode) *jarvisClient2 {
 		node:     node,
 		poolConn: jarvisbase.NewRoutinePool(),
 		poolMsg:  jarvisbase.NewL2RoutinePool(),
+		fsa:      newFailServAddr(),
 	}
 }
 
@@ -340,6 +342,10 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, funcO
 		return err
 	}
 
+	if c.fsa.isFailServAddr(servaddr) {
+		return ErrServAddrConnFail
+	}
+
 	curctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -391,6 +397,8 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, funcO
 		}
 
 		mgrconn.delConn(servaddr)
+
+		c.fsa.onConnFail(servaddr)
 
 		return err1
 	}
