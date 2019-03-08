@@ -7,29 +7,54 @@ import (
 	"testing"
 	"time"
 
+	"github.com/zhs007/jarviscore/base"
 	"github.com/zhs007/jarviscore/coredb/proto"
+
+	"go.uber.org/zap"
 )
 
-// funconcall
-type funconcall func(ctx context.Context, err error, obj *updnodeobj) error
+func outputErrUN(t *testing.T, err error, msg string, info string) {
+	if err == nil && info == "" {
+		jarvisbase.Error(msg)
+		t.Fatalf(msg)
 
-type mapnodeinfo struct {
+		return
+	} else if err == nil {
+		jarvisbase.Error(msg, zap.String("info", info))
+		t.Fatalf(msg+" info %v", info)
+
+		return
+	}
+
+	jarvisbase.Error(msg, zap.Error(err))
+	t.Fatalf(msg+" err %v", err)
+}
+
+func outputUN(t *testing.T, msg string) {
+	jarvisbase.Info(msg)
+	t.Logf(msg)
+}
+
+// funconcallUN
+type funconcallUN func(ctx context.Context, err error, obj *objUN) error
+
+type mapnodeinfoUN struct {
 	iconn  bool
 	connme bool
 }
 
-type updnodenodeinfo struct {
+type nodeinfoUN struct {
 	mapAddr    sync.Map
 	numsIConn  int
 	numsConnMe int
 }
 
-func (ni *updnodenodeinfo) onIConnectNode(node *coredbpb.NodeInfo) error {
+func (ni *nodeinfoUN) onIConnectNode(node *coredbpb.NodeInfo) error {
 	d, ok := ni.mapAddr.Load(node.Addr)
 	if ok {
-		mni, ok := d.(*mapnodeinfo)
+		mni, ok := d.(*mapnodeinfoUN)
 		if !ok {
-			return fmt.Errorf("updnodenodeinfo.onIConnectNode:mapAddr2mapnodeinfo err")
+			return fmt.Errorf("nodeinfoUN.onIConnectNode:mapAddr2mapnodeinfo err")
 		}
 
 		if !mni.iconn {
@@ -41,7 +66,7 @@ func (ni *updnodenodeinfo) onIConnectNode(node *coredbpb.NodeInfo) error {
 		return nil
 	}
 
-	mni := &mapnodeinfo{
+	mni := &mapnodeinfoUN{
 		iconn: true,
 	}
 
@@ -51,12 +76,12 @@ func (ni *updnodenodeinfo) onIConnectNode(node *coredbpb.NodeInfo) error {
 	return nil
 }
 
-func (ni *updnodenodeinfo) onNodeConnected(node *coredbpb.NodeInfo) error {
+func (ni *nodeinfoUN) onNodeConnected(node *coredbpb.NodeInfo) error {
 	d, ok := ni.mapAddr.Load(node.Addr)
 	if ok {
-		mni, ok := d.(*mapnodeinfo)
+		mni, ok := d.(*mapnodeinfoUN)
 		if !ok {
-			return fmt.Errorf("updnodenodeinfo.onNodeConnected:mapAddr2mapnodeinfo err")
+			return fmt.Errorf("nodeinfoUN.onNodeConnected:mapAddr2mapnodeinfo err")
 		}
 
 		if !mni.connme {
@@ -68,7 +93,7 @@ func (ni *updnodenodeinfo) onNodeConnected(node *coredbpb.NodeInfo) error {
 		return nil
 	}
 
-	mni := &mapnodeinfo{
+	mni := &mapnodeinfoUN{
 		connme: true,
 	}
 
@@ -78,28 +103,28 @@ func (ni *updnodenodeinfo) onNodeConnected(node *coredbpb.NodeInfo) error {
 	return nil
 }
 
-type updnodeobj struct {
+type objUN struct {
 	root             JarvisNode
 	node1            JarvisNode
 	node2            JarvisNode
-	rootni           updnodenodeinfo
-	node1ni          updnodenodeinfo
-	node2ni          updnodenodeinfo
+	rootni           nodeinfoUN
+	node1ni          nodeinfoUN
+	node2ni          nodeinfoUN
 	requestnodes     bool
 	updnodefromnode1 bool
 	endupdnodes      bool
 }
 
-func newUpdNodeObj() *updnodeobj {
-	return &updnodeobj{
-		rootni:       updnodenodeinfo{},
-		node1ni:      updnodenodeinfo{},
-		node2ni:      updnodenodeinfo{},
+func newObjUN() *objUN {
+	return &objUN{
+		rootni:       nodeinfoUN{},
+		node1ni:      nodeinfoUN{},
+		node2ni:      nodeinfoUN{},
 		requestnodes: false,
 	}
 }
 
-func (obj *updnodeobj) isDone() bool {
+func (obj *objUN) isDone() bool {
 	if obj.rootni.numsConnMe != 2 || obj.rootni.numsIConn != 2 {
 		return false
 	}
@@ -107,14 +132,14 @@ func (obj *updnodeobj) isDone() bool {
 	return obj.endupdnodes
 }
 
-func (obj *updnodeobj) onIConn(ctx context.Context) error {
+func (obj *objUN) onIConn(ctx context.Context, funcCancel context.CancelFunc) error {
 	if obj.rootni.numsConnMe == 2 && !obj.requestnodes {
-		err := obj.node1.RequestNodes(nil)
+		err := obj.node1.RequestNodes(ctx, nil)
 		if err != nil {
 			return err
 		}
 
-		err = obj.node2.RequestNodes(nil)
+		err = obj.node2.RequestNodes(ctx, nil)
 		if err != nil {
 			return err
 		}
@@ -124,21 +149,28 @@ func (obj *updnodeobj) onIConn(ctx context.Context) error {
 
 	if obj.node1ni.numsConnMe == 2 && obj.node2ni.numsConnMe == 2 && !obj.updnodefromnode1 {
 		err := obj.node1.UpdateAllNodes(ctx, "testupdnode", "0.7.25", nil,
-			func(ctx context.Context, jarvisnode JarvisNode, lstResult []*ResultSendMsg) error {
-				if len(lstResult) != 2 {
-					return fmt.Errorf("UpdateAllNodes:len %v", len(lstResult))
+			func(ctx context.Context, jarvisnode JarvisNode, numsNode int, lstResult []*ClientGroupProcMsgResults) error {
+
+				jarvisbase.Info("objUN.onIConn:node1.UpdateAllNodes",
+					zap.Int("numsNode", numsNode),
+					jarvisbase.JSON("lstResult", lstResult))
+
+				if numsNode == 2 && len(lstResult) == 2 && len(lstResult[0].Results) > 0 && len(lstResult[1].Results) > 0 &&
+					lstResult[0].Results[len(lstResult[0].Results)-1].Msg == nil &&
+					lstResult[1].Results[len(lstResult[1].Results)-1].Msg == nil {
+
+					if (len(lstResult[0].Results) == 2 && len(lstResult[1].Results) == 4) ||
+						(len(lstResult[1].Results) == 2 && len(lstResult[0].Results) == 4) {
+
+						obj.endupdnodes = true
+
+						funcCancel()
+
+						return nil
+					}
 				}
 
-				if (len(lstResult[0].Msgs) == 1 && len(lstResult[1].Msgs) == 3) ||
-					(len(lstResult[1].Msgs) == 1 && len(lstResult[0].Msgs) == 3) {
-
-					obj.endupdnodes = true
-
-					return nil
-				}
-
-				return fmt.Errorf("UpdateAllNodes:arr len is %v %v",
-					len(lstResult[0].Msgs), len(lstResult[1].Msgs))
+				return nil
 			})
 		if err != nil {
 			return err
@@ -150,18 +182,18 @@ func (obj *updnodeobj) onIConn(ctx context.Context) error {
 	return nil
 }
 
-func (obj *updnodeobj) onConnMe(ctx context.Context) error {
+func (obj *objUN) onConnMe(ctx context.Context) error {
 	return nil
 }
 
-func (obj *updnodeobj) makeString() string {
+func (obj *objUN) makeString() string {
 	return fmt.Sprintf("root(%v %v) node1(%v %v), node2(%v %v)",
 		obj.rootni.numsIConn, obj.rootni.numsConnMe,
 		obj.node1ni.numsIConn, obj.node1ni.numsConnMe,
 		obj.node2ni.numsIConn, obj.node2ni.numsConnMe)
 }
 
-func startTestNode(ctx context.Context, cfgfilename string, ni *updnodenodeinfo, obj *updnodeobj, oniconn funconcall, onconnme funconcall) (JarvisNode, error) {
+func startTestNodeUN(ctx context.Context, cfgfilename string, ni *nodeinfoUN, obj *objUN, oniconn funconcallUN, onconnme funconcallUN) (JarvisNode, error) {
 	cfg, err := LoadConfig(cfgfilename)
 	if err != nil {
 		return nil, fmt.Errorf("startTestNode load config %v err is %v", cfgfilename, err)
@@ -206,14 +238,14 @@ func TestUpdNode(t *testing.T) {
 	InitJarvisCore(rootcfg)
 	defer ReleaseJarvisCore()
 
-	obj := newUpdNodeObj()
+	obj := newObjUN()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
 	var errobj error
 
-	oniconn := func(ctx context.Context, err error, obj *updnodeobj) error {
+	oniconn := func(ctx context.Context, err error, obj *objUN) error {
 		if err != nil {
 			errobj = err
 
@@ -222,7 +254,7 @@ func TestUpdNode(t *testing.T) {
 			return nil
 		}
 
-		err1 := obj.onIConn(ctx)
+		err1 := obj.onIConn(ctx, cancel)
 		if err1 != nil {
 			errobj = err1
 
@@ -240,7 +272,7 @@ func TestUpdNode(t *testing.T) {
 		return nil
 	}
 
-	onconnme := func(ctx context.Context, err error, obj *updnodeobj) error {
+	onconnme := func(ctx context.Context, err error, obj *objUN) error {
 		if err != nil {
 			errobj = err
 
@@ -267,26 +299,26 @@ func TestUpdNode(t *testing.T) {
 		return nil
 	}
 
-	obj.root, err = startTestNode(ctx, "./test/test5000_updnoderoot.yaml", &obj.rootni, obj,
+	obj.root, err = startTestNodeUN(ctx, "./test/test5000_updnoderoot.yaml", &obj.rootni, obj,
 		oniconn, onconnme)
 	if err != nil {
-		t.Fatalf("TestUpdNode startTestNode root err %v", err)
+		outputErrUN(t, err, "TestUpdNode startTestNodeUN root", "")
 
 		return
 	}
 
-	obj.node1, err = startTestNode(ctx, "./test/test5001_updnode1.yaml", &obj.node1ni, obj,
+	obj.node1, err = startTestNodeUN(ctx, "./test/test5001_updnode1.yaml", &obj.node1ni, obj,
 		oniconn, onconnme)
 	if err != nil {
-		t.Fatalf("TestUpdNode startTestNode node1 err %v", err)
+		outputErrUN(t, err, "TestUpdNode startTestNodeUN node1", "")
 
 		return
 	}
 
-	obj.node2, err = startTestNode(ctx, "./test/test5002_updnode2.yaml", &obj.node2ni, obj,
+	obj.node2, err = startTestNodeUN(ctx, "./test/test5002_updnode2.yaml", &obj.node2ni, obj,
 		oniconn, onconnme)
 	if err != nil {
-		t.Fatalf("TestUpdNode startTestNode node2 err %v", err)
+		outputErrUN(t, err, "TestUpdNode startTestNodeUN node2", "")
 
 		return
 	}
@@ -298,16 +330,16 @@ func TestUpdNode(t *testing.T) {
 	<-ctx.Done()
 
 	if errobj != nil {
-		t.Fatalf("TestUpdNode err %v", errobj)
+		outputErrUN(t, errobj, "TestUpdNode", "")
 
 		return
 	}
 
 	if !obj.isDone() {
-		t.Fatalf("TestUpdNode no done %v", obj.makeString())
+		outputErrUN(t, nil, "TestUpdNode no done", obj.makeString())
 
 		return
 	}
 
-	t.Logf("TestRequestNodes OK")
+	outputUN(t, "TestUpdNode OK")
 }

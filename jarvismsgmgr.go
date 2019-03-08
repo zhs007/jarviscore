@@ -12,7 +12,7 @@ type jarvisMsgTask struct {
 	stream       pb.JarvisCoreServ_ProcMsgServer
 	mgr          *jarvisMsgMgr
 	chanEnd      chan int
-	funcOnResult FuncOnSendMsgResult
+	funcOnResult FuncOnProcMsgResult
 }
 
 func (task *jarvisMsgTask) Run(ctx context.Context) error {
@@ -45,7 +45,7 @@ func newJarvisMsgMgr(node JarvisNode) *jarvisMsgMgr {
 
 // sendMsg - send a ctrl msg
 func (mgr *jarvisMsgMgr) sendMsg(msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer,
-	chanEnd chan int, funcOnResult FuncOnSendMsgResult) {
+	chanEnd chan int, funcOnResult FuncOnProcMsgResult) {
 
 	task := &jarvisMsgTask{
 		msg:          msg,

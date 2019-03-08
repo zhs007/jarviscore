@@ -44,6 +44,7 @@ func initLogger(level zapcore.Level, isConsole bool, logpath string) (*zap.Logge
 		LevelKey:    "L",
 		EncodeLevel: zapcore.CapitalLevelEncoder,
 		EncodeTime:  zapcore.ISO8601TimeEncoder,
+		MessageKey:  "msg",
 	}
 
 	cl, err := cfg.Build()

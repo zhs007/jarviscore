@@ -41,7 +41,11 @@ func (r *routine) start(ctx context.Context) error {
 				task.Run(ctx)
 			}
 
-			r.chanWaiting <- r
+			if len(r.chanTask) == 0 {
+				// r.parentID = ""
+
+				r.chanWaiting <- r
+			}
 		case <-ctx.Done():
 			Debug("routine.Start:context done")
 			isend = true
