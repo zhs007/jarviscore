@@ -544,7 +544,15 @@ func (n *jarvisNode) onMsgReply2(ctx context.Context, msg *pb.JarvisMsg) error {
 	}
 
 	if msg.ReplyType == pb.REPLYTYPE_ERRMSGID {
+	}
 
+	if msg.LastMsgID > 0 {
+		cn := n.coredb.GetNode(msg.SrcAddr)
+		if cn != nil && cn.LastSendMsgID != msg.LastMsgID {
+			cn.LastSendMsgID = msg.LastMsgID
+
+			n.coredb.UpdNodeInfo(msg.SrcAddr)
+		}
 	}
 
 	return nil
