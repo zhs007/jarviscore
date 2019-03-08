@@ -27,7 +27,7 @@ log:
   # logpath - log path
   logpath: './test/test5012_reqnode2'
   # loglevel - log level, it can be debug, info, warn, error
-  loglevel: 'debug'
+  loglevel: 'info'
   # logconsole - it can be output to console
   logconsole: true
 
