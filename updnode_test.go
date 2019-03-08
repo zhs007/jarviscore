@@ -13,6 +13,28 @@ import (
 	"go.uber.org/zap"
 )
 
+func outputErrUN(t *testing.T, err error, msg string, info string) {
+	if err == nil && info == "" {
+		jarvisbase.Error(msg)
+		t.Fatalf(msg)
+
+		return
+	} else if err == nil {
+		jarvisbase.Error(msg, zap.String("info", info))
+		t.Fatalf(msg+" info %v", info)
+
+		return
+	}
+
+	jarvisbase.Error(msg, zap.Error(err))
+	t.Fatalf(msg+" err %v", err)
+}
+
+func outputUN(t *testing.T, msg string) {
+	jarvisbase.Info(msg)
+	t.Logf(msg)
+}
+
 // funconcallUN
 type funconcallUN func(ctx context.Context, err error, obj *objUN) error
 
@@ -280,7 +302,7 @@ func TestUpdNode(t *testing.T) {
 	obj.root, err = startTestNodeUN(ctx, "./test/test5000_updnoderoot.yaml", &obj.rootni, obj,
 		oniconn, onconnme)
 	if err != nil {
-		t.Fatalf("TestUpdNode startTestNodeUN root err %v", err)
+		outputErrUN(t, err, "TestUpdNode startTestNodeUN root", "")
 
 		return
 	}
@@ -288,7 +310,7 @@ func TestUpdNode(t *testing.T) {
 	obj.node1, err = startTestNodeUN(ctx, "./test/test5001_updnode1.yaml", &obj.node1ni, obj,
 		oniconn, onconnme)
 	if err != nil {
-		t.Fatalf("TestUpdNode startTestNodeUN node1 err %v", err)
+		outputErrUN(t, err, "TestUpdNode startTestNodeUN node1", "")
 
 		return
 	}
@@ -296,7 +318,7 @@ func TestUpdNode(t *testing.T) {
 	obj.node2, err = startTestNodeUN(ctx, "./test/test5002_updnode2.yaml", &obj.node2ni, obj,
 		oniconn, onconnme)
 	if err != nil {
-		t.Fatalf("TestUpdNode startTestNodeUN node2 err %v", err)
+		outputErrUN(t, err, "TestUpdNode startTestNodeUN node2", "")
 
 		return
 	}
@@ -308,16 +330,16 @@ func TestUpdNode(t *testing.T) {
 	<-ctx.Done()
 
 	if errobj != nil {
-		t.Fatalf("TestUpdNode err %v", errobj)
+		outputErrUN(t, errobj, "TestUpdNode", "")
 
 		return
 	}
 
 	if !obj.isDone() {
-		t.Fatalf("TestUpdNode no done %v", obj.makeString())
+		outputErrUN(t, nil, "TestUpdNode no done", obj.makeString())
 
 		return
 	}
 
-	t.Logf("TestUpdNode OK")
+	outputUN(t, "TestUpdNode OK")
 }

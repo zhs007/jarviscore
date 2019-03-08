@@ -1,4 +1,4 @@
 package basedef
 
 // VERSION - jarviscore version
-const VERSION = "0.7.42"
+const VERSION = "0.7.43"
