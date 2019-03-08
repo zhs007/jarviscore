@@ -35,9 +35,10 @@ type FuncOnGroupSendMsgResult func(ctx context.Context, jarvisnode JarvisNode,
 	numsNode int, lstResult []*ClientGroupProcMsgResults) error
 
 type clientTask struct {
+	servaddr     string
+	addr         string
 	client       *jarvisClient2
 	msg          *pb.JarvisMsg
-	servaddr     string
 	node         *coredbpb.NodeInfo
 	funcOnResult FuncOnProcMsgResult
 }
@@ -61,6 +62,15 @@ func (task *clientTask) Run(ctx context.Context) error {
 	return task.client._sendMsg(ctx, task.msg, task.funcOnResult)
 }
 
+// GetParentID - get parentID
+func (task *clientTask) GetParentID() string {
+	if task.msg == nil {
+		return task.addr
+	}
+
+	return ""
+}
+
 type clientInfo2 struct {
 	conn     *grpc.ClientConn
 	client   pb.JarvisCoreServClient
@@ -69,34 +79,53 @@ type clientInfo2 struct {
 
 // jarvisClient2 -
 type jarvisClient2 struct {
-	pool      jarvisbase.RoutinePool
+	poolMsg   jarvisbase.L2RoutinePool
+	poolConn  jarvisbase.RoutinePool
 	node      *jarvisNode
 	mapClient sync.Map
 }
 
 func newClient2(node *jarvisNode) *jarvisClient2 {
 	return &jarvisClient2{
-		node: node,
-		pool: jarvisbase.NewRoutinePool(),
+		node:     node,
+		poolConn: jarvisbase.NewRoutinePool(),
+		poolMsg:  jarvisbase.NewL2RoutinePool(),
 	}
 }
 
 // start - start goroutine to proc client task
 func (c *jarvisClient2) start(ctx context.Context) error {
-	return c.pool.Start(ctx, 128)
+	go c.poolConn.Start(ctx, 128)
+	go c.poolMsg.Start(ctx, 128)
+
+	<-ctx.Done()
+
+	return nil
 }
 
-// addTask - add a client task
-func (c *jarvisClient2) addTask(msg *pb.JarvisMsg, servaddr string, node *coredbpb.NodeInfo, funcOnResult FuncOnProcMsgResult) {
+// addConnTask - add a client task
+func (c *jarvisClient2) addConnTask(servaddr string, node *coredbpb.NodeInfo, funcOnResult FuncOnProcMsgResult) {
 	task := &clientTask{
-		msg:          msg,
 		servaddr:     servaddr,
 		client:       c,
 		node:         node,
 		funcOnResult: funcOnResult,
 	}
 
-	c.pool.SendTask(task)
+	c.poolConn.SendTask(task)
+}
+
+// addSendMsgTask - add a client send message task
+func (c *jarvisClient2) addSendMsgTask(msg *pb.JarvisMsg, node *coredbpb.NodeInfo, funcOnResult FuncOnProcMsgResult) {
+	task := &clientTask{
+		msg:          msg,
+		client:       c,
+		node:         node,
+		funcOnResult: funcOnResult,
+		addr:         msg.DestAddr,
+	}
+
+	c.poolMsg.SendTask(task)
 }
 
 func (c *jarvisClient2) isConnected(addr string) bool {

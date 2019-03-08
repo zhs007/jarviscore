@@ -332,7 +332,7 @@ func (n *jarvisNode) onMsgLocalConnect(ctx context.Context, msg *pb.JarvisMsg, f
 
 	cn := n.coredb.FindNodeWithServAddr(ci.ServAddr)
 	if cn == nil {
-		n.mgrClient2.addTask(nil, ci.ServAddr, nil, funcOnResult)
+		n.mgrClient2.addConnTask(ci.ServAddr, nil, funcOnResult)
 
 		return nil
 	}
@@ -348,7 +348,7 @@ func (n *jarvisNode) onMsgLocalConnect(ctx context.Context, msg *pb.JarvisMsg, f
 	}
 
 	if cn.ConnType == coredbpb.CONNECTTYPE_UNKNOWN_CONN {
-		n.mgrClient2.addTask(nil, cn.ServAddr, cn, funcOnResult)
+		n.mgrClient2.addConnTask(cn.ServAddr, cn, funcOnResult)
 
 		return nil
 	}
@@ -526,13 +526,13 @@ func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 			return err
 		}
 
-		n.mgrClient2.addTask(sendmsg2, "", nil, funcOnResult)
+		n.mgrClient2.addSendMsgTask(sendmsg2, nil, funcOnResult)
 
 		return nil
 	}
 
 	sendmsg2, err := BuildCtrlResult(n, n.myinfo.Addr, msg.SrcAddr, ci.CtrlID, string(ret))
-	n.mgrClient2.addTask(sendmsg2, "", nil, funcOnResult)
+	n.mgrClient2.addSendMsgTask(sendmsg2, nil, funcOnResult)
 
 	return nil
 }
@@ -574,7 +574,7 @@ func (n *jarvisNode) onMsgLocalSendMsg(ctx context.Context, msg *pb.JarvisMsg,
 
 	sendmsg := msg.GetMsg()
 
-	n.mgrClient2.addTask(sendmsg, "", nil, funcOnResult)
+	n.mgrClient2.addSendMsgTask(sendmsg, nil, funcOnResult)
 
 	return nil
 }
@@ -1140,11 +1140,11 @@ func (n *jarvisNode) AddNodeBaseInfo(nbi *pb.NodeBaseInfo) error {
 			return err
 		}
 
-		n.mgrClient2.addTask(nil, nbi.ServAddr, n.coredb.GetNode(nbi.Addr), nil)
+		n.mgrClient2.addConnTask(nbi.ServAddr, n.coredb.GetNode(nbi.Addr), nil)
 
 		return nil
 	} else if cn.ConnType == coredbpb.CONNECTTYPE_UNKNOWN_CONN {
-		n.mgrClient2.addTask(nil, nbi.ServAddr, cn, nil)
+		n.mgrClient2.addConnTask(nbi.ServAddr, cn, nil)
 
 		return nil
 	}
