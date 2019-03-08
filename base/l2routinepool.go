@@ -62,8 +62,6 @@ func (r *l2routine) start(ctx context.Context) error {
 			Debug("l2routine.Start:", zap.Int("lasttask", len(r.chanTask)))
 
 			if len(r.chanTask) == 0 {
-				// r.parentID = ""
-
 				r.chanWaiting <- r
 			}
 
@@ -78,7 +76,6 @@ func (r *l2routine) start(ctx context.Context) error {
 		}
 	}
 
-	// r.parentID = ""
 	r.chanRemove <- r
 
 	return nil
@@ -159,6 +156,7 @@ func (pool *l2routinePool) Start(ctx context.Context, maxNums int) error {
 
 			Debug("l2routinePool.Start:new remove")
 
+			delete(pool.mapRoutine, r.parentID)
 			r.parentID = ""
 
 			pool.removeRoutine(r)
@@ -191,6 +189,7 @@ func (pool *l2routinePool) onNewWaiting(ctx context.Context) error {
 	if ok {
 		if !cr.sendTask(task) {
 			pool.lstTask = append([]L2Task{task}, pool.lstTask...)
+			delete(pool.mapRoutine, pid)
 		}
 
 		return nil
@@ -205,6 +204,8 @@ func (pool *l2routinePool) onNewWaiting(ctx context.Context) error {
 
 		if !r.sendTask(task) {
 			pool.lstTask = append([]L2Task{task}, pool.lstTask...)
+			pool.lstWaiting = append(pool.lstWaiting, r)
+			delete(pool.mapRoutine, pid)
 		}
 
 		return nil
@@ -220,10 +221,14 @@ func (pool *l2routinePool) onNewWaiting(ctx context.Context) error {
 
 		pool.lstTotal = append(pool.lstTotal, r)
 
+		pool.mapRoutine[pid] = r
+
 		go pool.startRountine(ctx, r)
 
 		if !r.sendTask(task) {
 			pool.lstTask = append([]L2Task{task}, pool.lstTask...)
+			pool.lstWaiting = append(pool.lstWaiting, r)
+			delete(pool.mapRoutine, pid)
 		}
 
 		return nil
@@ -232,25 +237,6 @@ func (pool *l2routinePool) onNewWaiting(ctx context.Context) error {
 	pool.lstTask = append([]L2Task{task}, pool.lstTask...)
 
 	return nil
-
-	// return pool.run(ctx, task, false)
-	// pid := task.GetParentID()
-	// cr, ok := pool.mapRoutine[pid]
-	// if ok {
-
-	// }
-
-	// if len(pool.lstWaiting) > 0 {
-	// 	r := pool.lstWaiting[0]
-
-	// 	pool.lstWaiting = append(pool.lstWaiting[:0], pool.lstWaiting[1:]...)
-
-	// 	r.sendTask(task)
-
-	// 	return nil
-	// }
-
-	// return nil
 }
 
 // run - run with task
@@ -258,50 +244,6 @@ func (pool *l2routinePool) run(ctx context.Context, task L2Task) error {
 	pool.lstTask = append(pool.lstTask, task)
 
 	return pool.onNewWaiting(ctx)
-
-	// pid := task.GetParentID()
-	// cr, ok := pool.mapRoutine[pid]
-	// if ok {
-	// 	cr.sendTask(task)
-
-	// 	return nil
-	// }
-
-	// if len(pool.lstWaiting) > 0 {
-	// 	r := pool.lstWaiting[0]
-
-	// 	pool.lstWaiting = append(pool.lstWaiting[:0], pool.lstWaiting[1:]...)
-
-	// 	pool.mapRoutine[pid] = r
-	// 	r.sendTask(task)
-
-	// 	return nil
-	// }
-
-	// if len(pool.lstTotal) < pool.maxNums {
-	// 	r := &l2routine{
-	// 		routineID:   len(pool.lstTotal) + 1,
-	// 		chanTask:    make(chan L2Task, 8),
-	// 		chanRemove:  pool.chanRemove,
-	// 		chanWaiting: pool.chanWaiting,
-	// 	}
-
-	// 	pool.lstTotal = append(pool.lstTotal, r)
-
-	// 	go pool.startRountine(ctx, r)
-
-	// 	r.sendTask(task)
-
-	// 	return nil
-	// }
-
-	// if isend {
-	// 	pool.lstTask = append(pool.lstTask, task)
-	// } else {
-	// 	pool.lstTask = append([]L2Task{task}, pool.lstTask...)
-	// }
-
-	// return nil
 }
 
 // startRountine - start a new routine
