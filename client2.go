@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"sync"
+	"time"
 
 	"github.com/zhs007/jarviscore/coredb/proto"
 
@@ -216,6 +217,21 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 		return err
 	}
 
+	err = c._signJarvisMsg(smsg)
+	if err != nil {
+		jarvisbase.Warn("jarvisClient2._sendMsg:_signJarvisMsg", zap.Error(err))
+
+		if funcOnResult != nil {
+			lstResult = append(lstResult, &ClientProcMsgResult{
+				Err: err,
+			})
+
+			funcOnResult(ctx, c.node, lstResult)
+		}
+
+		return err
+	}
+
 	stream, err := ci2.client.ProcMsg(ctx, smsg)
 	if err != nil {
 		jarvisbase.Warn("jarvisClient2._sendMsg:ProcMsg", zap.Error(err))
@@ -395,6 +411,21 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, funcO
 		return err
 	}
 
+	err = c._signJarvisMsg(msg)
+	if err != nil {
+		jarvisbase.Warn("jarvisClient2._connectNode:_signJarvisMsg", zap.Error(err))
+
+		if funcOnResult != nil {
+			lstResult = append(lstResult, &ClientProcMsgResult{
+				Err: err,
+			})
+
+			funcOnResult(ctx, c.node, lstResult)
+		}
+
+		return err
+	}
+
 	stream, err1 := ci.client.ProcMsg(curctx, msg)
 	if err1 != nil {
 		jarvisbase.Warn("jarvisClient2._connectNode:ProcMsg", zap.Error(err1))
@@ -467,4 +498,11 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, funcO
 	}
 
 	return nil
+}
+
+func (c *jarvisClient2) _signJarvisMsg(msg *pb.JarvisMsg) error {
+	msg.MsgID = c.node.GetCoreDB().GetNewSendMsgID(msg.DestAddr)
+	msg.CurTime = time.Now().Unix()
+
+	return SignJarvisMsg(c.node.GetCoreDB().GetPrivateKey(), msg)
 }

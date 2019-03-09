@@ -385,9 +385,9 @@ func (n *jarvisNode) onMsgConnectNode(ctx context.Context, msg *pb.JarvisMsg, st
 		return err
 	}
 
-	err = stream.Send(sendmsg)
+	err = n.sendMsg2ClientStream(stream, sendmsg)
 	if err != nil {
-		jarvisbase.Warn("jarvisNode.onMsgConnectNode:sendmsg", zap.Error(err))
+		jarvisbase.Warn("jarvisNode.onMsgConnectNode:sendMsg2ClientStream", zap.Error(err))
 
 		return err
 	}
@@ -965,9 +965,9 @@ func (n *jarvisNode) onMsgRequestNodes(ctx context.Context, msg *pb.JarvisMsg, s
 			return err
 		}
 
-		err = stream.Send(sendmsg)
+		err = n.sendMsg2ClientStream(stream, sendmsg)
 		if err != nil {
-			jarvisbase.Warn("jarvisNode.onMsgRequestNodes:sendmsg", zap.Error(err))
+			jarvisbase.Warn("jarvisNode.onMsgRequestNodes:sendMsg2ClientStream", zap.Error(err))
 
 			return err
 		}
@@ -1114,9 +1114,9 @@ func (n *jarvisNode) onMsgRequestFile(ctx context.Context, msg *pb.JarvisMsg,
 		return err
 	}
 
-	err = stream.Send(sendmsg)
+	err = n.sendMsg2ClientStream(stream, sendmsg)
 	if err != nil {
-		jarvisbase.Warn("jarvisNode.onMsgRequestFile:Send", zap.Error(err))
+		jarvisbase.Warn("jarvisNode.onMsgRequestFile:sendMsg2ClientStream", zap.Error(err))
 
 		return err
 	}
@@ -1321,6 +1321,31 @@ func (n *jarvisNode) UpdateAllNodes(ctx context.Context, nodetype string, nodety
 
 		return nil
 	})
+
+	return nil
+}
+
+// sendMsg2ClientStream
+func (n *jarvisNode) sendMsg2ClientStream(stream pb.JarvisCoreServ_ProcMsgServer, sendmsg *pb.JarvisMsg) error {
+	if stream == nil {
+		jarvisbase.Warn("jarvisNode.sendMsg2ClientStream", zap.Error(ErrStreamNil))
+
+		return ErrStreamNil
+	}
+
+	err := SignJarvisMsg(n.GetCoreDB().GetPrivateKey(), sendmsg)
+	if err != nil {
+		jarvisbase.Warn("jarvisNode.sendMsg2ClientStream:SignJarvisMsg", zap.Error(err))
+
+		return err
+	}
+
+	err = stream.Send(sendmsg)
+	if err != nil {
+		jarvisbase.Warn("jarvisNode.sendMsg2ClientStream:sendmsg", zap.Error(err))
+
+		return err
+	}
 
 	return nil
 }
