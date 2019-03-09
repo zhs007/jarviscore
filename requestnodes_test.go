@@ -111,7 +111,10 @@ func (obj *objRN) isDone() bool {
 	return obj.requestnodes && obj.rqnodes1 && obj.rqnodes2
 }
 
-func (obj *objRN) onIConn(ctx context.Context, funcCancel context.CancelFunc) error {
+// cancelFunc - cancel function
+type cancelFunc func(err error)
+
+func (obj *objRN) onIConn(ctx context.Context, funcCancel cancelFunc) error {
 	if obj.rootni.numsConnMe == 2 && !obj.requestnodes {
 		err := obj.node1.RequestNodes(ctx, func(ctx context.Context, jarvisnode JarvisNode,
 			numsNode int, lstResult []*ClientGroupProcMsgResults) error {
@@ -122,11 +125,20 @@ func (obj *objRN) onIConn(ctx context.Context, funcCancel context.CancelFunc) er
 
 			if numsNode == 1 && len(lstResult) == 1 && lstResult[0].Results[len(lstResult[0].Results)-1].Msg == nil {
 				obj.rqnodes1 = true
+
+				if obj.isDone() {
+					funcCancel(nil)
+				}
 			}
 
 			return nil
 		})
 		if err != nil {
+			jarvisbase.Info("objRN.onIConn:node1.RequestNodes",
+				zap.Error(err))
+
+			funcCancel(err)
+
 			return err
 		}
 
@@ -139,19 +151,28 @@ func (obj *objRN) onIConn(ctx context.Context, funcCancel context.CancelFunc) er
 
 			if numsNode == 1 && len(lstResult) == 1 && lstResult[0].Results[len(lstResult[0].Results)-1].Msg == nil {
 				obj.rqnodes2 = true
+
+				if obj.isDone() {
+					funcCancel(nil)
+				}
 			}
 
 			return nil
 		})
 		if err != nil {
+			jarvisbase.Info("objRN.onIConn:node1.RequestNodes",
+				zap.Error(err))
+
+			funcCancel(err)
+
 			return err
 		}
 
 		obj.requestnodes = true
 	}
 
-	if obj.node1ni.numsConnMe == 2 && obj.node2ni.numsConnMe == 2 {
-		funcCancel()
+	if obj.isDone() {
+		funcCancel(nil)
 	}
 
 	return nil
@@ -162,10 +183,11 @@ func (obj *objRN) onConnMe(ctx context.Context) error {
 }
 
 func (obj *objRN) makeString() string {
-	return fmt.Sprintf("root(%v %v) node1(%v %v), node2(%v %v)",
+	return fmt.Sprintf("root(%v %v) node1(%v %v), node2(%v %v) requestnodes %v rqnodes1 %v rqnodes2 %v",
 		obj.rootni.numsIConn, obj.rootni.numsConnMe,
 		obj.node1ni.numsIConn, obj.node1ni.numsConnMe,
-		obj.node2ni.numsIConn, obj.node2ni.numsConnMe)
+		obj.node2ni.numsIConn, obj.node2ni.numsConnMe,
+		obj.requestnodes, obj.rqnodes1, obj.rqnodes2)
 }
 
 func startTestNodeRN(ctx context.Context, cfgfilename string, ni *nodeinfoRN, obj *objRN, oniconn funconcallRN, onconnme funconcallRN) (JarvisNode, error) {
@@ -229,7 +251,14 @@ func TestRequestNode(t *testing.T) {
 			return nil
 		}
 
-		err1 := obj.onIConn(ctx, cancel)
+		err1 := obj.onIConn(ctx, func(err error) {
+			if err != nil {
+				errobj = err
+			}
+
+			cancel()
+		})
+
 		if err1 != nil {
 			errobj = err1
 

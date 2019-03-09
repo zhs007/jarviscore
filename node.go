@@ -229,8 +229,7 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 	}
 
 	// proc local msg
-	if msg.MsgType == pb.MSGTYPE_LOCAL_CONNECT_OTHER ||
-		msg.MsgType == pb.MSGTYPE_LOCAL_SENDMSG {
+	if msg.MsgType == pb.MSGTYPE_LOCAL_SENDMSG {
 
 		// verify msg
 		err := VerifyJarvisMsg(msg)
@@ -242,9 +241,7 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 			return nil
 		}
 
-		if msg.MsgType == pb.MSGTYPE_LOCAL_CONNECT_OTHER {
-			return n.onMsgLocalConnect(ctx, msg, funcOnResult)
-		} else if msg.MsgType == pb.MSGTYPE_LOCAL_SENDMSG {
+		if msg.MsgType == pb.MSGTYPE_LOCAL_SENDMSG {
 			return n.onMsgLocalSendMsg(ctx, msg, funcOnResult)
 		}
 	}
@@ -321,40 +318,40 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 	return nil
 }
 
-// onMsgLocalConnect
-func (n *jarvisNode) onMsgLocalConnect(ctx context.Context, msg *pb.JarvisMsg, funcOnResult FuncOnProcMsgResult) error {
-	ci := msg.GetConnInfo()
+// // onMsgLocalConnect
+// func (n *jarvisNode) onMsgLocalConnect(ctx context.Context, msg *pb.JarvisMsg, funcOnResult FuncOnProcMsgResult) error {
+// 	ci := msg.GetConnInfo()
 
-	// if is me, return
-	if ci.ServAddr == n.myinfo.ServAddr {
-		return nil
-	}
+// 	// if is me, return
+// 	if ci.ServAddr == n.myinfo.ServAddr {
+// 		return nil
+// 	}
 
-	cn := n.coredb.FindNodeWithServAddr(ci.ServAddr)
-	if cn == nil {
-		n.mgrClient2.addConnTask(ci.ServAddr, nil, funcOnResult)
+// 	cn := n.coredb.FindNodeWithServAddr(ci.ServAddr)
+// 	if cn == nil {
+// 		n.mgrClient2.addConnTask(ci.ServAddr, nil, funcOnResult)
 
-		return nil
-	}
+// 		return nil
+// 	}
 
-	// if is me, return
-	if cn.Addr == n.myinfo.Addr {
-		return nil
-	}
+// 	// if is me, return
+// 	if cn.Addr == n.myinfo.Addr {
+// 		return nil
+// 	}
 
-	// if it is deprecated, return
-	if cn.Deprecated {
-		return nil
-	}
+// 	// if it is deprecated, return
+// 	if cn.Deprecated {
+// 		return nil
+// 	}
 
-	if cn.ConnType == coredbpb.CONNECTTYPE_UNKNOWN_CONN {
-		n.mgrClient2.addConnTask(cn.ServAddr, cn, funcOnResult)
+// 	if cn.ConnType == coredbpb.CONNECTTYPE_UNKNOWN_CONN {
+// 		n.mgrClient2.addConnTask(cn.ServAddr, cn, funcOnResult)
 
-		return nil
-	}
+// 		return nil
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 // onMsgNodeInfo
 func (n *jarvisNode) onMsgNodeInfo(ctx context.Context, msg *pb.JarvisMsg) error {
@@ -464,46 +461,90 @@ func (n *jarvisNode) connectAllNodes() error {
 
 // ConnectNodeWithServAddr - connect node
 func (n *jarvisNode) ConnectNodeWithServAddr(servaddr string, funcOnResult FuncOnProcMsgResult) error {
-	nbi := &pb.NodeBaseInfo{
-		ServAddr:        n.myinfo.ServAddr,
-		Addr:            n.myinfo.Addr,
-		Name:            n.myinfo.Name,
-		NodeTypeVersion: n.myinfo.NodeTypeVersion,
-		NodeType:        n.myinfo.NodeType,
-		CoreVersion:     n.myinfo.CoreVersion,
+	// if is me, return
+	if servaddr == n.myinfo.ServAddr {
+		return nil
 	}
 
-	msg, err := BuildLocalConnectOther(n, n.myinfo.Addr, "", servaddr, nbi)
-	if err != nil {
-		jarvisbase.Warn("jarvisNode.ConnectNodeWithServAddr:BuildLocalConnectOther", zap.Error(err))
+	cn := n.coredb.FindNodeWithServAddr(servaddr)
+	if cn == nil {
+		n.mgrClient2.addConnTask(servaddr, nil, funcOnResult)
 
-		return err
+		return nil
 	}
 
-	n.PostMsg(msg, nil, nil, funcOnResult)
+	// if is me, return
+	if cn.Addr == n.myinfo.Addr {
+		return nil
+	}
+
+	// if it is deprecated, return
+	if cn.Deprecated {
+		return nil
+	}
+
+	if cn.ConnType == coredbpb.CONNECTTYPE_UNKNOWN_CONN {
+		n.mgrClient2.addConnTask(cn.ServAddr, cn, funcOnResult)
+
+		return nil
+	}
+
+	// nbi := &pb.NodeBaseInfo{
+	// 	ServAddr:        n.myinfo.ServAddr,
+	// 	Addr:            n.myinfo.Addr,
+	// 	Name:            n.myinfo.Name,
+	// 	NodeTypeVersion: n.myinfo.NodeTypeVersion,
+	// 	NodeType:        n.myinfo.NodeType,
+	// 	CoreVersion:     n.myinfo.CoreVersion,
+	// }
+
+	// msg, err := BuildLocalConnectOther(n, n.myinfo.Addr, "", servaddr, nbi)
+	// if err != nil {
+	// 	jarvisbase.Warn("jarvisNode.ConnectNodeWithServAddr:BuildLocalConnectOther", zap.Error(err))
+
+	// 	return err
+	// }
+
+	// n.PostMsg(msg, nil, nil, funcOnResult)
 
 	return nil
 }
 
 // ConnectNode - connect node
 func (n *jarvisNode) ConnectNode(node *coredbpb.NodeInfo, funcOnResult FuncOnProcMsgResult) error {
-	nbi := &pb.NodeBaseInfo{
-		ServAddr:        n.myinfo.ServAddr,
-		Addr:            n.myinfo.Addr,
-		Name:            n.myinfo.Name,
-		NodeTypeVersion: n.myinfo.NodeTypeVersion,
-		NodeType:        n.myinfo.NodeType,
-		CoreVersion:     n.myinfo.CoreVersion,
+	// if is me, return
+	if node.Addr == n.myinfo.Addr {
+		return nil
 	}
 
-	msg, err := BuildLocalConnectOther(n, n.myinfo.Addr, node.Addr, node.ServAddr, nbi)
-	if err != nil {
-		jarvisbase.Warn("jarvisNode.ConnectNode:BuildLocalConnectOther", zap.Error(err))
-
-		return err
+	// if it is deprecated, return
+	if node.Deprecated {
+		return nil
 	}
 
-	n.PostMsg(msg, nil, nil, funcOnResult)
+	if node.ConnType == coredbpb.CONNECTTYPE_UNKNOWN_CONN {
+		n.mgrClient2.addConnTask(node.ServAddr, node, funcOnResult)
+
+		return nil
+	}
+
+	// nbi := &pb.NodeBaseInfo{
+	// 	ServAddr:        n.myinfo.ServAddr,
+	// 	Addr:            n.myinfo.Addr,
+	// 	Name:            n.myinfo.Name,
+	// 	NodeTypeVersion: n.myinfo.NodeTypeVersion,
+	// 	NodeType:        n.myinfo.NodeType,
+	// 	CoreVersion:     n.myinfo.CoreVersion,
+	// }
+
+	// msg, err := BuildLocalConnectOther(n, n.myinfo.Addr, node.Addr, node.ServAddr, nbi)
+	// if err != nil {
+	// 	jarvisbase.Warn("jarvisNode.ConnectNode:BuildLocalConnectOther", zap.Error(err))
+
+	// 	return err
+	// }
+
+	// n.PostMsg(msg, nil, nil, funcOnResult)
 
 	return nil
 }

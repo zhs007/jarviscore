@@ -27,7 +27,7 @@ enum MSGTYPE {
     // reply connect
     REPLY_CONNECT = 10;
     // local connect other
-    LOCAL_CONNECT_OTHER = 11;
+    LOCAL_CONNECT_OTHER = 11 [deprecated = true];
     // local sendmsg
     LOCAL_SENDMSG = 12;
     // local request nodes child

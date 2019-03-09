@@ -32,8 +32,7 @@ func GetRealFilename(fn string) string {
 //		sign(msgID + msgType + destAddr + curTime + srcAddr + data)
 //		for mul-language, all become string merge data
 func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
-	if msg.MsgType == pb.MSGTYPE_LOCAL_CONNECT_OTHER ||
-		msg.MsgType == pb.MSGTYPE_CONNECT_NODE {
+	if msg.MsgType == pb.MSGTYPE_CONNECT_NODE {
 
 		ci := msg.GetConnInfo()
 		if ci != nil {
@@ -275,33 +274,33 @@ func BuildReplyConn(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	return msg, nil
 }
 
-// BuildLocalConnectOther - build jarvismsg with LOCAL_CONNECT_OTHER
-func BuildLocalConnectOther(jarvisnode JarvisNode, srcAddr string,
-	destAddr string, servaddr string, ni *pb.NodeBaseInfo) (*pb.JarvisMsg, error) {
+// // BuildLocalConnectOther - build jarvismsg with LOCAL_CONNECT_OTHER
+// func BuildLocalConnectOther(jarvisnode JarvisNode, srcAddr string,
+// 	destAddr string, servaddr string, ni *pb.NodeBaseInfo) (*pb.JarvisMsg, error) {
 
-	msg := &pb.JarvisMsg{
-		MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
-		CurTime:   time.Now().Unix(),
-		SrcAddr:   srcAddr,
-		MyAddr:    srcAddr,
-		DestAddr:  destAddr,
-		MsgType:   pb.MSGTYPE_LOCAL_CONNECT_OTHER,
-		LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
-		Data: &pb.JarvisMsg_ConnInfo{
-			ConnInfo: &pb.ConnectInfo{
-				ServAddr: servaddr,
-				MyInfo:   ni,
-			},
-		},
-	}
+// 	msg := &pb.JarvisMsg{
+// 		MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
+// 		CurTime:   time.Now().Unix(),
+// 		SrcAddr:   srcAddr,
+// 		MyAddr:    srcAddr,
+// 		DestAddr:  destAddr,
+// 		MsgType:   pb.MSGTYPE_LOCAL_CONNECT_OTHER,
+// 		LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+// 		Data: &pb.JarvisMsg_ConnInfo{
+// 			ConnInfo: &pb.ConnectInfo{
+// 				ServAddr: servaddr,
+// 				MyInfo:   ni,
+// 			},
+// 		},
+// 	}
 
-	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
-	if err != nil {
-		return nil, err
-	}
+// 	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	return msg, nil
-}
+// 	return msg, nil
+// }
 
 // BuildRequestCtrl - build jarvismsg with REQUEST_CTRL
 func BuildRequestCtrl(jarvisnode JarvisNode, srcAddr string,
