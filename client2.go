@@ -3,7 +3,6 @@ package jarviscore
 import (
 	"context"
 	"io"
-	"net"
 	"sync"
 
 	"github.com/zhs007/jarviscore/coredb/proto"
@@ -318,13 +317,10 @@ func (c *jarvisClient2) _broadCastMsg(ctx context.Context, msg *pb.JarvisMsg) er
 func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, funcOnResult FuncOnProcMsgResult) error {
 	var lstResult []*ClientProcMsgResult
 
-	_, _, err := net.SplitHostPort(servaddr)
-	if err != nil {
-		jarvisbase.Warn("jarvisClient2._connectNode:checkServAddr", zap.Error(err))
-
+	if !IsValidServAddr(servaddr) {
 		if funcOnResult != nil {
 			lstResult = append(lstResult, &ClientProcMsgResult{
-				Err: err,
+				Err: ErrInvalidServAddr,
 			})
 
 			funcOnResult(ctx, c.node, lstResult)

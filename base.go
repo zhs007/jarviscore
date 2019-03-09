@@ -71,6 +71,25 @@ func IsMyServAddr(destaddr string, myaddr string) bool {
 	return false
 }
 
+// IsValidServAddr - is the server address is valid?
+func IsValidServAddr(servaddr string) bool {
+	arr := strings.Split(servaddr, ":")
+	if len(arr) != 2 {
+		return false
+	}
+
+	if arr[0] == "" || arr[1] == "" {
+		return false
+	}
+
+	_, _, err := net.SplitHostPort(servaddr)
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
 // // GetDNSPulicIP -
 // func GetDNSPulicIP() string {
 // 	conn, err := net.Dial("udp", "8.8.8.8:53")
