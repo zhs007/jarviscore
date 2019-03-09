@@ -178,7 +178,10 @@ func SignJarvisMsg(privkey *jarviscrypto.PrivateKey, msg *pb.JarvisMsg) error {
 // VerifyJarvisMsg - Verify JarvisMsg
 func VerifyJarvisMsg(msg *pb.JarvisMsg) error {
 	pk := jarviscrypto.PublicKey{}
-	pk.FromBytes(msg.PubKey)
+	err := pk.FromBytes(msg.PubKey)
+	if err != nil {
+		return err
+	}
 
 	if pk.ToAddress() != msg.SrcAddr {
 		return ErrPublicKeyAddr
@@ -241,10 +244,10 @@ func BuildConnNode(jarvisnode JarvisNode, srcAddr string, destAddr string,
 		},
 	}
 
-	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
-	if err != nil {
-		return nil, err
-	}
+	// err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return msg, nil
 }
@@ -266,10 +269,10 @@ func BuildReplyConn(jarvisnode JarvisNode, srcAddr string, destAddr string,
 		},
 	}
 
-	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
-	if err != nil {
-		return nil, err
-	}
+	// err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return msg, nil
 }
@@ -319,10 +322,10 @@ func BuildRequestCtrl(jarvisnode JarvisNode, srcAddr string,
 		},
 	}
 
-	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
-	if err != nil {
-		return nil, err
-	}
+	// err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return msg, nil
 }
@@ -344,10 +347,10 @@ func BuildReply2(jarvisnode JarvisNode, srcAddr string,
 		ReplyMsgID: replyMsgID,
 	}
 
-	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
-	if err != nil {
-		return nil, err
-	}
+	// err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return msg, nil
 }
@@ -372,10 +375,10 @@ func BuildCtrlResult(jarvisnode JarvisNode, srcAddr string,
 		},
 	}
 
-	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
-	if err != nil {
-		return nil, err
-	}
+	// err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return msg, nil
 }
@@ -419,10 +422,10 @@ func BuildRequestNodes(jarvisnode JarvisNode, srcAddr string,
 		LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
 	}
 
-	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
-	if err != nil {
-		return nil, err
-	}
+	// err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return msg, nil
 }
@@ -444,10 +447,10 @@ func BuildNodeInfo(jarvisnode JarvisNode, srcAddr string, destAddr string,
 		},
 	}
 
-	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
-	if err != nil {
-		return nil, err
-	}
+	// err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return msg, nil
 }
@@ -471,10 +474,10 @@ func BuildTransferFile(jarvisnode JarvisNode, srcAddr string, destAddr string,
 		},
 	}
 
-	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
-	if err != nil {
-		return nil, err
-	}
+	// err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return msg, nil
 }
@@ -496,10 +499,10 @@ func BuildRequestFile(jarvisnode JarvisNode, srcAddr string, destAddr string,
 		},
 	}
 
-	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
-	if err != nil {
-		return nil, err
-	}
+	// err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return msg, nil
 }
@@ -523,10 +526,10 @@ func BuildReplyRequestFile(jarvisnode JarvisNode, srcAddr string, destAddr strin
 		},
 	}
 
-	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
-	if err != nil {
-		return nil, err
-	}
+	// err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return msg, nil
 }
@@ -603,10 +606,10 @@ func BuildReplyTransferFile(jarvisnode JarvisNode, srcAddr string, destAddr stri
 		},
 	}
 
-	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
-	if err != nil {
-		return nil, err
-	}
+	// err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return msg, nil
 }
@@ -631,10 +634,10 @@ func BuildUpdateNode(jarvisnode JarvisNode, srcAddr string, destAddr string,
 		},
 	}
 
-	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
-	if err != nil {
-		return nil, err
-	}
+	// err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return msg, nil
 }

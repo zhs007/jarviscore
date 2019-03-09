@@ -334,6 +334,11 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, funcO
 	var lstResult []*ClientProcMsgResult
 
 	if !IsValidServAddr(servaddr) {
+		jarvisbase.Warn("jarvisClient2._connectNode",
+			zap.Error(ErrInvalidServAddr),
+			zap.String("addr", c.node.myinfo.Addr),
+			zap.String("servaddr", servaddr))
+
 		if funcOnResult != nil {
 			lstResult = append(lstResult, &ClientProcMsgResult{
 				Err: ErrInvalidServAddr,
@@ -346,7 +351,11 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, funcO
 	}
 
 	if IsMyServAddr(servaddr, c.node.myinfo.BindAddr) {
-		jarvisbase.Warn("jarvisClient2._connectNode", zap.Error(ErrServAddrIsMe))
+		jarvisbase.Warn("jarvisClient2._connectNode",
+			zap.Error(ErrServAddrIsMe),
+			zap.String("addr", c.node.myinfo.Addr),
+			zap.String("bindaddr", c.node.myinfo.BindAddr),
+			zap.String("servaddr", c.node.myinfo.ServAddr))
 
 		if funcOnResult != nil {
 			lstResult = append(lstResult, &ClientProcMsgResult{

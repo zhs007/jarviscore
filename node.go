@@ -234,7 +234,9 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 		// verify msg
 		err := VerifyJarvisMsg(msg)
 		if err != nil {
-			jarvisbase.Warn("jarvisNode.OnMsg", zap.Error(err))
+			jarvisbase.Warn("jarvisNode.OnMsg",
+				zap.Error(err),
+				jarvisbase.JSON("msg", msg))
 
 			n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
 
@@ -251,7 +253,9 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 		// verify msg
 		err := VerifyJarvisMsg(msg)
 		if err != nil {
-			jarvisbase.Warn("jarvisNode.OnMsg", zap.Error(err))
+			jarvisbase.Warn("jarvisNode.OnMsg",
+				zap.Error(err),
+				jarvisbase.JSON("msg", msg))
 
 			n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
 
@@ -269,7 +273,9 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 		// verify msg
 		err := VerifyJarvisMsg(msg)
 		if err != nil {
-			jarvisbase.Warn("jarvisNode.OnMsg:VerifyJarvisMsg", zap.Error(err))
+			jarvisbase.Warn("jarvisNode.OnMsg:VerifyJarvisMsg",
+				zap.Error(err),
+				jarvisbase.JSON("msg", msg))
 
 			n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
 
@@ -998,7 +1004,7 @@ func (n *jarvisNode) replyStream2(msg *pb.JarvisMsg, stream pb.JarvisCoreServ_Pr
 		return err
 	}
 
-	err = stream.SendMsg(sendmsg)
+	err = n.sendMsg2ClientStream(stream, sendmsg)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.replyStream2:SendMsg", zap.Error(err))
 
@@ -1019,9 +1025,10 @@ func (n *jarvisNode) replyTransferFile(msg *pb.JarvisMsg, stream pb.JarvisCoreSe
 		return err
 	}
 
-	err = stream.SendMsg(sendmsg)
+	n.sendMsg2ClientStream(stream, sendmsg)
+	// err = stream.SendMsg(sendmsg)
 	if err != nil {
-		jarvisbase.Warn("jarvisNode.replyTransferFile:SendMsg", zap.Error(err))
+		jarvisbase.Warn("jarvisNode.replyTransferFile:sendMsg2ClientStream", zap.Error(err))
 
 		return err
 	}
