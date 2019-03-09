@@ -24,22 +24,22 @@ type JarvisNode interface {
 	GetCoreDB() *coredb.CoreDB
 
 	// RequestCtrl - send ctrl to jarvisnode with addr
-	RequestCtrl(ctx context.Context, addr string, ci *pb.CtrlInfo, funcReply FuncReplyRequest,
+	RequestCtrl(ctx context.Context, addr string, ci *pb.CtrlInfo,
 		funcOnResult FuncOnProcMsgResult) error
 	// SendFile - send filedata to jarvisnode with addr
-	SendFile(ctx context.Context, addr string, fd *pb.FileData, funcReply FuncReplyRequest,
+	SendFile(ctx context.Context, addr string, fd *pb.FileData,
 		funcOnResult FuncOnProcMsgResult) error
 	// RequestFile - request node send filedata to me
-	RequestFile(ctx context.Context, addr string, rf *pb.RequestFile, funcReply FuncReplyRequest,
+	RequestFile(ctx context.Context, addr string, rf *pb.RequestFile,
 		funcOnResult FuncOnProcMsgResult) error
 	// RequestNodes - request nodes
 	RequestNodes(ctx context.Context, funcOnResult FuncOnGroupSendMsgResult) error
 	// UpdateNode - update node
 	UpdateNode(ctx context.Context, addr string, nodetype string, nodetypever string,
-		funcReply FuncReplyRequest, funcOnResult FuncOnProcMsgResult) error
+		funcOnResult FuncOnProcMsgResult) error
 	// UpdateAllNodes - update all nodes
 	UpdateAllNodes(ctx context.Context, nodetype string, nodetypever string,
-		funcReply FuncReplyRequest, funcOnResult FuncOnGroupSendMsgResult) error
+		funcOnResult FuncOnGroupSendMsgResult) error
 
 	// AddNodeBaseInfo - add nodeinfo
 	AddNodeBaseInfo(nbi *pb.NodeBaseInfo) error
@@ -87,7 +87,7 @@ type jarvisNode struct {
 	mgrEvent     *eventMgr
 	cfg          *Config
 	mgrCtrl      *ctrlMgr
-	mgrRequest   *requestMgr
+	// mgrRequest   *requestMgr
 }
 
 const (
@@ -127,7 +127,7 @@ func NewNode(cfg *Config) (JarvisNode, error) {
 		mgrCtrl: &ctrlMgr{
 			mapCtrl: make(map[string](Ctrl)),
 		},
-		mgrRequest: &requestMgr{},
+		// mgrRequest: &requestMgr{},
 	}
 
 	node.mgrCtrl.Reg(CtrlTypeShell, &CtrlShell{})
@@ -592,9 +592,9 @@ func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 
 // onMsgReply2
 func (n *jarvisNode) onMsgReply2(ctx context.Context, msg *pb.JarvisMsg) error {
-	if msg.ReplyMsgID > 0 {
-		n.mgrRequest.onReplyRequest(ctx, n, msg)
-	}
+	// if msg.ReplyMsgID > 0 {
+	// 	n.mgrRequest.onReplyRequest(ctx, n, msg)
+	// }
 
 	if msg.ReplyType == pb.REPLYTYPE_ERRMSGID {
 	}
@@ -613,9 +613,9 @@ func (n *jarvisNode) onMsgReply2(ctx context.Context, msg *pb.JarvisMsg) error {
 
 // onMsgReplyTransferFile
 func (n *jarvisNode) onMsgReplyTransferFile(ctx context.Context, msg *pb.JarvisMsg) error {
-	if msg.ReplyMsgID > 0 {
-		n.mgrRequest.onReplyRequest(ctx, n, msg)
-	}
+	// if msg.ReplyMsgID > 0 {
+	// 	n.mgrRequest.onReplyRequest(ctx, n, msg)
+	// }
 
 	n.mgrEvent.onMsgEvent(ctx, EventOnReplyTransferFile, msg)
 
@@ -819,7 +819,7 @@ func (n *jarvisNode) onMsgLocalRequesrNodes(ctx context.Context, msg *pb.JarvisM
 
 // RequestCtrl - send ctrl to jarvisnode with addr
 func (n *jarvisNode) RequestCtrl(ctx context.Context, addr string, ci *pb.CtrlInfo,
-	funcReply FuncReplyRequest, funcOnResult FuncOnProcMsgResult) error {
+	funcOnResult FuncOnProcMsgResult) error {
 
 	sendmsg, err := BuildRequestCtrl(n, n.myinfo.Addr, addr, ci)
 	if err != nil {
@@ -848,7 +848,7 @@ func (n *jarvisNode) RequestCtrl(ctx context.Context, addr string, ci *pb.CtrlIn
 
 // SendFile - send filedata to jarvisnode with addr
 func (n *jarvisNode) SendFile(ctx context.Context, addr string, fd *pb.FileData,
-	funcReply FuncReplyRequest, funcOnResult FuncOnProcMsgResult) error {
+	funcOnResult FuncOnProcMsgResult) error {
 
 	sendmsg, err := BuildTransferFile(n, n.myinfo.Addr, addr, fd)
 	if err != nil {
@@ -1147,9 +1147,9 @@ func (n *jarvisNode) onMsgRequestFile(ctx context.Context, msg *pb.JarvisMsg,
 func (n *jarvisNode) onMsgReplyRequestFile(ctx context.Context, msg *pb.JarvisMsg) error {
 	// jarvisbase.Debug("jarvisNode.onMsgReplyRequestFile")
 
-	if msg.ReplyMsgID > 0 {
-		n.mgrRequest.onReplyRequest(ctx, n, msg)
-	}
+	// if msg.ReplyMsgID > 0 {
+	// 	n.mgrRequest.onReplyRequest(ctx, n, msg)
+	// }
 
 	n.mgrEvent.onMsgEvent(ctx, EventOnReplyRequestFile, msg)
 
@@ -1158,7 +1158,7 @@ func (n *jarvisNode) onMsgReplyRequestFile(ctx context.Context, msg *pb.JarvisMs
 
 // RequestFile - request node send filedata to me
 func (n *jarvisNode) RequestFile(ctx context.Context, addr string, rf *pb.RequestFile,
-	funcReply FuncReplyRequest, funcOnResult FuncOnProcMsgResult) error {
+	funcOnResult FuncOnProcMsgResult) error {
 
 	sendmsg, err := BuildRequestFile(n, n.myinfo.Addr, addr, rf)
 	if err != nil {
@@ -1255,7 +1255,7 @@ func (n *jarvisNode) checkMsgID(ctx context.Context, msg *pb.JarvisMsg) error {
 
 // UpdateNode - update node
 func (n *jarvisNode) UpdateNode(ctx context.Context, addr string, nodetype string, nodetypever string,
-	funcReply FuncReplyRequest, funcOnResult FuncOnProcMsgResult) error {
+	funcOnResult FuncOnProcMsgResult) error {
 
 	sendmsg, err := BuildUpdateNode(n, n.myinfo.Addr, addr, nodetype, nodetypever)
 	if err != nil {
@@ -1284,7 +1284,7 @@ func (n *jarvisNode) UpdateNode(ctx context.Context, addr string, nodetype strin
 
 // UpdateAllNodes - update all nodes
 func (n *jarvisNode) UpdateAllNodes(ctx context.Context, nodetype string, nodetypever string,
-	funcReply FuncReplyRequest, funcOnResult FuncOnGroupSendMsgResult) error {
+	funcOnResult FuncOnGroupSendMsgResult) error {
 
 	numsSend := 0
 
@@ -1306,7 +1306,7 @@ func (n *jarvisNode) UpdateAllNodes(ctx context.Context, nodetype string, nodety
 			curResult := &ClientGroupProcMsgResults{}
 			totalResults = append(totalResults, curResult)
 
-			err := n.UpdateNode(ctx, addr, nodetype, nodetypever, funcReply,
+			err := n.UpdateNode(ctx, addr, nodetype, nodetypever,
 				func(ctx context.Context, jarvisnode JarvisNode, lstResult []*ClientProcMsgResult) error {
 					curResult.Results = lstResult
 					// numsRecv++
