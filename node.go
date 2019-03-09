@@ -152,6 +152,12 @@ func NewNode(cfg *Config) (JarvisNode, error) {
 	node.myinfo.BindAddr = cfg.BaseNodeInfo.BindAddr
 	node.myinfo.ServAddr = cfg.BaseNodeInfo.ServAddr
 
+	jarvisbase.Info("jarviscore.NewNode",
+		zap.String("Addr", node.myinfo.Addr),
+		zap.String("Name", node.myinfo.Name),
+		zap.String("BindAddr", node.myinfo.BindAddr),
+		zap.String("ServAddr", node.myinfo.ServAddr))
+
 	// mgrJasvisMsg
 	node.mgrJasvisMsg = newJarvisMsgMgr(node)
 
@@ -228,25 +234,25 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 		return nil
 	}
 
-	// proc local msg
-	if msg.MsgType == pb.MSGTYPE_LOCAL_SENDMSG {
+	// // proc local msg
+	// if msg.MsgType == pb.MSGTYPE_LOCAL_SENDMSG {
 
-		// verify msg
-		err := VerifyJarvisMsg(msg)
-		if err != nil {
-			jarvisbase.Warn("jarvisNode.OnMsg",
-				zap.Error(err),
-				jarvisbase.JSON("msg", msg))
+	// 	// verify msg
+	// 	err := VerifyJarvisMsg(msg)
+	// 	if err != nil {
+	// 		jarvisbase.Warn("jarvisNode.OnMsg",
+	// 			zap.Error(err),
+	// 			jarvisbase.JSON("msg", msg))
 
-			n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
+	// 		n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
 
-			return nil
-		}
+	// 		return nil
+	// 	}
 
-		if msg.MsgType == pb.MSGTYPE_LOCAL_SENDMSG {
-			return n.onMsgLocalSendMsg(ctx, msg, funcOnResult)
-		}
-	}
+	// 	if msg.MsgType == pb.MSGTYPE_LOCAL_SENDMSG {
+	// 		return n.onMsgLocalSendMsg(ctx, msg, funcOnResult)
+	// 	}
+	// }
 
 	// proc connect msg
 	if msg.MsgType == pb.MSGTYPE_CONNECT_NODE {
@@ -822,18 +828,20 @@ func (n *jarvisNode) RequestCtrl(ctx context.Context, addr string, ci *pb.CtrlIn
 		return err
 	}
 
-	msg, err := BuildLocalSendMsg(n, n.myinfo.Addr, "", sendmsg)
-	if err != nil {
-		jarvisbase.Warn("jarvisNode.RequestCtrl:BuildLocalSendMsg", zap.Error(err))
+	n.mgrClient2.addSendMsgTask(sendmsg, nil, funcOnResult)
 
-		return err
-	}
+	// msg, err := BuildLocalSendMsg(n, n.myinfo.Addr, "", sendmsg)
+	// if err != nil {
+	// 	jarvisbase.Warn("jarvisNode.RequestCtrl:BuildLocalSendMsg", zap.Error(err))
 
-	if funcReply != nil {
-		n.mgrRequest.addRequestData(msg, funcReply)
-	}
+	// 	return err
+	// }
 
-	n.PostMsg(msg, nil, nil, funcOnResult)
+	// if funcReply != nil {
+	// 	n.mgrRequest.addRequestData(msg, funcReply)
+	// }
+
+	// n.PostMsg(msg, nil, nil, funcOnResult)
 
 	return nil
 }
@@ -849,18 +857,20 @@ func (n *jarvisNode) SendFile(ctx context.Context, addr string, fd *pb.FileData,
 		return err
 	}
 
-	msg, err := BuildLocalSendMsg(n, n.myinfo.Addr, "", sendmsg)
-	if err != nil {
-		jarvisbase.Warn("jarvisNode.SendFile:BuildLocalSendMsg", zap.Error(err))
+	n.mgrClient2.addSendMsgTask(sendmsg, nil, funcOnResult)
 
-		return err
-	}
+	// msg, err := BuildLocalSendMsg(n, n.myinfo.Addr, "", sendmsg)
+	// if err != nil {
+	// 	jarvisbase.Warn("jarvisNode.SendFile:BuildLocalSendMsg", zap.Error(err))
 
-	if funcReply != nil {
-		n.mgrRequest.addRequestData(msg, funcReply)
-	}
+	// 	return err
+	// }
 
-	n.PostMsg(msg, nil, nil, funcOnResult)
+	// if funcReply != nil {
+	// 	n.mgrRequest.addRequestData(msg, funcReply)
+	// }
+
+	// n.PostMsg(msg, nil, nil, funcOnResult)
 
 	return nil
 }
@@ -885,14 +895,16 @@ func (n *jarvisNode) RequestNode(ctx context.Context, addr string,
 			return nil
 		}
 
-		msg, err := BuildLocalSendMsg(n, n.myinfo.Addr, "", sendmsg)
-		if err != nil {
-			jarvisbase.Warn("jarvisNode.RequestNode:BuildLocalSendMsg", zap.Error(err))
+		n.mgrClient2.addSendMsgTask(sendmsg, nil, funcOnResult)
 
-			return err
-		}
+		// msg, err := BuildLocalSendMsg(n, n.myinfo.Addr, "", sendmsg)
+		// if err != nil {
+		// 	jarvisbase.Warn("jarvisNode.RequestNode:BuildLocalSendMsg", zap.Error(err))
 
-		n.PostMsg(msg, nil, nil, funcOnResult)
+		// 	return err
+		// }
+
+		// n.PostMsg(msg, nil, nil, funcOnResult)
 	}
 
 	return nil
@@ -1155,18 +1167,20 @@ func (n *jarvisNode) RequestFile(ctx context.Context, addr string, rf *pb.Reques
 		return err
 	}
 
-	msg, err := BuildLocalSendMsg(n, n.myinfo.Addr, "", sendmsg)
-	if err != nil {
-		jarvisbase.Warn("jarvisNode.RequestFile:BuildLocalSendMsg", zap.Error(err))
+	n.mgrClient2.addSendMsgTask(sendmsg, nil, funcOnResult)
 
-		return err
-	}
+	// msg, err := BuildLocalSendMsg(n, n.myinfo.Addr, "", sendmsg)
+	// if err != nil {
+	// 	jarvisbase.Warn("jarvisNode.RequestFile:BuildLocalSendMsg", zap.Error(err))
 
-	if funcReply != nil {
-		n.mgrRequest.addRequestData(msg, funcReply)
-	}
+	// 	return err
+	// }
 
-	n.PostMsg(msg, nil, nil, funcOnResult)
+	// if funcReply != nil {
+	// 	n.mgrRequest.addRequestData(msg, funcReply)
+	// }
+
+	// n.PostMsg(msg, nil, nil, funcOnResult)
 
 	return nil
 }
@@ -1250,18 +1264,20 @@ func (n *jarvisNode) UpdateNode(ctx context.Context, addr string, nodetype strin
 		return err
 	}
 
-	msg, err := BuildLocalSendMsg(n, n.myinfo.Addr, "", sendmsg)
-	if err != nil {
-		jarvisbase.Warn("jarvisNode.RequestFile:BuildLocalSendMsg", zap.Error(err))
+	n.mgrClient2.addSendMsgTask(sendmsg, nil, funcOnResult)
 
-		return err
-	}
+	// msg, err := BuildLocalSendMsg(n, n.myinfo.Addr, "", sendmsg)
+	// if err != nil {
+	// 	jarvisbase.Warn("jarvisNode.RequestFile:BuildLocalSendMsg", zap.Error(err))
 
-	if funcReply != nil {
-		n.mgrRequest.addRequestData(msg, funcReply)
-	}
+	// 	return err
+	// }
 
-	n.PostMsg(msg, nil, nil, funcOnResult)
+	// if funcReply != nil {
+	// 	n.mgrRequest.addRequestData(msg, funcReply)
+	// }
+
+	// n.PostMsg(msg, nil, nil, funcOnResult)
 
 	return nil
 }

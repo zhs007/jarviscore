@@ -84,17 +84,6 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 
 			return append(str[:], buf[:]...), nil
 		}
-	} else if msg.MsgType == pb.MSGTYPE_LOCAL_SENDMSG {
-		cr := msg.GetMsg()
-		if cr != nil {
-			str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
-			buf, err := proto.Marshal(cr)
-			if err != nil {
-				return nil, err
-			}
-
-			return append(str[:], buf[:]...), nil
-		}
 	} else if msg.MsgType == pb.MSGTYPE_REQUEST_NODES {
 		str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
 
@@ -383,30 +372,30 @@ func BuildCtrlResult(jarvisnode JarvisNode, srcAddr string,
 	return msg, nil
 }
 
-// BuildLocalSendMsg - build jarvismsg with LOCAL_SENDMSG
-func BuildLocalSendMsg(jarvisnode JarvisNode, srcAddr string,
-	destAddr string, sendmsg *pb.JarvisMsg) (*pb.JarvisMsg, error) {
+// // BuildLocalSendMsg - build jarvismsg with LOCAL_SENDMSG
+// func BuildLocalSendMsg(jarvisnode JarvisNode, srcAddr string,
+// 	destAddr string, sendmsg *pb.JarvisMsg) (*pb.JarvisMsg, error) {
 
-	msg := &pb.JarvisMsg{
-		MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
-		CurTime:   time.Now().Unix(),
-		SrcAddr:   srcAddr,
-		MyAddr:    srcAddr,
-		DestAddr:  destAddr,
-		MsgType:   pb.MSGTYPE_LOCAL_SENDMSG,
-		LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
-		Data: &pb.JarvisMsg_Msg{
-			Msg: sendmsg,
-		},
-	}
+// 	msg := &pb.JarvisMsg{
+// 		MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
+// 		CurTime:   time.Now().Unix(),
+// 		SrcAddr:   srcAddr,
+// 		MyAddr:    srcAddr,
+// 		DestAddr:  destAddr,
+// 		MsgType:   pb.MSGTYPE_LOCAL_SENDMSG,
+// 		LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+// 		Data: &pb.JarvisMsg_Msg{
+// 			Msg: sendmsg,
+// 		},
+// 	}
 
-	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
-	if err != nil {
-		return nil, err
-	}
+// 	err := SignJarvisMsg(jarvisnode.GetCoreDB().GetPrivateKey(), msg)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	return msg, nil
-}
+// 	return msg, nil
+// }
 
 // BuildRequestNodes - build jarvismsg with REQUEST_NODES
 func BuildRequestNodes(jarvisnode JarvisNode, srcAddr string,

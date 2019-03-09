@@ -29,7 +29,7 @@ enum MSGTYPE {
     // local connect other
     LOCAL_CONNECT_OTHER = 11 [deprecated = true];
     // local sendmsg
-    LOCAL_SENDMSG = 12;
+    LOCAL_SENDMSG = 12 [deprecated = true];
     // local request nodes child
     LOCAL_REQUEST_NODES = 13 [deprecated = true];
     // transfer file
