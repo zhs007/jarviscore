@@ -72,7 +72,9 @@ func (task *clientTask) Run(ctx context.Context) error {
 			task.client.node.mgrEvent.onNodeEvent(ctx, EventOnIConnectNodeFail, task.node)
 		}
 
-		jarvisbase.Warn("clientTask.Run:_connectNode", zap.Error(err))
+		if err != nil {
+			jarvisbase.Warn("clientTask.Run:_connectNode", zap.Error(err))
+		}
 
 		return err
 	}
