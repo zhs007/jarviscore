@@ -83,6 +83,8 @@ func (ni *nodeinfoRN) onNodeConnected(node *coredbpb.NodeInfo) error {
 }
 
 type objRN struct {
+	sync.RWMutex
+
 	root         JarvisNode
 	node1        JarvisNode
 	node2        JarvisNode
@@ -114,8 +116,15 @@ func (obj *objRN) isDone() bool {
 // cancelFunc - cancel function
 type cancelFunc func(err error)
 
-func (obj *objRN) onIConn(ctx context.Context, funcCancel cancelFunc) error {
-	if obj.rootni.numsConnMe == 2 && !obj.requestnodes {
+func (obj *objRN) oncheck(ctx context.Context, funcCancel cancelFunc) error {
+	obj.Lock()
+	defer obj.Unlock()
+
+	if obj.rootni.numsConnMe == 2 &&
+		obj.node1ni.numsConnMe >= 1 && obj.node1ni.numsIConn >= 1 &&
+		obj.node2ni.numsConnMe >= 1 && obj.node2ni.numsIConn >= 1 &&
+		!obj.requestnodes {
+
 		err := obj.node1.RequestNodes(ctx, func(ctx context.Context, jarvisnode JarvisNode,
 			numsNode int, lstResult []*ClientGroupProcMsgResults) error {
 
@@ -178,8 +187,12 @@ func (obj *objRN) onIConn(ctx context.Context, funcCancel cancelFunc) error {
 	return nil
 }
 
-func (obj *objRN) onConnMe(ctx context.Context) error {
-	return nil
+func (obj *objRN) onIConn(ctx context.Context, funcCancel cancelFunc) error {
+	return obj.oncheck(ctx, funcCancel)
+}
+
+func (obj *objRN) onConnMe(ctx context.Context, funcCancel cancelFunc) error {
+	return obj.oncheck(ctx, funcCancel)
 }
 
 func (obj *objRN) makeString() string {
@@ -285,7 +298,13 @@ func TestRequestNode(t *testing.T) {
 			return nil
 		}
 
-		err1 := obj.onConnMe(ctx)
+		err1 := obj.onConnMe(ctx, func(err error) {
+			if err != nil {
+				errobj = err
+			}
+
+			cancel()
+		})
 		if err1 != nil {
 			errobj = err1
 
@@ -328,6 +347,7 @@ func TestRequestNode(t *testing.T) {
 	}
 
 	go obj.root.Start(ctx)
+	time.Sleep(time.Second * 1)
 	go obj.node1.Start(ctx)
 	go obj.node2.Start(ctx)
 
