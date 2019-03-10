@@ -28,3 +28,26 @@ func TestIsMyServAddr(t *testing.T) {
 
 	t.Logf("TestIsMyServAddr OK")
 }
+
+func TestIsValidServAddr(t *testing.T) {
+	type data struct {
+		servaddr string
+		ret      bool
+	}
+
+	lst := []data{
+		data{"192.168.0.1:7788", true},
+		data{"192.168.0.1:", false},
+		data{":7788", false},
+		data{"a.b.c:7788", true},
+	}
+
+	for i := 0; i < len(lst); i++ {
+		cr := IsValidServAddr(lst[i].servaddr)
+		if cr != lst[i].ret {
+			t.Fatalf("TestIsValidServAddr fail %v", lst[i].servaddr)
+		}
+	}
+
+	t.Logf("TestIsValidServAddr OK")
+}

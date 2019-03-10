@@ -132,8 +132,11 @@ func (obj *objUN) isDone() bool {
 	return obj.endupdnodes
 }
 
-func (obj *objUN) onIConn(ctx context.Context, funcCancel context.CancelFunc) error {
-	if obj.rootni.numsConnMe == 2 && !obj.requestnodes {
+func (obj *objUN) oncheck(ctx context.Context, funcCancel context.CancelFunc) error {
+	if obj.rootni.numsConnMe == 2 &&
+		obj.node1ni.numsConnMe >= 1 && obj.node1ni.numsIConn >= 1 &&
+		obj.node2ni.numsConnMe >= 1 && obj.node2ni.numsIConn >= 1 &&
+		!obj.requestnodes {
 		err := obj.node1.RequestNodes(ctx, nil)
 		if err != nil {
 			return err
@@ -148,7 +151,7 @@ func (obj *objUN) onIConn(ctx context.Context, funcCancel context.CancelFunc) er
 	}
 
 	if obj.node1ni.numsConnMe == 2 && obj.node2ni.numsConnMe == 2 && !obj.updnodefromnode1 {
-		err := obj.node1.UpdateAllNodes(ctx, "testupdnode", "0.7.25", nil,
+		err := obj.node1.UpdateAllNodes(ctx, "testupdnode", "0.7.25",
 			func(ctx context.Context, jarvisnode JarvisNode, numsNode int, lstResult []*ClientGroupProcMsgResults) error {
 
 				jarvisbase.Info("objUN.onIConn:node1.UpdateAllNodes",
@@ -182,8 +185,12 @@ func (obj *objUN) onIConn(ctx context.Context, funcCancel context.CancelFunc) er
 	return nil
 }
 
-func (obj *objUN) onConnMe(ctx context.Context) error {
-	return nil
+func (obj *objUN) onIConn(ctx context.Context, funcCancel context.CancelFunc) error {
+	return obj.oncheck(ctx, funcCancel)
+}
+
+func (obj *objUN) onConnMe(ctx context.Context, funcCancel context.CancelFunc) error {
+	return obj.oncheck(ctx, funcCancel)
 }
 
 func (obj *objUN) makeString() string {
@@ -281,7 +288,7 @@ func TestUpdNode(t *testing.T) {
 			return nil
 		}
 
-		err1 := obj.onConnMe(ctx)
+		err1 := obj.onConnMe(ctx, cancel)
 		if err1 != nil {
 			errobj = err1
 
@@ -324,6 +331,7 @@ func TestUpdNode(t *testing.T) {
 	}
 
 	go obj.root.Start(ctx)
+	time.Sleep(time.Second * 1)
 	go obj.node1.Start(ctx)
 	go obj.node2.Start(ctx)
 
