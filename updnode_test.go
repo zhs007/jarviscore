@@ -331,6 +331,7 @@ func TestUpdNode(t *testing.T) {
 	}
 
 	go obj.root.Start(ctx)
+	time.Sleep(time.Second * 1)
 	go obj.node1.Start(ctx)
 	go obj.node2.Start(ctx)
 
