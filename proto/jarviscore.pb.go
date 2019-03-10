@@ -127,7 +127,7 @@ func (x MSGTYPE) String() string {
 	return proto.EnumName(MSGTYPE_name, int32(x))
 }
 func (MSGTYPE) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_289f68f60f7a5bb6, []int{0}
+	return fileDescriptor_jarviscore_550c028419688763, []int{0}
 }
 
 // REPLYTYPE - reply type
@@ -169,7 +169,7 @@ func (x REPLYTYPE) String() string {
 	return proto.EnumName(REPLYTYPE_name, int32(x))
 }
 func (REPLYTYPE) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_289f68f60f7a5bb6, []int{1}
+	return fileDescriptor_jarviscore_550c028419688763, []int{1}
 }
 
 type NodeBaseInfo struct {
@@ -194,7 +194,7 @@ func (m *NodeBaseInfo) Reset()         { *m = NodeBaseInfo{} }
 func (m *NodeBaseInfo) String() string { return proto.CompactTextString(m) }
 func (*NodeBaseInfo) ProtoMessage()    {}
 func (*NodeBaseInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_289f68f60f7a5bb6, []int{0}
+	return fileDescriptor_jarviscore_550c028419688763, []int{0}
 }
 func (m *NodeBaseInfo) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_NodeBaseInfo.Unmarshal(m, b)
@@ -269,7 +269,7 @@ func (m *ReplyConnect2) Reset()         { *m = ReplyConnect2{} }
 func (m *ReplyConnect2) String() string { return proto.CompactTextString(m) }
 func (*ReplyConnect2) ProtoMessage()    {}
 func (*ReplyConnect2) Descriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_289f68f60f7a5bb6, []int{1}
+	return fileDescriptor_jarviscore_550c028419688763, []int{1}
 }
 func (m *ReplyConnect2) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ReplyConnect2.Unmarshal(m, b)
@@ -303,7 +303,7 @@ func (m *ReplyConnect2) GetNbi() *NodeBaseInfo {
 	return nil
 }
 
-// ConnectInfo - used in LOCAL_CONNECT_OTHER, CONNECT_NODE
+// ConnectInfo - used in CONNECT_NODE
 type ConnectInfo struct {
 	ServAddr             string        `protobuf:"bytes,1,opt,name=servAddr,proto3" json:"servAddr,omitempty"`
 	MyInfo               *NodeBaseInfo `protobuf:"bytes,2,opt,name=myInfo,proto3" json:"myInfo,omitempty"`
@@ -316,7 +316,7 @@ func (m *ConnectInfo) Reset()         { *m = ConnectInfo{} }
 func (m *ConnectInfo) String() string { return proto.CompactTextString(m) }
 func (*ConnectInfo) ProtoMessage()    {}
 func (*ConnectInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_289f68f60f7a5bb6, []int{2}
+	return fileDescriptor_jarviscore_550c028419688763, []int{2}
 }
 func (m *ConnectInfo) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ConnectInfo.Unmarshal(m, b)
@@ -362,7 +362,7 @@ func (m *ReplyJoin) Reset()         { *m = ReplyJoin{} }
 func (m *ReplyJoin) String() string { return proto.CompactTextString(m) }
 func (*ReplyJoin) ProtoMessage()    {}
 func (*ReplyJoin) Descriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_289f68f60f7a5bb6, []int{3}
+	return fileDescriptor_jarviscore_550c028419688763, []int{3}
 }
 func (m *ReplyJoin) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ReplyJoin.Unmarshal(m, b)
@@ -408,7 +408,7 @@ func (m *ReplyTransferFile) Reset()         { *m = ReplyTransferFile{} }
 func (m *ReplyTransferFile) String() string { return proto.CompactTextString(m) }
 func (*ReplyTransferFile) ProtoMessage()    {}
 func (*ReplyTransferFile) Descriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_289f68f60f7a5bb6, []int{4}
+	return fileDescriptor_jarviscore_550c028419688763, []int{4}
 }
 func (m *ReplyTransferFile) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ReplyTransferFile.Unmarshal(m, b)
@@ -450,7 +450,7 @@ func (m *FileData) Reset()         { *m = FileData{} }
 func (m *FileData) String() string { return proto.CompactTextString(m) }
 func (*FileData) ProtoMessage()    {}
 func (*FileData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_289f68f60f7a5bb6, []int{5}
+	return fileDescriptor_jarviscore_550c028419688763, []int{5}
 }
 func (m *FileData) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_FileData.Unmarshal(m, b)
@@ -510,7 +510,7 @@ func (m *RequestFile) Reset()         { *m = RequestFile{} }
 func (m *RequestFile) String() string { return proto.CompactTextString(m) }
 func (*RequestFile) ProtoMessage()    {}
 func (*RequestFile) Descriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_289f68f60f7a5bb6, []int{6}
+	return fileDescriptor_jarviscore_550c028419688763, []int{6}
 }
 func (m *RequestFile) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_RequestFile.Unmarshal(m, b)
@@ -552,7 +552,7 @@ func (m *CtrlScriptData) Reset()         { *m = CtrlScriptData{} }
 func (m *CtrlScriptData) String() string { return proto.CompactTextString(m) }
 func (*CtrlScriptData) ProtoMessage()    {}
 func (*CtrlScriptData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_289f68f60f7a5bb6, []int{7}
+	return fileDescriptor_jarviscore_550c028419688763, []int{7}
 }
 func (m *CtrlScriptData) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CtrlScriptData.Unmarshal(m, b)
@@ -607,7 +607,7 @@ func (m *CtrlScript2Data) Reset()         { *m = CtrlScript2Data{} }
 func (m *CtrlScript2Data) String() string { return proto.CompactTextString(m) }
 func (*CtrlScript2Data) ProtoMessage()    {}
 func (*CtrlScript2Data) Descriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_289f68f60f7a5bb6, []int{8}
+	return fileDescriptor_jarviscore_550c028419688763, []int{8}
 }
 func (m *CtrlScript2Data) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CtrlScript2Data.Unmarshal(m, b)
@@ -658,7 +658,7 @@ func (m *CtrlInfo) Reset()         { *m = CtrlInfo{} }
 func (m *CtrlInfo) String() string { return proto.CompactTextString(m) }
 func (*CtrlInfo) ProtoMessage()    {}
 func (*CtrlInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_289f68f60f7a5bb6, []int{9}
+	return fileDescriptor_jarviscore_550c028419688763, []int{9}
 }
 func (m *CtrlInfo) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CtrlInfo.Unmarshal(m, b)
@@ -732,7 +732,7 @@ func (m *CtrlResult) Reset()         { *m = CtrlResult{} }
 func (m *CtrlResult) String() string { return proto.CompactTextString(m) }
 func (*CtrlResult) ProtoMessage()    {}
 func (*CtrlResult) Descriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_289f68f60f7a5bb6, []int{10}
+	return fileDescriptor_jarviscore_550c028419688763, []int{10}
 }
 func (m *CtrlResult) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CtrlResult.Unmarshal(m, b)
@@ -779,7 +779,7 @@ func (m *MultiMsgData) Reset()         { *m = MultiMsgData{} }
 func (m *MultiMsgData) String() string { return proto.CompactTextString(m) }
 func (*MultiMsgData) ProtoMessage()    {}
 func (*MultiMsgData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_289f68f60f7a5bb6, []int{11}
+	return fileDescriptor_jarviscore_550c028419688763, []int{11}
 }
 func (m *MultiMsgData) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MultiMsgData.Unmarshal(m, b)
@@ -835,7 +835,7 @@ func (m *UpdateNode) Reset()         { *m = UpdateNode{} }
 func (m *UpdateNode) String() string { return proto.CompactTextString(m) }
 func (*UpdateNode) ProtoMessage()    {}
 func (*UpdateNode) Descriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_289f68f60f7a5bb6, []int{12}
+	return fileDescriptor_jarviscore_550c028419688763, []int{12}
 }
 func (m *UpdateNode) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UpdateNode.Unmarshal(m, b)
@@ -907,7 +907,7 @@ func (m *JarvisMsg) Reset()         { *m = JarvisMsg{} }
 func (m *JarvisMsg) String() string { return proto.CompactTextString(m) }
 func (*JarvisMsg) ProtoMessage()    {}
 func (*JarvisMsg) Descriptor() ([]byte, []int) {
-	return fileDescriptor_jarviscore_289f68f60f7a5bb6, []int{13}
+	return fileDescriptor_jarviscore_550c028419688763, []int{13}
 }
 func (m *JarvisMsg) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_JarvisMsg.Unmarshal(m, b)
@@ -1516,9 +1516,9 @@ var _JarvisCoreServ_serviceDesc = grpc.ServiceDesc{
 	Metadata: "jarviscore.proto",
 }
 
-func init() { proto.RegisterFile("jarviscore.proto", fileDescriptor_jarviscore_289f68f60f7a5bb6) }
+func init() { proto.RegisterFile("jarviscore.proto", fileDescriptor_jarviscore_550c028419688763) }
 
-var fileDescriptor_jarviscore_289f68f60f7a5bb6 = []byte{
+var fileDescriptor_jarviscore_550c028419688763 = []byte{
 	// 1292 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x55, 0x6d, 0x8f, 0xdb, 0xc4,
 	0x13, 0x8f, 0xe3, 0x3c, 0x4e, 0x1e, 0xce, 0xb7, 0xed, 0x5d, 0xdd, 0xeb, 0x5f, 0x7f, 0x4e, 0x16,
