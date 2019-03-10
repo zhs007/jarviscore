@@ -132,8 +132,11 @@ func (obj *objUN) isDone() bool {
 	return obj.endupdnodes
 }
 
-func (obj *objUN) onIConn(ctx context.Context, funcCancel context.CancelFunc) error {
-	if obj.rootni.numsConnMe == 2 && !obj.requestnodes {
+func (obj *objUN) oncheck(ctx context.Context, funcCancel context.CancelFunc) error {
+	if obj.rootni.numsConnMe == 2 &&
+		obj.node1ni.numsConnMe >= 1 && obj.node1ni.numsIConn >= 1 &&
+		obj.node2ni.numsConnMe >= 1 && obj.node2ni.numsIConn >= 1 &&
+		!obj.requestnodes {
 		err := obj.node1.RequestNodes(ctx, nil)
 		if err != nil {
 			return err
@@ -182,8 +185,12 @@ func (obj *objUN) onIConn(ctx context.Context, funcCancel context.CancelFunc) er
 	return nil
 }
 
-func (obj *objUN) onConnMe(ctx context.Context) error {
-	return nil
+func (obj *objUN) onIConn(ctx context.Context, funcCancel context.CancelFunc) error {
+	return obj.oncheck(ctx, funcCancel)
+}
+
+func (obj *objUN) onConnMe(ctx context.Context, funcCancel context.CancelFunc) error {
+	return obj.oncheck(ctx, funcCancel)
 }
 
 func (obj *objUN) makeString() string {
@@ -281,7 +288,7 @@ func TestUpdNode(t *testing.T) {
 			return nil
 		}
 
-		err1 := obj.onConnMe(ctx)
+		err1 := obj.onConnMe(ctx, cancel)
 		if err1 != nil {
 			errobj = err1
 
