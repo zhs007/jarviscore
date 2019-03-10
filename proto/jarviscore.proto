@@ -87,7 +87,7 @@ message ReplyConnect2 {
     NodeBaseInfo nbi = 2;
 }
 
-// ConnectInfo - used in LOCAL_CONNECT_OTHER, CONNECT_NODE
+// ConnectInfo - used in CONNECT_NODE
 message ConnectInfo {
     string servAddr = 1;
     NodeBaseInfo myInfo = 2;

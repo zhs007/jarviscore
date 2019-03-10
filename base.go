@@ -90,6 +90,24 @@ func IsValidServAddr(servaddr string) bool {
 	return true
 }
 
+// IsLocalHostAddr - is localhost
+func IsLocalHostAddr(servaddr string) bool {
+	arr := strings.Split(servaddr, ":")
+	if len(arr) != 2 {
+		return false
+	}
+
+	if arr[0] == "" {
+		return false
+	}
+
+	if arr[0] == "127.0.0.1" || arr[0] == "localhost" {
+		return true
+	}
+
+	return false
+}
+
 // // GetDNSPulicIP -
 // func GetDNSPulicIP() string {
 // 	conn, err := net.Dial("udp", "8.8.8.8:53")

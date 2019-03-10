@@ -496,6 +496,9 @@ func (n *jarvisNode) ConnectNodeWithServAddr(servaddr string, funcOnResult FuncO
 	}
 
 	if cn.ConnType == coredbpb.CONNECTTYPE_UNKNOWN_CONN {
+		cn.ConnectNums++
+		cn.LastConnectTime = time.Now().Unix()
+
 		n.mgrClient2.addConnTask(cn.ServAddr, cn, funcOnResult)
 
 		return nil
@@ -535,6 +538,9 @@ func (n *jarvisNode) ConnectNode(node *coredbpb.NodeInfo, funcOnResult FuncOnPro
 	}
 
 	if node.ConnType == coredbpb.CONNECTTYPE_UNKNOWN_CONN {
+		node.ConnectNums++
+		node.LastConnectTime = time.Now().Unix()
+
 		n.mgrClient2.addConnTask(node.ServAddr, node, funcOnResult)
 
 		return nil
@@ -683,8 +689,8 @@ func onNodeConnected(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.
 			return err
 		}
 
-		node.ConnectNums++
-		node.LastConnectTime = time.Now().Unix()
+		// node.ConnectNums++
+		// node.LastConnectTime = time.Now().Unix()
 
 		err = jarvisnode.GetCoreDB().UpdNodeInfo(node.Addr)
 		if err != nil {
@@ -968,6 +974,11 @@ func (n *jarvisNode) onMsgRequestNodes(ctx context.Context, msg *pb.JarvisMsg, s
 	}
 
 	n.coredb.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
+		//!!! don't broadcast the localhost and deprecated node
+		if IsLocalHostAddr(v.ServAddr) && v.Deprecated {
+			return nil
+		}
+
 		mni := &pb.NodeBaseInfo{
 			ServAddr: v.ServAddr,
 			Addr:     v.Addr,
@@ -1210,10 +1221,19 @@ func (n *jarvisNode) AddNodeBaseInfo(nbi *pb.NodeBaseInfo) error {
 			return err
 		}
 
-		n.mgrClient2.addConnTask(nbi.ServAddr, n.coredb.GetNode(nbi.Addr), nil)
+		cn = n.coredb.GetNode(nbi.Addr)
+		if cn != nil {
+			cn.ConnectNums++
+			cn.LastConnectTime = time.Now().Unix()
+		}
+
+		n.mgrClient2.addConnTask(nbi.ServAddr, cn, nil)
 
 		return nil
 	} else if cn.ConnType == coredbpb.CONNECTTYPE_UNKNOWN_CONN {
+		cn.ConnectNums++
+		cn.LastConnectTime = time.Now().Unix()
+
 		n.mgrClient2.addConnTask(nbi.ServAddr, cn, nil)
 
 		return nil
