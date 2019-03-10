@@ -974,6 +974,11 @@ func (n *jarvisNode) onMsgRequestNodes(ctx context.Context, msg *pb.JarvisMsg, s
 	}
 
 	n.coredb.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
+		//!!! don't broadcast the localhost and deprecated node
+		if IsLocalHostAddr(v.ServAddr) && v.Deprecated {
+			return nil
+		}
+
 		mni := &pb.NodeBaseInfo{
 			ServAddr: v.ServAddr,
 			Addr:     v.Addr,

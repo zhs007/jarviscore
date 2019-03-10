@@ -51,3 +51,29 @@ func TestIsValidServAddr(t *testing.T) {
 
 	t.Logf("TestIsValidServAddr OK")
 }
+
+func TestIsLocalHostAddr(t *testing.T) {
+	type data struct {
+		servaddr string
+		ret      bool
+	}
+
+	lst := []data{
+		data{"192.168.0.1:7788", false},
+		data{"192.168.0.1:", false},
+		data{":7788", false},
+		data{"localhost:7788", true},
+		data{"localhost:", true},
+		data{"127.0.0.1:7788", true},
+		data{"127.0.0.1:", true},
+	}
+
+	for i := 0; i < len(lst); i++ {
+		cr := IsLocalHostAddr(lst[i].servaddr)
+		if cr != lst[i].ret {
+			t.Fatalf("TestIsLocalHostAddr fail %v", lst[i].servaddr)
+		}
+	}
+
+	t.Logf("TestIsLocalHostAddr OK")
+}
