@@ -346,16 +346,17 @@ func BuildReply2(jarvisnode JarvisNode, srcAddr string,
 
 // BuildCtrlResult - build jarvismsg with REPLY_CTRL_RESULT
 func BuildCtrlResult(jarvisnode JarvisNode, srcAddr string,
-	destAddr string, ctrlid int64, result string) (*pb.JarvisMsg, error) {
+	destAddr string, ctrlid int64, msgid int64, result string) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
 		// MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
-		CurTime:   time.Now().Unix(),
-		SrcAddr:   srcAddr,
-		MyAddr:    srcAddr,
-		DestAddr:  destAddr,
-		MsgType:   pb.MSGTYPE_REPLY_CTRL_RESULT,
-		LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+		CurTime:    time.Now().Unix(),
+		SrcAddr:    srcAddr,
+		MyAddr:     srcAddr,
+		DestAddr:   destAddr,
+		MsgType:    pb.MSGTYPE_REPLY_CTRL_RESULT,
+		LastMsgID:  jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+		ReplyMsgID: msgid,
 		Data: &pb.JarvisMsg_CtrlResult{
 			CtrlResult: &pb.CtrlResult{
 				CtrlID:     ctrlid,

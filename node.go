@@ -579,7 +579,7 @@ func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 	ci := msg.GetCtrlInfo()
 	ret, err := n.mgrCtrl.Run(ci)
 	if err != nil {
-		sendmsg2, err := BuildCtrlResult(n, n.myinfo.Addr, msg.SrcAddr, ci.CtrlID, err.Error())
+		sendmsg2, err := BuildCtrlResult(n, n.myinfo.Addr, msg.SrcAddr, ci.CtrlID, msg.MsgID, err.Error())
 		if err != nil {
 			jarvisbase.Warn("jarvisNode.onMsgRequestCtrl:BuildCtrlResult", zap.Error(err))
 
@@ -591,7 +591,7 @@ func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 		return nil
 	}
 
-	sendmsg2, err := BuildCtrlResult(n, n.myinfo.Addr, msg.SrcAddr, ci.CtrlID, string(ret))
+	sendmsg2, err := BuildCtrlResult(n, n.myinfo.Addr, msg.SrcAddr, ci.CtrlID, msg.MsgID, string(ret))
 	n.mgrClient2.addSendMsgTask(sendmsg2, nil, funcOnResult)
 
 	return nil
