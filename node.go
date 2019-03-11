@@ -1295,7 +1295,8 @@ func (n *jarvisNode) checkMsgID(ctx context.Context, msg *pb.JarvisMsg) error {
 			zap.String("destaddr", msg.DestAddr),
 			zap.String("srcaddr", msg.SrcAddr),
 			zap.Int64("msgid", msg.MsgID),
-			zap.Int64("lasrrevmsgid", cn.LastRecvMsgID))
+			zap.Int64("lasrrevmsgid", cn.LastRecvMsgID),
+			jarvisbase.JSON("msg", msg))
 
 		return ErrInvalidMsgID
 	}
@@ -1411,6 +1412,9 @@ func (n *jarvisNode) sendMsg2ClientStream(stream pb.JarvisCoreServ_ProcMsgServer
 
 		return ErrStreamNil
 	}
+
+	sendmsg.MsgID = n.GetCoreDB().GetNewSendMsgID(sendmsg.DestAddr)
+	sendmsg.CurTime = time.Now().Unix()
 
 	err := SignJarvisMsg(n.GetCoreDB().GetPrivateKey(), sendmsg)
 	if err != nil {
