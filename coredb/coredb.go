@@ -306,8 +306,8 @@ func (db *CoreDB) loadAllNodes() error {
 		val.ConnectMe = false
 		val.ConnType = coredbpb.CONNECTTYPE_UNKNOWN_CONN
 		val.Deprecated = false
-		if val.LastRecvMsgID <= 0 {
-			val.LastRecvMsgID = 1
+		if val.LastRecvMsgID < 0 {
+			val.LastRecvMsgID = 0
 		}
 
 		db.mapNodes.Store(val.Addr, val)
@@ -341,7 +341,7 @@ func (db *CoreDB) UpdNodeBaseInfo(ni *jarviscorepb.NodeBaseInfo) error {
 			NodeTypeVersion: ni.NodeTypeVersion,
 			NodeType:        ni.NodeType,
 			CoreVersion:     ni.CoreVersion,
-			LastRecvMsgID:   1,
+			LastRecvMsgID:   0,
 			ConnType:        coredbpb.CONNECTTYPE_UNKNOWN_CONN,
 		}
 	} else {

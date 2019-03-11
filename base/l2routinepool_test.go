@@ -133,7 +133,7 @@ func l2makeTask(mgr *l2taskMgr, pool L2RoutinePool, maxpid int, maxc int) {
 	// cancel()
 }
 
-func TestL2RountinePool(t *testing.T) {
+func TestL2RountinePool128(t *testing.T) {
 	InitLogger(zap.InfoLevel, true, "")
 	Debug("start...")
 	// fmt.Print("haha\n")
@@ -150,6 +150,52 @@ func TestL2RountinePool(t *testing.T) {
 	go l2makeTask(mgr, pool, 1000, 102)
 
 	pool.Start(ctx, 128)
+
+	if !mgr.isok() {
+		t.Fail()
+	}
+}
+
+func TestL2RountinePool1(t *testing.T) {
+	InitLogger(zap.InfoLevel, true, "")
+	Debug("start...")
+	// fmt.Print("haha\n")
+
+	pool := NewL2RoutinePool()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	mgr := &l2taskMgr{
+		cancel:   cancel,
+		mapIndex: make(map[int]int),
+	}
+	go l2makeTask(mgr, pool, 100, 10)
+
+	pool.Start(ctx, 1)
+
+	if !mgr.isok() {
+		t.Fail()
+	}
+}
+
+func TestL2RountinePool2(t *testing.T) {
+	InitLogger(zap.InfoLevel, true, "")
+	Debug("start...")
+	// fmt.Print("haha\n")
+
+	pool := NewL2RoutinePool()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	mgr := &l2taskMgr{
+		cancel:   cancel,
+		mapIndex: make(map[int]int),
+	}
+	go l2makeTask(mgr, pool, 100, 10)
+
+	pool.Start(ctx, 2)
 
 	if !mgr.isok() {
 		t.Fail()
