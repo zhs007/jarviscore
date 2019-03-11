@@ -51,7 +51,7 @@ const queryNodeInfos = `query NodeInfos($snapshotID: Int64!, $beginIndex: Int!, 
 		snapshotID, endIndex, maxIndex, 
 		nodes {
 			addr, servAddr, name, connectNums, connectedNums, ctrlID, lstClientAddr, addTime, 
-			nodeType, coreVersion, nodeTypeVersion, lastSendMsgID, lastRecvMsgID, deprecated
+			nodeType, coreVersion, nodeTypeVersion, lastSendMsgID, lastRecvMsgID, deprecated, timestampDeprecated, numsConnectFail
 		}
 	}
 }`
@@ -59,7 +59,7 @@ const queryNodeInfos = `query NodeInfos($snapshotID: Int64!, $beginIndex: Int!, 
 const queryUpdNodeInfo = `mutation UpdNodeInfo($nodeInfo: NodeInfoInput!) {
 	updNodeInfo(nodeInfo: $nodeInfo) {
 		addr, servAddr, name, connectNums, connectedNums, ctrlID, lstClientAddr, addTime, 
-		connectMe, connType, nodeType, coreVersion, nodeTypeVersion, lastSendMsgID, lastRecvMsgID, deprecated
+		connectMe, connType, nodeType, coreVersion, nodeTypeVersion, lastSendMsgID, lastRecvMsgID, deprecated, timestampDeprecated, numsConnectFail
 	}
 }`
 

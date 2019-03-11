@@ -74,6 +74,12 @@ var inputTypeNodeInfo = graphql.NewInputObject(
 			"validConnNodes": &graphql.InputObjectFieldConfig{
 				Type: graphql.NewList(graphql.String),
 			},
+			"timestampDeprecated": &graphql.InputObjectFieldConfig{
+				Type: graphqlext.Int64,
+			},
+			"numsConnectFail": &graphql.InputObjectFieldConfig{
+				Type: graphql.Int,
+			},
 		},
 	},
 )

@@ -139,6 +139,7 @@ func NewNode(cfg *Config) (JarvisNode, error) {
 	node.mgrEvent.regNodeEventFunc(EventOnNodeConnected, onNodeConnected)
 	node.mgrEvent.regNodeEventFunc(EventOnIConnectNode, onIConnectNode)
 	node.mgrEvent.regNodeEventFunc(EventOnDeprecateNode, onDeprecateNode)
+	node.mgrEvent.regNodeEventFunc(EventOnIConnectNodeFail, onIConnectNodeFail)
 
 	err = node.coredb.Init()
 	if err != nil {
@@ -491,7 +492,7 @@ func (n *jarvisNode) ConnectNodeWithServAddr(servaddr string, funcOnResult FuncO
 	}
 
 	// if it is deprecated, return
-	if cn.Deprecated {
+	if coredb.IsDeprecatedNode(cn) {
 		return nil
 	}
 
@@ -533,7 +534,7 @@ func (n *jarvisNode) ConnectNode(node *coredbpb.NodeInfo, funcOnResult FuncOnPro
 	}
 
 	// if it is deprecated, return
-	if node.Deprecated {
+	if coredb.IsDeprecatedNode(node) {
 		return nil
 	}
 
@@ -719,6 +720,9 @@ func onIConnectNode(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.N
 	node.LastConnectedTime = time.Now().Unix()
 	node.ConnType = coredbpb.CONNECTTYPE_DIRECT_CONN
 
+	node.TimestampDeprecated = 0
+	node.NumsConnectFail = 0
+
 	err := jarvisnode.GetCoreDB().UpdNodeInfo(node.Addr)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.onIConnectNode:UpdNodeInfo", zap.Error(err))
@@ -741,6 +745,38 @@ func onDeprecateNode(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.
 		err := jarvisnode.GetCoreDB().UpdNodeInfo(node.Addr)
 		if err != nil {
 			jarvisbase.Warn("jarvisNode.onDeprecateNode:UpdNodeInfo",
+				zap.Error(err))
+		}
+	}
+
+	return nil
+}
+
+// onIConnectNodeFail - func event
+func onIConnectNodeFail(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
+	jarvisbase.Debug("onIConnectNodeFail")
+
+	if !node.Deprecated {
+		node.NumsConnectFail++
+
+		if node.NumsConnectFail%3 == 0 {
+			ci := int(node.NumsConnectFail / 3)
+			if ci >= len(basedef.LastTimeDeprecated) {
+				ci = len(basedef.LastTimeDeprecated) - 1
+			}
+
+			node.TimestampDeprecated = time.Now().Unix() + basedef.LastTimeDeprecated[ci]
+
+			jarvisbase.Info("onIConnectNodeFail",
+				zap.String("addr", node.Addr),
+				zap.String("servaddr", node.ServAddr),
+				zap.Int32("NumsConnectFail", node.NumsConnectFail),
+				zap.Int64("TimestampDeprecated", node.TimestampDeprecated))
+		}
+
+		err := jarvisnode.GetCoreDB().UpdNodeInfo(node.Addr)
+		if err != nil {
+			jarvisbase.Warn("jarvisNode.onIConnectNodeFail:UpdNodeInfo",
 				zap.Error(err))
 		}
 	}
@@ -893,7 +929,7 @@ func (n *jarvisNode) RequestNode(ctx context.Context, addr string,
 	funcOnResult FuncOnProcMsgResult) error {
 
 	ni := n.coredb.GetNode(addr)
-	if ni != nil && !ni.Deprecated {
+	if ni != nil && !coredb.IsDeprecatedNode(ni) {
 		sendmsg, err := BuildRequestNodes(n, n.myinfo.Addr, ni.Addr)
 		if err != nil {
 			jarvisbase.Warn("jarvisNode.RequestNode:BuildRequestNodes", zap.Error(err))
@@ -926,7 +962,7 @@ func (n *jarvisNode) RequestNodes(ctx context.Context, funcOnResult FuncOnGroupS
 	//!! 在网络IO很快的时候，假设一共有2个节点，但第一个节点很快返回的话，可能还没全部发送完成，就产生回调
 	//!! 所以这里分2次遍历
 	n.coredb.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
-		if !v.Deprecated && n.mgrClient2.isConnected(v.Addr) {
+		if !coredb.IsDeprecatedNode(v) && n.mgrClient2.isConnected(v.Addr) {
 			numsSend++
 		}
 
@@ -936,7 +972,7 @@ func (n *jarvisNode) RequestNodes(ctx context.Context, funcOnResult FuncOnGroupS
 	n.coredb.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
 		jarvisbase.Debug(fmt.Sprintf("jarvisNode.RequestNodes %v", v))
 
-		if !v.Deprecated && n.mgrClient2.isConnected(v.Addr) {
+		if !coredb.IsDeprecatedNode(v) && n.mgrClient2.isConnected(v.Addr) {
 			curResult := &ClientGroupProcMsgResults{}
 			totalResults = append(totalResults, curResult)
 

@@ -102,6 +102,12 @@ var typeNodeInfo = graphql.NewObject(
 			"validConnNodes": &graphql.Field{
 				Type: graphql.NewList(graphql.String),
 			},
+			"timestampDeprecated": &graphql.Field{
+				Type: graphqlext.Int64,
+			},
+			"numsConnectFail": &graphql.Field{
+				Type: graphql.Int,
+			},
 		},
 	},
 )
