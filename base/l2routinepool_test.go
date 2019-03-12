@@ -157,7 +157,8 @@ func TestL2RountinePool128(t *testing.T) {
 
 	if !mgr.isok() {
 		Error("TestL2RountinePool128",
-			zap.String("output", mgr.getOutputString()))
+			zap.String("output", mgr.getOutputString()),
+			zap.String("pool", pool.GetStatus()))
 
 		t.Fail()
 	}
@@ -183,7 +184,8 @@ func TestL2RountinePool1(t *testing.T) {
 
 	if !mgr.isok() {
 		Error("TestL2RountinePool1",
-			zap.String("output", mgr.getOutputString()))
+			zap.String("output", mgr.getOutputString()),
+			zap.String("pool", pool.GetStatus()))
 
 		t.Fail()
 	}
@@ -209,7 +211,8 @@ func TestL2RountinePool2(t *testing.T) {
 
 	if !mgr.isok() {
 		Error("TestL2RountinePool2",
-			zap.String("output", mgr.getOutputString()))
+			zap.String("output", mgr.getOutputString()),
+			zap.String("pool", pool.GetStatus()))
 
 		t.Fail()
 	}

@@ -143,7 +143,8 @@ func TestRountinePool(t *testing.T) {
 
 	if !mgr.isok(-1) {
 		Error("TestRountinePool",
-			zap.String("output", mgr.getOutputString()))
+			zap.String("output", mgr.getOutputString()),
+			zap.String("pool", pool.GetStatus()))
 
 		t.Fail()
 	}

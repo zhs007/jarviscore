@@ -578,7 +578,7 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 				funcOnResult(ctx, c.node, lstResult)
 			}
 
-			break
+			return err
 		} else {
 			jarvisbase.Debug("jarvisClient2._connectNode:stream", jarvisbase.JSON("msg", msg))
 
