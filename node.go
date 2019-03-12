@@ -572,6 +572,9 @@ func (n *jarvisNode) ConnectNode(node *coredbpb.NodeInfo, funcOnResult FuncOnPro
 func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 	stream pb.JarvisCoreServ_ProcMsgServer, funcOnResult FuncOnProcMsgResult) error {
 
+	jarvisbase.Info("jarvisNode.onMsgRequestCtrl:recvmsg",
+		jarvisbase.JSON("msg", msg))
+
 	n.replyStream2(msg, stream, pb.REPLYTYPE_ISME, "")
 
 	n.mgrEvent.onMsgEvent(ctx, EventOnCtrl, msg)
@@ -586,12 +589,21 @@ func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 			return err
 		}
 
+		jarvisbase.Info("jarvisNode.onMsgRequestCtrl",
+			jarvisbase.JSON("msg", msg),
+			jarvisbase.JSON("sendmsg", sendmsg2))
+
 		n.mgrClient2.addSendMsgTask(sendmsg2, nil, funcOnResult)
 
 		return nil
 	}
 
 	sendmsg2, err := BuildCtrlResult(n, n.myinfo.Addr, msg.SrcAddr, ci.CtrlID, msg.MsgID, string(ret))
+
+	jarvisbase.Info("jarvisNode.onMsgRequestCtrl",
+		jarvisbase.JSON("msg", msg),
+		jarvisbase.JSON("sendmsg", sendmsg2))
+
 	n.mgrClient2.addSendMsgTask(sendmsg2, nil, funcOnResult)
 
 	return nil

@@ -73,7 +73,16 @@ func (task *clientTask) Run(ctx context.Context) error {
 		}
 
 		if err != nil {
-			jarvisbase.Warn("clientTask.Run:_connectNode", zap.Error(err))
+			if task.node != nil {
+				jarvisbase.Warn("clientTask.Run:_connectNode",
+					zap.Error(err),
+					zap.String("servaddr", task.servaddr),
+					jarvisbase.JSON("node", task.node))
+			} else {
+				jarvisbase.Warn("clientTask.Run:_connectNode",
+					zap.Error(err),
+					zap.String("servaddr", task.servaddr))
+			}
 		}
 
 		return err
@@ -474,7 +483,9 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, funcO
 		}
 
 		if err != nil {
-			jarvisbase.Warn("jarvisClient2._connectNode:stream", zap.Error(err))
+			jarvisbase.Warn("jarvisClient2._connectNode:stream",
+				zap.Error(err),
+				zap.String("servaddr", servaddr))
 
 			if funcOnResult != nil {
 				lstResult = append(lstResult, &ClientProcMsgResult{
