@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"google.golang.org/grpc/codes"
+
 	"github.com/zhs007/jarviscore/coredb"
 
 	"github.com/zhs007/jarviscore/coredb/proto"
@@ -15,6 +17,7 @@ import (
 	"github.com/zhs007/jarviscore/base"
 	pb "github.com/zhs007/jarviscore/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 )
 
 // ClientProcMsgResult - result for client.ProcMsg
@@ -539,6 +542,30 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 		}
 
 		if err != nil {
+			grpcerr, ok := status.FromError(err)
+			if ok && grpcerr.Code() == codes.Unimplemented {
+				jarvisbase.Warn("jarvisClient2._connectNode:ProcMsg:Unimplemented", zap.Error(err))
+
+				if funcOnResult != nil {
+					lstResult = append(lstResult, &ClientProcMsgResult{
+						Err: err,
+					})
+
+					funcOnResult(ctx, c.node, lstResult)
+				}
+
+				err1 := conn.Close()
+				if err1 != nil {
+					jarvisbase.Warn("jarvisClient2._connectNode:Close", zap.Error(err))
+				}
+
+				mgrconn.delConn(servaddr)
+
+				c.fsa.onConnFail(servaddr)
+
+				return err
+			}
+
 			jarvisbase.Warn("jarvisClient2._connectNode:stream",
 				zap.Error(err),
 				zap.String("servaddr", servaddr))
