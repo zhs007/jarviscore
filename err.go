@@ -61,4 +61,8 @@ var (
 	ErrAutoUpdateClosed = errors.New("auto update closed")
 	// ErrServAddrConnFail - the servaddr connect fail
 	ErrServAddrConnFail = errors.New("the servaddr connect fail")
+	// ErrAssertGetNode - assert(GetNode() is not nil)
+	ErrAssertGetNode = errors.New("assert(GetNode() is not nil)")
+	// ErrDeprecatedNode - deprecated node
+	ErrDeprecatedNode = errors.New("deprecated node")
 )

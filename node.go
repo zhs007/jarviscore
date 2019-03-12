@@ -202,7 +202,11 @@ func (n *jarvisNode) Start(ctx context.Context) (err error) {
 	go n.serv2.Start(servctx)
 
 	n.ConnectNodeWithServAddr(n.cfg.RootServAddr, nil)
+	jarvisbase.Info("StartServer:connectRoot",
+		zap.String("RootServAddr", n.cfg.RootServAddr))
+
 	n.connectAllNodes()
+	jarvisbase.Info("StartServer:connectAllNodes")
 
 	tickerRequestChild := time.NewTicker(time.Duration(n.cfg.TimeRequestChild) * time.Second)
 
@@ -689,6 +693,8 @@ func (n *jarvisNode) onMsgUpdateNode(ctx context.Context, msg *pb.JarvisMsg, str
 func onNodeConnected(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
 
 	node.ConnectMe = true
+	node.NumsConnectFail = 0
+	node.TimestampDeprecated = 0
 
 	jarvisbase.Debug("jarvisNode.onMsgConnectNode:ConnType",
 		zap.Int32("ConnType", int32(node.ConnType)))
@@ -701,9 +707,6 @@ func onNodeConnected(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.
 
 			return err
 		}
-
-		// node.ConnectNums++
-		// node.LastConnectTime = time.Now().Unix()
 
 		err = jarvisnode.GetCoreDB().UpdNodeInfo(node.Addr)
 		if err != nil {
@@ -1260,6 +1263,7 @@ func (n *jarvisNode) PostMsg(msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsg
 
 // AddNodeBaseInfo - add nodeinfo
 func (n *jarvisNode) AddNodeBaseInfo(nbi *pb.NodeBaseInfo) error {
+
 	cn := n.coredb.GetNode(nbi.Addr)
 	if cn == nil {
 		err := n.coredb.UpdNodeBaseInfo(nbi)
@@ -1270,19 +1274,17 @@ func (n *jarvisNode) AddNodeBaseInfo(nbi *pb.NodeBaseInfo) error {
 		}
 
 		cn = n.coredb.GetNode(nbi.Addr)
-		if cn != nil {
-			cn.ConnectNums++
-			cn.LastConnectTime = time.Now().Unix()
+		if cn == nil {
+			jarvisbase.Warn("jarvisNode.AddNodeBaseInfo:GetNode", zap.Error(ErrAssertGetNode))
+
+			return ErrAssertGetNode
 		}
 
-		n.mgrClient2.addConnTask(nbi.ServAddr, cn, nil)
+		n.ConnectNode(cn, nil)
 
 		return nil
 	} else if cn.ConnType == coredbpb.CONNECTTYPE_UNKNOWN_CONN {
-		cn.ConnectNums++
-		cn.LastConnectTime = time.Now().Unix()
-
-		n.mgrClient2.addConnTask(nbi.ServAddr, cn, nil)
+		n.ConnectNode(cn, nil)
 
 		return nil
 	}

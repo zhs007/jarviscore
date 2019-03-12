@@ -17,8 +17,11 @@ type sleepl2taskMgr struct {
 	sendTask   int
 	totalTask  int
 	mapIndex   map[int]int
+	cancel     context.CancelFunc
+}
 
-	cancel context.CancelFunc
+func (mgr *sleepl2taskMgr) getOutputString() string {
+	return fmt.Sprintf("sleepl2taskMgr finishTask %v sendTask %v totalTask %v", mgr.finishTask, mgr.sendTask, mgr.totalTask)
 }
 
 func (mgr *sleepl2taskMgr) init(pid int) {
@@ -127,17 +130,11 @@ func sleepl2makeTask(mgr *sleepl2taskMgr, pool L2RoutinePool, maxpid int, maxc i
 			mgr.send()
 		}
 	}
-
-	// time.Sleep(3 * time.Second)
-	// Debug("end")
-	// fmt.Print("end\n")
-	// cancel()
 }
 
 func TestL2RountinePoolSleep128(t *testing.T) {
 	InitLogger(zap.InfoLevel, true, "")
 	Debug("start...")
-	// fmt.Print("haha\n")
 
 	pool := NewL2RoutinePool()
 
@@ -153,6 +150,10 @@ func TestL2RountinePoolSleep128(t *testing.T) {
 	pool.Start(ctx, 128)
 
 	if !mgr.isok() {
+		Error("TestL2RountinePoolSleep128",
+			zap.String("output", mgr.getOutputString()),
+			zap.String("pool", pool.GetStatus()))
+
 		t.Fail()
 	}
 }
@@ -160,7 +161,6 @@ func TestL2RountinePoolSleep128(t *testing.T) {
 func TestL2RountinePoolSleep1(t *testing.T) {
 	InitLogger(zap.InfoLevel, true, "")
 	Debug("start...")
-	// fmt.Print("haha\n")
 
 	pool := NewL2RoutinePool()
 
@@ -176,6 +176,10 @@ func TestL2RountinePoolSleep1(t *testing.T) {
 	pool.Start(ctx, 1)
 
 	if !mgr.isok() {
+		Error("TestL2RountinePoolSleep1",
+			zap.String("output", mgr.getOutputString()),
+			zap.String("pool", pool.GetStatus()))
+
 		t.Fail()
 	}
 }
@@ -183,7 +187,6 @@ func TestL2RountinePoolSleep1(t *testing.T) {
 func TestL2RountinePoolSleep2(t *testing.T) {
 	InitLogger(zap.InfoLevel, true, "")
 	Debug("start...")
-	// fmt.Print("haha\n")
 
 	pool := NewL2RoutinePool()
 
@@ -199,6 +202,10 @@ func TestL2RountinePoolSleep2(t *testing.T) {
 	pool.Start(ctx, 2)
 
 	if !mgr.isok() {
+		Error("TestL2RountinePoolSleep2",
+			zap.String("output", mgr.getOutputString()),
+			zap.String("pool", pool.GetStatus()))
+
 		t.Fail()
 	}
 }

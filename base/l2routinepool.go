@@ -2,6 +2,7 @@ package jarvisbase
 
 import (
 	"context"
+	"fmt"
 
 	"go.uber.org/zap"
 )
@@ -87,6 +88,8 @@ type L2RoutinePool interface {
 	SendTask(task L2Task)
 	// Start - start a routine pool
 	Start(ctx context.Context, maxNums int) error
+	// GetStatus - get status
+	GetStatus() string
 }
 
 // l2routinePool - l2routinePool
@@ -109,6 +112,19 @@ func NewL2RoutinePool() L2RoutinePool {
 		chanTask:    make(chan L2Task, 256),
 		mapRoutine:  make(map[string]*l2routine),
 	}
+}
+
+// GetStatus - get status
+func (pool *l2routinePool) GetStatus() string {
+	return fmt.Sprintf("l2routinePool - mapRoutine %v, chanRemove %v, chanWaiting %v, chanTask %v, lstTask %v, maxNums %v, lstWaiting %v, lstTotal %v",
+		len(pool.mapRoutine),
+		len(pool.chanRemove),
+		len(pool.chanWaiting),
+		len(pool.chanTask),
+		len(pool.lstTask),
+		pool.maxNums,
+		len(pool.lstWaiting),
+		len(pool.lstTotal))
 }
 
 // SendTask - send new task

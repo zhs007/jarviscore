@@ -21,6 +21,10 @@ type l2taskMgr struct {
 	cancel context.CancelFunc
 }
 
+func (mgr *l2taskMgr) getOutputString() string {
+	return fmt.Sprintf("l2taskMgr finishTask %v sendTask %v totalTask %v", mgr.finishTask, mgr.sendTask, mgr.totalTask)
+}
+
 func (mgr *l2taskMgr) init(pid int) {
 	mgr.Lock()
 	defer mgr.Unlock()
@@ -152,6 +156,9 @@ func TestL2RountinePool128(t *testing.T) {
 	pool.Start(ctx, 128)
 
 	if !mgr.isok() {
+		Error("TestL2RountinePool128",
+			zap.String("output", mgr.getOutputString()))
+
 		t.Fail()
 	}
 }
@@ -175,6 +182,9 @@ func TestL2RountinePool1(t *testing.T) {
 	pool.Start(ctx, 1)
 
 	if !mgr.isok() {
+		Error("TestL2RountinePool1",
+			zap.String("output", mgr.getOutputString()))
+
 		t.Fail()
 	}
 }
@@ -198,6 +208,9 @@ func TestL2RountinePool2(t *testing.T) {
 	pool.Start(ctx, 2)
 
 	if !mgr.isok() {
+		Error("TestL2RountinePool2",
+			zap.String("output", mgr.getOutputString()))
+
 		t.Fail()
 	}
 }
