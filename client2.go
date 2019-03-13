@@ -6,6 +6,10 @@ import (
 	"sync"
 	"time"
 
+	"google.golang.org/grpc/codes"
+
+	"github.com/zhs007/jarviscore/coredb"
+
 	"github.com/zhs007/jarviscore/coredb/proto"
 
 	"go.uber.org/zap"
@@ -13,6 +17,7 @@ import (
 	"github.com/zhs007/jarviscore/base"
 	pb "github.com/zhs007/jarviscore/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 )
 
 // ClientProcMsgResult - result for client.ProcMsg
@@ -63,7 +68,7 @@ type clientTask struct {
 
 func (task *clientTask) Run(ctx context.Context) error {
 	if task.msg == nil {
-		err := task.client._connectNode(ctx, task.servaddr, task.funcOnResult)
+		err := task.client._connectNode(ctx, task.servaddr, task.node, task.funcOnResult)
 		if err != nil && task.node != nil {
 			if err == ErrServAddrIsMe || err == ErrInvalidServAddr {
 				task.client.node.mgrEvent.onNodeEvent(ctx, EventOnDeprecateNode, task.node)
@@ -73,8 +78,19 @@ func (task *clientTask) Run(ctx context.Context) error {
 		}
 
 		if err != nil {
-			jarvisbase.Warn("clientTask.Run:_connectNode", zap.Error(err))
+			if task.node != nil {
+				jarvisbase.Warn("clientTask.Run:_connectNode",
+					zap.Error(err),
+					zap.String("servaddr", task.servaddr),
+					jarvisbase.JSON("node", task.node))
+			} else {
+				jarvisbase.Warn("clientTask.Run:_connectNode",
+					zap.Error(err),
+					zap.String("servaddr", task.servaddr))
+			}
 		}
+
+		task.client.onConnTaskEnd(task.servaddr)
 
 		return err
 	}
@@ -99,11 +115,12 @@ type clientInfo2 struct {
 
 // jarvisClient2 -
 type jarvisClient2 struct {
-	poolMsg   jarvisbase.L2RoutinePool
-	poolConn  jarvisbase.RoutinePool
-	node      *jarvisNode
-	mapClient sync.Map
-	fsa       *failservaddr
+	poolMsg         jarvisbase.L2RoutinePool
+	poolConn        jarvisbase.RoutinePool
+	node            *jarvisNode
+	mapClient       sync.Map
+	fsa             *failservaddr
+	mapConnServAddr sync.Map
 }
 
 func newClient2(node *jarvisNode) *jarvisClient2 {
@@ -125,8 +142,21 @@ func (c *jarvisClient2) start(ctx context.Context) error {
 	return nil
 }
 
+// onConnTaskEnd - on ConnTask end
+func (c *jarvisClient2) onConnTaskEnd(servaddr string) {
+	c.mapConnServAddr.Delete(servaddr)
+}
+
 // addConnTask - add a client task
 func (c *jarvisClient2) addConnTask(servaddr string, node *coredbpb.NodeInfo, funcOnResult FuncOnProcMsgResult) {
+
+	_, ok := c.mapConnServAddr.Load(servaddr)
+	if ok {
+		return
+	}
+
+	c.mapConnServAddr.Store(servaddr, 0)
+
 	task := &clientTask{
 		servaddr:     servaddr,
 		client:       c,
@@ -330,8 +360,46 @@ func (c *jarvisClient2) _broadCastMsg(ctx context.Context, msg *pb.JarvisMsg) er
 	return nil
 }
 
-func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, funcOnResult FuncOnProcMsgResult) error {
+func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node *coredbpb.NodeInfo, funcOnResult FuncOnProcMsgResult) error {
 	var lstResult []*ClientProcMsgResult
+
+	if node != nil {
+		if node.Addr == c.node.myinfo.Addr {
+			jarvisbase.Warn("jarvisClient2._connectNode:checkNodeAddr",
+				zap.Error(ErrServAddrIsMe),
+				zap.String("addr", c.node.myinfo.Addr),
+				zap.String("bindaddr", c.node.myinfo.BindAddr),
+				zap.String("servaddr", c.node.myinfo.ServAddr))
+
+			if funcOnResult != nil {
+				lstResult = append(lstResult, &ClientProcMsgResult{
+					Err: ErrServAddrIsMe,
+				})
+
+				funcOnResult(ctx, c.node, lstResult)
+			}
+
+			return ErrServAddrIsMe
+		}
+
+		if coredb.IsDeprecatedNode(node) {
+			jarvisbase.Warn("jarvisClient2._connectNode:IsDeprecatedNode",
+				zap.Error(ErrDeprecatedNode),
+				zap.String("addr", c.node.myinfo.Addr),
+				zap.String("bindaddr", c.node.myinfo.BindAddr),
+				zap.String("servaddr", c.node.myinfo.ServAddr))
+
+			if funcOnResult != nil {
+				lstResult = append(lstResult, &ClientProcMsgResult{
+					Err: ErrDeprecatedNode,
+				})
+
+				funcOnResult(ctx, c.node, lstResult)
+			}
+
+			return ErrDeprecatedNode
+		}
+	}
 
 	if !IsValidServAddr(servaddr) {
 		jarvisbase.Warn("jarvisClient2._connectNode",
@@ -474,7 +542,33 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, funcO
 		}
 
 		if err != nil {
-			jarvisbase.Warn("jarvisClient2._connectNode:stream", zap.Error(err))
+			grpcerr, ok := status.FromError(err)
+			if ok && grpcerr.Code() == codes.Unimplemented {
+				jarvisbase.Warn("jarvisClient2._connectNode:ProcMsg:Unimplemented", zap.Error(err))
+
+				if funcOnResult != nil {
+					lstResult = append(lstResult, &ClientProcMsgResult{
+						Err: err,
+					})
+
+					funcOnResult(ctx, c.node, lstResult)
+				}
+
+				err1 := conn.Close()
+				if err1 != nil {
+					jarvisbase.Warn("jarvisClient2._connectNode:Close", zap.Error(err))
+				}
+
+				mgrconn.delConn(servaddr)
+
+				c.fsa.onConnFail(servaddr)
+
+				return err
+			}
+
+			jarvisbase.Warn("jarvisClient2._connectNode:stream",
+				zap.Error(err),
+				zap.String("servaddr", servaddr))
 
 			if funcOnResult != nil {
 				lstResult = append(lstResult, &ClientProcMsgResult{
@@ -484,7 +578,7 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, funcO
 				funcOnResult(ctx, c.node, lstResult)
 			}
 
-			break
+			return err
 		} else {
 			jarvisbase.Debug("jarvisClient2._connectNode:stream", jarvisbase.JSON("msg", msg))
 

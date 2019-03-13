@@ -1,10 +1,13 @@
 package basedef
 
 // VERSION - jarviscore version
-const VERSION = "0.7.60"
+const VERSION = "0.7.68"
 
 // TimeFailedServAddr - if the servaddr is failed, we won't try to connect it within this time
 const TimeFailedServAddr = 60
 
 // NumsReconnectFailedServAddr - if the servaddr is failed, we will retry this number before it is marked as failed
 const NumsReconnectFailedServAddr = 3
+
+// LastTimeDeprecated - This is a constant about timestampDeprecated
+var LastTimeDeprecated = []int64{30, 5 * 60, 30 * 60, 60 * 60, 2 * 60 * 60, 4 * 60 * 60, 8 * 60 * 60, 16 * 60 * 60, 24 * 60 * 60}

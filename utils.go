@@ -218,7 +218,7 @@ func BuildConnNode(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	servaddr string, ni *pb.NodeBaseInfo) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
+		// MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
 		CurTime:   time.Now().Unix(),
 		SrcAddr:   srcAddr,
 		MyAddr:    srcAddr,
@@ -246,7 +246,7 @@ func BuildReplyConn(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	ni *pb.NodeBaseInfo) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
+		// MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
 		CurTime:   time.Now().Unix(),
 		SrcAddr:   srcAddr,
 		MyAddr:    srcAddr,
@@ -299,7 +299,7 @@ func BuildRequestCtrl(jarvisnode JarvisNode, srcAddr string,
 	destAddr string, ci *pb.CtrlInfo) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
+		// MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
 		CurTime:   time.Now().Unix(),
 		SrcAddr:   srcAddr,
 		MyAddr:    srcAddr,
@@ -324,7 +324,7 @@ func BuildReply2(jarvisnode JarvisNode, srcAddr string,
 	destAddr string, rt pb.REPLYTYPE, strErr string, replyMsgID int64) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		MsgID:      jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
+		// MsgID:      jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
 		CurTime:    time.Now().Unix(),
 		SrcAddr:    srcAddr,
 		MyAddr:     srcAddr,
@@ -346,16 +346,17 @@ func BuildReply2(jarvisnode JarvisNode, srcAddr string,
 
 // BuildCtrlResult - build jarvismsg with REPLY_CTRL_RESULT
 func BuildCtrlResult(jarvisnode JarvisNode, srcAddr string,
-	destAddr string, ctrlid int64, result string) (*pb.JarvisMsg, error) {
+	destAddr string, ctrlid int64, msgid int64, result string) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
-		CurTime:   time.Now().Unix(),
-		SrcAddr:   srcAddr,
-		MyAddr:    srcAddr,
-		DestAddr:  destAddr,
-		MsgType:   pb.MSGTYPE_REPLY_CTRL_RESULT,
-		LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+		// MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
+		CurTime:    time.Now().Unix(),
+		SrcAddr:    srcAddr,
+		MyAddr:     srcAddr,
+		DestAddr:   destAddr,
+		MsgType:    pb.MSGTYPE_REPLY_CTRL_RESULT,
+		LastMsgID:  jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+		ReplyMsgID: msgid,
 		Data: &pb.JarvisMsg_CtrlResult{
 			CtrlResult: &pb.CtrlResult{
 				CtrlID:     ctrlid,
@@ -402,7 +403,7 @@ func BuildRequestNodes(jarvisnode JarvisNode, srcAddr string,
 	destAddr string) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
+		// MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
 		CurTime:   time.Now().Unix(),
 		SrcAddr:   srcAddr,
 		MyAddr:    srcAddr,
@@ -424,7 +425,7 @@ func BuildNodeInfo(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	ni *pb.NodeBaseInfo) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
+		// MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
 		CurTime:   time.Now().Unix(),
 		SrcAddr:   srcAddr,
 		MyAddr:    srcAddr,
@@ -451,7 +452,7 @@ func BuildTransferFile(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	fd.Md5String = GetMD5String(fd.File)
 
 	msg := &pb.JarvisMsg{
-		MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
+		// MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
 		CurTime:   time.Now().Unix(),
 		SrcAddr:   srcAddr,
 		MyAddr:    srcAddr,
@@ -476,7 +477,7 @@ func BuildRequestFile(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	rf *pb.RequestFile) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
+		// MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
 		CurTime:   time.Now().Unix(),
 		SrcAddr:   srcAddr,
 		MyAddr:    srcAddr,
@@ -503,7 +504,7 @@ func BuildReplyRequestFile(jarvisnode JarvisNode, srcAddr string, destAddr strin
 	fd.Md5String = GetMD5String(fd.File)
 
 	msg := &pb.JarvisMsg{
-		MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
+		// MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
 		CurTime:   time.Now().Unix(),
 		SrcAddr:   srcAddr,
 		MyAddr:    srcAddr,
@@ -580,7 +581,7 @@ func BuildReplyTransferFile(jarvisnode JarvisNode, srcAddr string, destAddr stri
 	md5str string, replyMsgID int64) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		MsgID:      jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
+		// MsgID:      jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
 		CurTime:    time.Now().Unix(),
 		SrcAddr:    srcAddr,
 		MyAddr:     srcAddr,
@@ -608,7 +609,7 @@ func BuildUpdateNode(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	nodetype string, nodetypever string) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
+		// MsgID:     jarvisnode.GetCoreDB().GetNewSendMsgID(destAddr),
 		CurTime:   time.Now().Unix(),
 		SrcAddr:   srcAddr,
 		MyAddr:    srcAddr,

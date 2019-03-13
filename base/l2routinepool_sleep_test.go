@@ -10,36 +10,35 @@ import (
 	"go.uber.org/zap"
 )
 
-type l2taskMgr struct {
+type sleepl2taskMgr struct {
 	sync.RWMutex
 
 	finishTask int
 	sendTask   int
 	totalTask  int
 	mapIndex   map[int]int
-
-	cancel context.CancelFunc
+	cancel     context.CancelFunc
 }
 
-func (mgr *l2taskMgr) getOutputString() string {
-	return fmt.Sprintf("l2taskMgr finishTask %v sendTask %v totalTask %v", mgr.finishTask, mgr.sendTask, mgr.totalTask)
+func (mgr *sleepl2taskMgr) getOutputString() string {
+	return fmt.Sprintf("sleepl2taskMgr finishTask %v sendTask %v totalTask %v", mgr.finishTask, mgr.sendTask, mgr.totalTask)
 }
 
-func (mgr *l2taskMgr) init(pid int) {
+func (mgr *sleepl2taskMgr) init(pid int) {
 	mgr.Lock()
 	defer mgr.Unlock()
 
 	mgr.mapIndex[pid] = 0
 }
 
-func (mgr *l2taskMgr) send() {
+func (mgr *sleepl2taskMgr) send() {
 	mgr.Lock()
 	defer mgr.Unlock()
 
 	mgr.sendTask++
 }
 
-func (mgr *l2taskMgr) finish(pid int) {
+func (mgr *sleepl2taskMgr) finish(pid int) {
 	mgr.Lock()
 	defer mgr.Unlock()
 
@@ -47,7 +46,7 @@ func (mgr *l2taskMgr) finish(pid int) {
 	mgr.finishTask++
 }
 
-func (mgr *l2taskMgr) check(pid int, index int) bool {
+func (mgr *sleepl2taskMgr) check(pid int, index int) bool {
 	mgr.RLock()
 	defer mgr.RUnlock()
 
@@ -55,7 +54,7 @@ func (mgr *l2taskMgr) check(pid int, index int) bool {
 		return true
 	}
 
-	Debug("l2taskMgr.check",
+	Debug("sleepl2taskMgr.check",
 		zap.Int("pid", pid),
 		zap.Int("mgr.mapIndex", mgr.mapIndex[pid]),
 		zap.Int("index", index))
@@ -63,11 +62,11 @@ func (mgr *l2taskMgr) check(pid int, index int) bool {
 	return false
 }
 
-func (mgr *l2taskMgr) isok() bool {
+func (mgr *sleepl2taskMgr) isok() bool {
 	mgr.RLock()
 	defer mgr.RUnlock()
 
-	Debug("l2taskMgr:isok",
+	Debug("sleepl2taskMgr:isok",
 		zap.Int("total", mgr.totalTask),
 		zap.Int("send", mgr.sendTask),
 		zap.Int("finish", mgr.finishTask))
@@ -75,14 +74,14 @@ func (mgr *l2taskMgr) isok() bool {
 	return mgr.finishTask == mgr.sendTask && mgr.finishTask == mgr.totalTask
 }
 
-type l2taskTest struct {
+type sleepl2taskTest struct {
 	index int
 	j     int
-	mgr   *l2taskMgr
+	mgr   *sleepl2taskMgr
 	pid   string
 }
 
-func (task *l2taskTest) Run(ctx context.Context) error {
+func (task *sleepl2taskTest) Run(ctx context.Context) error {
 	// time.Sleep(1 * time.Second)
 
 	if !task.mgr.check(task.j, task.index) {
@@ -91,6 +90,7 @@ func (task *l2taskTest) Run(ctx context.Context) error {
 		return nil
 	}
 
+	time.Sleep(time.Microsecond * 10)
 	Debug("run ", zap.Int("index", task.index), zap.Int("j", task.j))
 	task.mgr.finish(task.j)
 
@@ -104,11 +104,11 @@ func (task *l2taskTest) Run(ctx context.Context) error {
 }
 
 // GetParentID - get parentID
-func (task *l2taskTest) GetParentID() string {
+func (task *sleepl2taskTest) GetParentID() string {
 	return task.pid
 }
 
-func l2makeTask(mgr *l2taskMgr, pool L2RoutinePool, maxpid int, maxc int) {
+func sleepl2makeTask(mgr *sleepl2taskMgr, pool L2RoutinePool, maxpid int, maxc int) {
 	time.Sleep(3 * time.Second)
 
 	mgr.totalTask = maxpid * maxc
@@ -119,7 +119,7 @@ func l2makeTask(mgr *l2taskMgr, pool L2RoutinePool, maxpid int, maxc int) {
 				mgr.init(j)
 			}
 
-			task := &l2taskTest{
+			task := &sleepl2taskTest{
 				index: i,
 				j:     j,
 				mgr:   mgr,
@@ -130,33 +130,27 @@ func l2makeTask(mgr *l2taskMgr, pool L2RoutinePool, maxpid int, maxc int) {
 			mgr.send()
 		}
 	}
-
-	// time.Sleep(3 * time.Second)
-	// Debug("end")
-	// fmt.Print("end\n")
-	// cancel()
 }
 
-func TestL2RountinePool128(t *testing.T) {
+func TestL2RountinePoolSleep128(t *testing.T) {
 	InitLogger(zap.InfoLevel, true, "")
 	Debug("start...")
-	// fmt.Print("haha\n")
 
 	pool := NewL2RoutinePool()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	mgr := &l2taskMgr{
+	mgr := &sleepl2taskMgr{
 		cancel:   cancel,
 		mapIndex: make(map[int]int),
 	}
-	go l2makeTask(mgr, pool, 1000, 102)
+	go sleepl2makeTask(mgr, pool, 100, 10)
 
 	pool.Start(ctx, 128)
 
 	if !mgr.isok() {
-		Error("TestL2RountinePool128",
+		Error("TestL2RountinePoolSleep128",
 			zap.String("output", mgr.getOutputString()),
 			zap.String("pool", pool.GetStatus()))
 
@@ -164,26 +158,25 @@ func TestL2RountinePool128(t *testing.T) {
 	}
 }
 
-func TestL2RountinePool1(t *testing.T) {
+func TestL2RountinePoolSleep1(t *testing.T) {
 	InitLogger(zap.InfoLevel, true, "")
 	Debug("start...")
-	// fmt.Print("haha\n")
 
 	pool := NewL2RoutinePool()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	mgr := &l2taskMgr{
+	mgr := &sleepl2taskMgr{
 		cancel:   cancel,
 		mapIndex: make(map[int]int),
 	}
-	go l2makeTask(mgr, pool, 100, 10)
+	go sleepl2makeTask(mgr, pool, 100, 10)
 
 	pool.Start(ctx, 1)
 
 	if !mgr.isok() {
-		Error("TestL2RountinePool1",
+		Error("TestL2RountinePoolSleep1",
 			zap.String("output", mgr.getOutputString()),
 			zap.String("pool", pool.GetStatus()))
 
@@ -191,26 +184,25 @@ func TestL2RountinePool1(t *testing.T) {
 	}
 }
 
-func TestL2RountinePool2(t *testing.T) {
+func TestL2RountinePoolSleep2(t *testing.T) {
 	InitLogger(zap.InfoLevel, true, "")
 	Debug("start...")
-	// fmt.Print("haha\n")
 
 	pool := NewL2RoutinePool()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	mgr := &l2taskMgr{
+	mgr := &sleepl2taskMgr{
 		cancel:   cancel,
 		mapIndex: make(map[int]int),
 	}
-	go l2makeTask(mgr, pool, 100, 10)
+	go sleepl2makeTask(mgr, pool, 100, 10)
 
 	pool.Start(ctx, 2)
 
 	if !mgr.isok() {
-		Error("TestL2RountinePool2",
+		Error("TestL2RountinePoolSleep2",
 			zap.String("output", mgr.getOutputString()),
 			zap.String("pool", pool.GetStatus()))
 

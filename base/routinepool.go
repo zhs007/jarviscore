@@ -2,6 +2,7 @@ package jarvisbase
 
 import (
 	"context"
+	"fmt"
 )
 
 // Task - task
@@ -68,6 +69,8 @@ type RoutinePool interface {
 	SendTask(task Task)
 	// Start - start a routine pool
 	Start(ctx context.Context, maxNums int) error
+	// GetStatus - get status
+	GetStatus() string
 }
 
 // routinePool - routinePool
@@ -88,6 +91,18 @@ func NewRoutinePool() RoutinePool {
 		chanWaiting: make(chan *routine, 128),
 		chanTask:    make(chan Task, 256),
 	}
+}
+
+// GetStatus - get status
+func (pool *routinePool) GetStatus() string {
+	return fmt.Sprintf("routinePool - lstRoutine %v, chanRemove %v, chanWaiting %v, chanTask %v, lstTask %v, maxNums %v, lstWaiting %v",
+		len(pool.lstRoutine),
+		len(pool.chanRemove),
+		len(pool.chanWaiting),
+		len(pool.chanTask),
+		len(pool.lstTask),
+		pool.maxNums,
+		len(pool.lstWaiting))
 }
 
 // SendTask - send new task

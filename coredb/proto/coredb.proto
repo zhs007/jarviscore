@@ -64,6 +64,12 @@ message NodeInfo {
     // When I can't connect directly to this node, this is the list of nodes I know 
     // that can be directly connected to this node.
     repeated string validConnNodes = 22;
+    // This node was ignored before this time, 
+    // this property is only used for deprecated to be false
+    int64 timestampDeprecated = 23;
+    // This property is the number of failures to connect to the node. 
+    // If there is a successful connection, this property will be reset to 0.
+    int32 numsConnectFail = 24;
 }
 
 // node info list

@@ -28,6 +28,9 @@ type NodeInfo {
     lastRecvMsgID: Int64
     deprecated: Boolean
     connType: Int
+    validConnNodes: [String]
+    timestampDeprecated: Int64
+    numsConnectFail: Int32
 }
 
 type NodeInfoList {
