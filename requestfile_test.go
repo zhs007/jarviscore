@@ -1,0 +1,416 @@
+package jarviscore
+
+import (
+	"context"
+	"fmt"
+	"sync"
+	"testing"
+	"time"
+
+	"github.com/zhs007/jarviscore/proto"
+
+	"github.com/zhs007/jarviscore/base"
+	"github.com/zhs007/jarviscore/coredb/proto"
+
+	"go.uber.org/zap"
+)
+
+func outputErrRF(t *testing.T, err error, msg string, info string) {
+	if err == nil && info == "" {
+		jarvisbase.Error(msg)
+		t.Fatalf(msg)
+
+		return
+	} else if err == nil {
+		jarvisbase.Error(msg, zap.String("info", info))
+		t.Fatalf(msg+" info %v", info)
+
+		return
+	}
+
+	jarvisbase.Error(msg, zap.Error(err))
+	t.Fatalf(msg+" err %v", err)
+}
+
+func outputRF(t *testing.T, msg string) {
+	jarvisbase.Info(msg)
+	t.Logf(msg)
+}
+
+// funconcallRF
+type funconcallRF func(ctx context.Context, err error, obj *objRF) error
+
+type mapnodeinfoRF struct {
+	iconn  bool
+	connme bool
+}
+
+type nodeinfoRF struct {
+	mapAddr    sync.Map
+	numsIConn  int
+	numsConnMe int
+}
+
+func (ni *nodeinfoRF) onIConnectNode(node *coredbpb.NodeInfo) error {
+	d, ok := ni.mapAddr.Load(node.Addr)
+	if ok {
+		mni, ok := d.(*mapnodeinfoRF)
+		if !ok {
+			return fmt.Errorf("nodeinfoRF.onIConnectNode:mapAddr2mapnodeinfo err")
+		}
+
+		if !mni.iconn {
+			mni.iconn = true
+
+			ni.numsIConn++
+		}
+
+		return nil
+	}
+
+	mni := &mapnodeinfoRF{
+		iconn: true,
+	}
+
+	ni.mapAddr.Store(node.Addr, mni)
+	ni.numsIConn++
+
+	return nil
+}
+
+func (ni *nodeinfoRF) onNodeConnected(node *coredbpb.NodeInfo) error {
+	d, ok := ni.mapAddr.Load(node.Addr)
+	if ok {
+		mni, ok := d.(*mapnodeinfoRF)
+		if !ok {
+			return fmt.Errorf("nodeinfoRF.onNodeConnected:mapAddr2mapnodeinfo err")
+		}
+
+		if !mni.connme {
+			mni.connme = true
+
+			ni.numsConnMe++
+		}
+
+		return nil
+	}
+
+	mni := &mapnodeinfoRF{
+		connme: true,
+	}
+
+	ni.mapAddr.Store(node.Addr, mni)
+	ni.numsConnMe++
+
+	return nil
+}
+
+type objRF struct {
+	root           JarvisNode
+	node1          JarvisNode
+	node2          JarvisNode
+	rootni         nodeinfoRF
+	node1ni        nodeinfoRF
+	node2ni        nodeinfoRF
+	requestnodes   bool
+	requestfile1   bool
+	requestfile1ok bool
+	err            error
+}
+
+func newObjRF() *objRF {
+	return &objRF{
+		rootni:       nodeinfoRF{},
+		node1ni:      nodeinfoRF{},
+		node2ni:      nodeinfoRF{},
+		requestnodes: false,
+	}
+}
+
+func (obj *objRF) isDone() bool {
+	if obj.rootni.numsConnMe != 2 || obj.rootni.numsIConn != 2 {
+		return false
+	}
+
+	return obj.requestfile1 && obj.requestfile1ok
+}
+
+func (obj *objRF) oncheck(ctx context.Context, funcCancel context.CancelFunc) error {
+	if obj.rootni.numsConnMe == 2 &&
+		obj.node1ni.numsConnMe >= 1 && obj.node1ni.numsIConn >= 1 &&
+		obj.node2ni.numsConnMe >= 1 && obj.node2ni.numsIConn >= 1 &&
+		!obj.requestnodes {
+		err := obj.node1.RequestNodes(ctx, nil)
+		if err != nil {
+			return err
+		}
+
+		err = obj.node2.RequestNodes(ctx, nil)
+		if err != nil {
+			return err
+		}
+
+		obj.requestnodes = true
+	}
+
+	if obj.node1ni.numsConnMe == 2 && obj.node2ni.numsConnMe == 2 && !obj.requestfile1 {
+
+		curresultnums := 0
+
+		rf := &jarviscorepb.RequestFile{
+			Filename: "./test/test.sh",
+		}
+		err := obj.node1.RequestFile(ctx, obj.node2.GetMyInfo().Addr, rf,
+			func(ctx context.Context, jarvisnode JarvisNode,
+				lstResult []*ClientProcMsgResult) error {
+
+				if len(lstResult) > curresultnums {
+					for ; curresultnums < len(lstResult); curresultnums++ {
+						if lstResult[curresultnums].Err != nil {
+							obj.err = fmt.Errorf("lstResult[%v].Err %v", curresultnums, lstResult[curresultnums].Err)
+
+							curresultnums++
+
+							funcCancel()
+
+							return nil
+						}
+
+						if lstResult[curresultnums].Msg != nil &&
+							lstResult[curresultnums].Msg.MsgType == jarviscorepb.MSGTYPE_REPLY_REQUEST_FILE {
+
+							fd := lstResult[curresultnums].Msg.GetFile()
+							if fd == nil {
+								obj.err = ErrNoFileData
+
+								funcCancel()
+
+								return nil
+							}
+
+							if fd.Md5String == "" {
+								obj.err = ErrFileDataNoMD5String
+
+								funcCancel()
+
+								return nil
+							}
+
+							if fd.Md5String != GetMD5String(fd.File) {
+								obj.err = ErrInvalidFileDataMD5String
+
+								funcCancel()
+
+								return nil
+							}
+						}
+
+						if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
+							obj.requestfile1ok = true
+
+							funcCancel()
+
+							return nil
+						}
+					}
+				}
+
+				// jarvisbase.Info("obRF.onIConn:node1.UpdateAllNodes",
+				// 	zap.Int("numsNode", numsNode),
+				// 	jarvisbase.JSON("lstResult", lstResult))
+
+				// if numsNode == 2 && len(lstResult) == 2 && len(lstResult[0].Results) > 0 && len(lstResult[1].Results) > 0 &&
+				// 	lstResult[0].Results[len(lstResult[0].Results)-1].Msg == nil &&
+				// 	lstResult[1].Results[len(lstResult[1].Results)-1].Msg == nil {
+
+				// 	if (len(lstResult[0].Results) == 2 && len(lstResult[1].Results) == 4) ||
+				// 		(len(lstResult[1].Results) == 2 && len(lstResult[0].Results) == 4) {
+
+				// 		obj.endupdnodes = true
+
+				// 		funcCancel()
+
+				// 		return nil
+				// 	}
+				// }
+
+				return nil
+			})
+		if err != nil {
+			return err
+		}
+
+		obj.requestfile1 = true
+	}
+
+	return nil
+}
+
+func (obj *objRF) onIConn(ctx context.Context, funcCancel context.CancelFunc) error {
+	return obj.oncheck(ctx, funcCancel)
+}
+
+func (obj *objRF) onConnMe(ctx context.Context, funcCancel context.CancelFunc) error {
+	return obj.oncheck(ctx, funcCancel)
+}
+
+func (obj *objRF) makeString() string {
+	return fmt.Sprintf("root(%v %v) node1(%v %v), node2(%v %v)",
+		obj.rootni.numsIConn, obj.rootni.numsConnMe,
+		obj.node1ni.numsIConn, obj.node1ni.numsConnMe,
+		obj.node2ni.numsIConn, obj.node2ni.numsConnMe)
+}
+
+func startTestNodeRF(ctx context.Context, cfgfilename string, ni *nodeinfoRF, obj *objRF,
+	oniconn funconcallRF, onconnme funconcallRF) (JarvisNode, error) {
+
+	cfg, err := LoadConfig(cfgfilename)
+	if err != nil {
+		return nil, fmt.Errorf("startTestNode load config %v err is %v", cfgfilename, err)
+	}
+
+	curnode, err := NewNode(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("startTestNode NewNode node %v", err)
+	}
+
+	curnode.SetNodeTypeInfo("testreqfile", "0.7.22")
+
+	curnode.RegNodeEventFunc(EventOnIConnectNode,
+		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
+			err := ni.onIConnectNode(node)
+
+			oniconn(ctx, err, obj)
+
+			return nil
+		})
+
+	curnode.RegNodeEventFunc(EventOnNodeConnected,
+		func(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
+			err := ni.onNodeConnected(node)
+
+			onconnme(ctx, err, obj)
+
+			return nil
+		})
+
+	return curnode, nil
+}
+
+func TestRequestFile(t *testing.T) {
+	rootcfg, err := LoadConfig("./test/test5020_reqfileroot.yaml")
+	if err != nil {
+		t.Fatalf("TestRequestFile load config %v err is %v", "./test/test5020_reqfileroot.yaml", err)
+
+		return
+	}
+
+	InitJarvisCore(rootcfg)
+	defer ReleaseJarvisCore()
+
+	obj := newObjRF()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	var errobj error
+
+	oniconn := func(ctx context.Context, err error, obj *objRF) error {
+		if err != nil {
+			errobj = err
+
+			cancel()
+
+			return nil
+		}
+
+		err1 := obj.onIConn(ctx, cancel)
+		if err1 != nil {
+			errobj = err1
+
+			cancel()
+
+			return nil
+		}
+
+		if obj.isDone() {
+			cancel()
+
+			return nil
+		}
+
+		return nil
+	}
+
+	onconnme := func(ctx context.Context, err error, obj *objRF) error {
+		if err != nil {
+			errobj = err
+
+			cancel()
+
+			return nil
+		}
+
+		err1 := obj.onConnMe(ctx, cancel)
+		if err1 != nil {
+			errobj = err1
+
+			cancel()
+
+			return nil
+		}
+
+		if obj.isDone() {
+			cancel()
+
+			return nil
+		}
+
+		return nil
+	}
+
+	obj.root, err = startTestNodeRF(ctx, "./test/test5020_reqfileroot.yaml", &obj.rootni, obj,
+		oniconn, onconnme)
+	if err != nil {
+		outputErrRF(t, err, "TestRequestFile startTestNodeRF root", "")
+
+		return
+	}
+
+	obj.node1, err = startTestNodeRF(ctx, "./test/test5021_reqfile1.yaml", &obj.node1ni, obj,
+		oniconn, onconnme)
+	if err != nil {
+		outputErrRF(t, err, "TestRequestFile startTestNodeRF node1", "")
+
+		return
+	}
+
+	obj.node2, err = startTestNodeRF(ctx, "./test/test5022_reqfile2.yaml", &obj.node2ni, obj,
+		oniconn, onconnme)
+	if err != nil {
+		outputErrRF(t, err, "TestRequestFile startTestNodeRF node2", "")
+
+		return
+	}
+
+	go obj.root.Start(ctx)
+	time.Sleep(time.Second * 1)
+	go obj.node1.Start(ctx)
+	go obj.node2.Start(ctx)
+
+	<-ctx.Done()
+
+	if errobj != nil {
+		outputErrRF(t, errobj, "TestRequestFile", "")
+
+		return
+	}
+
+	if !obj.isDone() {
+		outputErrRF(t, nil, "TestRequestFile no done", obj.makeString())
+
+		return
+	}
+
+	outputRF(t, "TestRequestFile OK")
+}

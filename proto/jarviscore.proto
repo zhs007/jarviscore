@@ -64,6 +64,8 @@ enum REPLYTYPE {
     ERROR = 4;
     // messageid error
     ERRMSGID = 5;
+    // I got it
+    IGOTIT = 6;
 }
 
 message NodeBaseInfo {

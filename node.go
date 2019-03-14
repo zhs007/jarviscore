@@ -1037,6 +1037,8 @@ func (n *jarvisNode) onMsgRequestFile(ctx context.Context, msg *pb.JarvisMsg,
 		return ErrStreamNil
 	}
 
+	n.replyStream2(msg, stream, pb.REPLYTYPE_IGOTIT, "")
+
 	n.mgrEvent.onMsgEvent(ctx, EventOnRequestFile, msg)
 
 	rf := msg.GetRequestFile()
@@ -1063,6 +1065,25 @@ func (n *jarvisNode) onMsgRequestFile(ctx context.Context, msg *pb.JarvisMsg,
 
 // onMsgReplyRequestFile
 func (n *jarvisNode) onMsgReplyRequestFile(ctx context.Context, msg *pb.JarvisMsg) error {
+
+	fd := msg.GetFile()
+	if fd == nil {
+		jarvisbase.Warn("jarvisNode.onMsgReplyRequestFile", zap.Error(ErrNoFileData))
+
+		return ErrNoFileData
+	}
+
+	if fd.Md5String == "" {
+		jarvisbase.Warn("jarvisNode.onMsgReplyRequestFile", zap.Error(ErrFileDataNoMD5String))
+
+		return ErrFileDataNoMD5String
+	}
+
+	if fd.Md5String != GetMD5String(fd.File) {
+		jarvisbase.Warn("jarvisNode.onMsgReplyRequestFile", zap.Error(ErrInvalidFileDataMD5String))
+
+		return ErrInvalidFileDataMD5String
+	}
 
 	n.mgrEvent.onMsgEvent(ctx, EventOnReplyRequestFile, msg)
 
