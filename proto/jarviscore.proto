@@ -103,17 +103,30 @@ message ReplyTransferFile {
     string md5String = 1;
 }
 
+// FileType - file type
+enum FileType {
+    FT_BINARY = 0;
+    FT_UTF8 = 1;
+}
+
 // FileData - file data
 message FileData {
     bytes file = 1;
     string filename = 2;
     string destPath = 3;
     string md5String = 4;
+    FileType ft = 5;
+    int64 start = 6;
+    int64 length = 7;
+    int64 totalLength = 8;
 }
 
 // RequestFile - request file
 message RequestFile {
     string filename = 1;
+    FileType ft = 2;
+    int64 start = 3;
+    int64 length = 4;
 }
 
 // CtrlScriptData - used in CtrlInfo.dat

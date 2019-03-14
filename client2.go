@@ -579,25 +579,26 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 			}
 
 			return err
-		} else {
-			jarvisbase.Debug("jarvisClient2._connectNode:stream", jarvisbase.JSON("msg", msg))
-
-			if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT {
-				ni := msg.GetNodeInfo()
-
-				c.mapClient.Store(ni.Addr, ci)
-			}
-
-			c.node.PostMsg(msg, nil, nil, nil)
-
-			if funcOnResult != nil {
-				lstResult = append(lstResult, &ClientProcMsgResult{
-					Msg: msg,
-				})
-
-				funcOnResult(ctx, c.node, lstResult)
-			}
 		}
+
+		jarvisbase.Debug("jarvisClient2._connectNode:stream", jarvisbase.JSON("msg", msg))
+
+		if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT {
+			ni := msg.GetNodeInfo()
+
+			c.mapClient.Store(ni.Addr, ci)
+		}
+
+		c.node.PostMsg(msg, nil, nil, nil)
+
+		if funcOnResult != nil {
+			lstResult = append(lstResult, &ClientProcMsgResult{
+				Msg: msg,
+			})
+
+			funcOnResult(ctx, c.node, lstResult)
+		}
+
 	}
 
 	return nil

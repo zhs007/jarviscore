@@ -108,6 +108,16 @@ func IsLocalHostAddr(servaddr string) bool {
 	return false
 }
 
+// GetFileLength - get file length
+func GetFileLength(fn string) (int64, error) {
+	fileInfo, err := os.Stat(fn)
+	if err != nil {
+		return 0, err
+	}
+
+	return fileInfo.Size(), nil
+}
+
 // // GetDNSPulicIP -
 // func GetDNSPulicIP() string {
 // 	conn, err := net.Dial("udp", "8.8.8.8:53")
