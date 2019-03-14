@@ -3,6 +3,8 @@ package jarviscore
 import (
 	"context"
 	"fmt"
+	"math/rand"
+	"os"
 	"sync"
 	"testing"
 	"time"
@@ -14,6 +16,53 @@ import (
 
 	"go.uber.org/zap"
 )
+
+func randfillFile(fn string, len int) error {
+	f, err := os.Create(fn)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	l4 := len / 4
+	l1 := len % 4
+
+	for i := 0; i < l4; i++ {
+		d := []byte{
+			byte(rand.Intn(256)),
+			byte(rand.Intn(256)),
+			byte(rand.Intn(256)),
+			byte(rand.Intn(256)),
+		}
+
+		n, err := f.Write(d)
+		if err != nil {
+			return nil
+		}
+
+		if n != 4 {
+			return fmt.Errorf("randfillFile len err")
+		}
+	}
+
+	for i := 0; i < l1; i++ {
+		d := []byte{
+			byte(rand.Intn(256)),
+		}
+
+		n, err := f.Write(d)
+		if err != nil {
+			return nil
+		}
+
+		if n != 1 {
+			return fmt.Errorf("randfillFile len err")
+		}
+	}
+
+	return nil
+}
 
 func outputErrRF(t *testing.T, err error, msg string, info string) {
 	if err == nil && info == "" {
@@ -158,7 +207,7 @@ func (obj *objRF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 		curresultnums := 0
 
 		rf := &jarviscorepb.RequestFile{
-			Filename: "./test/test.sh",
+			Filename: "./test/rf001.dat",
 		}
 		err := obj.node1.RequestFile(ctx, obj.node2.GetMyInfo().Addr, rf,
 			func(ctx context.Context, jarvisnode JarvisNode,
@@ -298,6 +347,9 @@ func startTestNodeRF(ctx context.Context, cfgfilename string, ni *nodeinfoRF, ob
 }
 
 func TestRequestFile(t *testing.T) {
+	randfillFile("./test/rf001.dat", 2*1024*1024)
+	randfillFile("./test/rf002.dat", 10*1024*1024)
+
 	rootcfg, err := LoadConfig("./test/test5020_reqfileroot.yaml")
 	if err != nil {
 		t.Fatalf("TestRequestFile load config %v err is %v", "./test/test5020_reqfileroot.yaml", err)
