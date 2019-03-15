@@ -1258,8 +1258,9 @@ func (n *jarvisNode) BuildStatus() *pb.JarvisNodeStatus {
 			NodeType:        n.myinfo.NodeType,
 			CoreVersion:     n.myinfo.CoreVersion,
 		},
-		MsgPool: n.mgrClient2.BuildMsgPoolStatus(),
 	}
+
+	n.mgrClient2.BuildNodeStatus(ns)
 
 	return ns
 }

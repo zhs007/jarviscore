@@ -135,8 +135,30 @@ func newClient2(node *jarvisNode) *jarvisClient2 {
 }
 
 // BuildStatus - build status
-func (c *jarvisClient2) BuildMsgPoolStatus() *pb.L2PoolInfo {
-	return c.poolMsg.BuildStatus()
+func (c *jarvisClient2) BuildNodeStatus(ns *pb.JarvisNodeStatus) {
+	ns.MsgPool = c.poolMsg.BuildStatus()
+
+	c.mapClient.Range(func(key, v interface{}) bool {
+		addr, keyok := key.(string)
+		// ci, vok := v.(*clientInfo2)
+		if keyok {
+			ni := c.node.GetCoreDB().GetNode(addr)
+			if ni != nil {
+				nbi := &pb.NodeBaseInfo{
+					ServAddr:        ni.ServAddr,
+					Addr:            ni.Addr,
+					Name:            ni.Name,
+					NodeTypeVersion: ni.NodeTypeVersion,
+					NodeType:        ni.NodeType,
+					CoreVersion:     ni.CoreVersion,
+				}
+
+				ns.LstConnected = append(ns.LstConnected, nbi)
+			}
+		}
+
+		return true
+	})
 }
 
 // start - start goroutine to proc client task
