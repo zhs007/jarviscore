@@ -595,6 +595,8 @@ func (n *jarvisNode) onMsgLocalSendMsg(ctx context.Context, msg *pb.JarvisMsg,
 // onMsgUpdateNode
 func (n *jarvisNode) onMsgUpdateNode(ctx context.Context, msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer) error {
 
+	jarvisbase.Info("jarvisNode.onMsgUpdateNode", jarvisbase.JSON("msg", msg))
+
 	if n.cfg.AutoUpdate {
 		n.replyStream2(msg, stream, pb.REPLYTYPE_ISME, "")
 
