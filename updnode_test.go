@@ -194,10 +194,13 @@ func (obj *objUN) onConnMe(ctx context.Context, funcCancel context.CancelFunc) e
 }
 
 func (obj *objUN) makeString() string {
-	return fmt.Sprintf("root(%v %v) node1(%v %v), node2(%v %v)",
+	return fmt.Sprintf("root(%v %v) node1(%v %v), node2(%v %v) requestnodes %v updnodefromnode1 %v endupdnodes %v",
 		obj.rootni.numsIConn, obj.rootni.numsConnMe,
 		obj.node1ni.numsIConn, obj.node1ni.numsConnMe,
-		obj.node2ni.numsIConn, obj.node2ni.numsConnMe)
+		obj.node2ni.numsIConn, obj.node2ni.numsConnMe,
+		obj.requestnodes,
+		obj.updnodefromnode1,
+		obj.endupdnodes)
 }
 
 func startTestNodeUN(ctx context.Context, cfgfilename string, ni *nodeinfoUN, obj *objUN, oniconn funconcallUN, onconnme funconcallUN) (JarvisNode, error) {

@@ -48,6 +48,15 @@ type l2routine struct {
 	chanWaiting chan *l2routine
 }
 
+// isFull - is full
+func (r *l2routine) isFull() bool {
+	if cap(r.chanTask) < len(r.chanTask) {
+		return false
+	}
+
+	return true
+}
+
 // sendTask - start a routine
 func (r *l2routine) sendTask(task L2Task) bool {
 	if r.parentID != "" && task.GetParentID() != r.parentID {
@@ -55,6 +64,10 @@ func (r *l2routine) sendTask(task L2Task) bool {
 			zap.String("myparentid", r.parentID),
 			zap.String("taskparentid", task.GetParentID()))
 
+		return false
+	}
+
+	if cap(r.chanTask) < len(r.chanTask) {
 		return false
 	}
 
@@ -228,18 +241,23 @@ func (pool *l2routinePool) onNewWaiting(ctx context.Context) error {
 	}
 
 	task := pool.lstTask[0]
-	pool.lstTask = append(pool.lstTask[:0], pool.lstTask[1:]...)
 
 	pid := task.GetParentID()
 	cr, ok := pool.mapRoutine[pid]
 	if ok {
-		if !cr.sendTask(task) {
-			pool.lstTask = append([]L2Task{task}, pool.lstTask...)
-			delete(pool.mapRoutine, pid)
+		if !cr.isFull() {
+			pool.lstTask = append(pool.lstTask[:0], pool.lstTask[1:]...)
+
+			if !cr.sendTask(task) {
+				pool.lstTask = append([]L2Task{task}, pool.lstTask...)
+				delete(pool.mapRoutine, pid)
+			}
 		}
 
 		return nil
 	}
+
+	pool.lstTask = append(pool.lstTask[:0], pool.lstTask[1:]...)
 
 	if len(pool.lstWaiting) > 0 {
 		r := pool.lstWaiting[0]

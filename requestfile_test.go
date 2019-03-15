@@ -213,6 +213,8 @@ func (obj *objRF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 			func(ctx context.Context, jarvisnode JarvisNode,
 				lstResult []*ClientProcMsgResult) error {
 
+				jarvisbase.Info("obj.node1.RequestFile", jarvisbase.JSON("result", lstResult))
+
 				if len(lstResult) > curresultnums {
 					for ; curresultnums < len(lstResult); curresultnums++ {
 						if lstResult[curresultnums].Err != nil {
@@ -304,7 +306,7 @@ func (obj *objRF) onConnMe(ctx context.Context, funcCancel context.CancelFunc) e
 }
 
 func (obj *objRF) makeString() string {
-	return fmt.Sprintf("root(%v %v) node1(%v %v), node2(%v %v) 	requestnodes %v requestfile1 %v requestfile1ok %v",
+	return fmt.Sprintf("root(%v %v) node1(%v %v), node2(%v %v) requestnodes %v requestfile1 %v requestfile1ok %v",
 		obj.rootni.numsIConn, obj.rootni.numsConnMe,
 		obj.node1ni.numsIConn, obj.node1ni.numsConnMe,
 		obj.node2ni.numsIConn, obj.node2ni.numsConnMe,
