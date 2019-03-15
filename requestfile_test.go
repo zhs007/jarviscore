@@ -203,7 +203,8 @@ func (obj *objRF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 		obj.requestnodes = true
 	}
 
-	if obj.node1ni.numsConnMe == 2 && obj.node2ni.numsConnMe == 2 && !obj.requestfile1 {
+	if obj.node1ni.numsConnMe == 2 && obj.node2ni.numsConnMe == 2 &&
+		obj.node1ni.numsIConn == 2 && obj.node2ni.numsIConn == 2 && !obj.requestfile1 {
 
 		curresultnums := 0
 
@@ -291,13 +292,16 @@ func (obj *objRF) onConnMe(ctx context.Context, funcCancel context.CancelFunc) e
 }
 
 func (obj *objRF) makeString() string {
-	return fmt.Sprintf("root(%v %v) node1(%v %v), node2(%v %v) requestnodes %v requestfile1 %v requestfile1ok %v",
+	return fmt.Sprintf("root(%v %v) node1(%v %v), node2(%v %v) requestnodes %v requestfile1 %v requestfile1ok %v root %v node1 %v node2 %v",
 		obj.rootni.numsIConn, obj.rootni.numsConnMe,
 		obj.node1ni.numsIConn, obj.node1ni.numsConnMe,
 		obj.node2ni.numsIConn, obj.node2ni.numsConnMe,
 		obj.requestnodes,
 		obj.requestfile1,
-		obj.requestfile1ok)
+		obj.requestfile1ok,
+		obj.root.BuildStatus(),
+		obj.node1.BuildStatus(),
+		obj.node2.BuildStatus())
 }
 
 func startTestNodeRF(ctx context.Context, cfgfilename string, ni *nodeinfoRF, obj *objRF,

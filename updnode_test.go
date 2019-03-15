@@ -150,7 +150,8 @@ func (obj *objUN) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 		obj.requestnodes = true
 	}
 
-	if obj.node1ni.numsConnMe == 2 && obj.node2ni.numsConnMe == 2 && !obj.updnodefromnode1 {
+	if obj.node1ni.numsConnMe == 2 && obj.node2ni.numsConnMe == 2 &&
+		obj.node1ni.numsIConn == 2 && obj.node2ni.numsIConn == 2 && !obj.updnodefromnode1 {
 		err := obj.node1.UpdateAllNodes(ctx, "testupdnode", "0.7.25",
 			func(ctx context.Context, jarvisnode JarvisNode, numsNode int, lstResult []*ClientGroupProcMsgResults) error {
 
@@ -194,13 +195,16 @@ func (obj *objUN) onConnMe(ctx context.Context, funcCancel context.CancelFunc) e
 }
 
 func (obj *objUN) makeString() string {
-	return fmt.Sprintf("root(%v %v) node1(%v %v), node2(%v %v) requestnodes %v updnodefromnode1 %v endupdnodes %v",
+	return fmt.Sprintf("root(%v %v) node1(%v %v), node2(%v %v) requestnodes %v updnodefromnode1 %v endupdnodes %v root %v node1 %v node2 %v",
 		obj.rootni.numsIConn, obj.rootni.numsConnMe,
 		obj.node1ni.numsIConn, obj.node1ni.numsConnMe,
 		obj.node2ni.numsIConn, obj.node2ni.numsConnMe,
 		obj.requestnodes,
 		obj.updnodefromnode1,
-		obj.endupdnodes)
+		obj.endupdnodes,
+		obj.root.BuildStatus(),
+		obj.node1.BuildStatus(),
+		obj.node2.BuildStatus())
 }
 
 func startTestNodeUN(ctx context.Context, cfgfilename string, ni *nodeinfoUN, obj *objUN, oniconn funconcallUN, onconnme funconcallUN) (JarvisNode, error) {

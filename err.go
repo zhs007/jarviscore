@@ -71,4 +71,6 @@ var (
 	ErrFileDataNoMD5String = errors.New("filedata no md5tring")
 	// ErrInvalidFileDataMD5String - invalid filedata md5tring
 	ErrInvalidFileDataMD5String = errors.New("invalid filedata md5tring")
+	// ErrNotConnectedNode - not connected node
+	ErrNotConnectedNode = errors.New("not connected node")
 )

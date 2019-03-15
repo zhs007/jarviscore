@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"go.uber.org/zap"
+
+	"github.com/zhs007/jarviscore/proto"
 )
 
 // L2BaseTask - level 2 basetask
@@ -129,6 +131,8 @@ type L2RoutinePool interface {
 	GetStatus() string
 	// NewTaskID - new taskID
 	NewTaskID() int64
+	// BuildStatus - build status
+	BuildStatus() *jarviscorepb.L2PoolInfo
 }
 
 // l2routinePool - l2routinePool
@@ -152,6 +156,22 @@ func NewL2RoutinePool() L2RoutinePool {
 		chanWaiting: make(chan *l2routine, 128),
 		chanTask:    make(chan L2Task, 256),
 		mapRoutine:  make(map[string]*l2routine),
+	}
+}
+
+// BuildStatus - build status
+func (pool *l2routinePool) BuildStatus() *jarviscorepb.L2PoolInfo {
+	return &jarviscorepb.L2PoolInfo{
+		NumsMapRoutine:  int32(len(pool.mapRoutine)),
+		NumsChanRemove:  int32(len(pool.chanRemove)),
+		NumsChanWaiting: int32(len(pool.chanWaiting)),
+		NumsChanTask:    int32(len(pool.chanTask)),
+		NumsTasks:       int32(len(pool.lstTask)),
+		MaxNums:         int32(pool.maxNums),
+		NumsWaiting:     int32(len(pool.lstWaiting)),
+		NumsTotal:       int32(len(pool.lstTotal)),
+		CurTaskID:       int32(pool.curTaskID),
+		ZeroTaskID:      int32(pool.zeroTaskID),
 	}
 }
 

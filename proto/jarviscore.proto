@@ -48,6 +48,10 @@ enum MSGTYPE {
     REPLY2 = 20;
     // update node
     UPDATENODE = 21;
+    // node status
+    NODESTATUS = 22;
+    // request node status
+    REQUEST_NODESTATUS = 23;
 }
 
 // REPLYTYPE - reply type
@@ -176,6 +180,27 @@ message UpdateNode {
     string nodeType = 2;
 }
 
+// L2PoolInfo -
+message L2PoolInfo {
+	int32 numsMapRoutine = 1;
+	int32 numsChanRemove = 2;
+	int32 numsChanWaiting = 3;
+	int32 numsChanTask = 4;
+	int32 numsTasks = 5;
+	int32 maxNums = 6;
+	int32 numsWaiting = 7;
+	int32 numsTotal = 8;
+	int32 curTaskID = 9;
+	int32 zeroTaskID = 10;
+}
+
+// JarvisNodeStatus - for NODESTATUS
+message JarvisNodeStatus {
+    NodeBaseInfo myBaseInfo = 1;
+    repeated NodeBaseInfo lstConnected = 2;
+    L2PoolInfo msgPool = 3; 
+}
+
 // JarvisMsg - jarvis base msg
 //      sign(msgID + msgType + destAddr + curTime + srcAddr + data)
 message JarvisMsg {
@@ -205,6 +230,7 @@ message JarvisMsg {
         ReplyConnect2 replyConn2 = 108 [deprecated = true];
         ReplyTransferFile replyTransferFile = 109;
         UpdateNode updateNode = 110;
+        JarvisNodeStatus nodeStatus = 111;
     }
 }
 

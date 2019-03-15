@@ -134,6 +134,11 @@ func newClient2(node *jarvisNode) *jarvisClient2 {
 	}
 }
 
+// BuildStatus - build status
+func (c *jarvisClient2) BuildMsgPoolStatus() *pb.L2PoolInfo {
+	return c.poolMsg.BuildStatus()
+}
+
 // start - start goroutine to proc client task
 func (c *jarvisClient2) start(ctx context.Context) error {
 	go c.poolConn.Start(ctx, 128)
@@ -231,7 +236,18 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 
 	_, ok := c.mapClient.Load(smsg.DestAddr)
 	if !ok {
-		return c._broadCastMsg(ctx, smsg)
+		jarvisbase.Warn("jarvisClient2._sendMsg:getValidClientConn", zap.Error(ErrNotConnectedNode))
+
+		if funcOnResult != nil {
+			lstResult = append(lstResult, &ClientProcMsgResult{
+				Err: ErrNotConnectedNode,
+			})
+
+			funcOnResult(ctx, c.node, lstResult)
+		}
+
+		return ErrNotConnectedNode
+		// return c._broadCastMsg(ctx, smsg)
 	}
 
 	jarvisbase.Debug("jarvisClient2._sendMsg", jarvisbase.JSON("msg", smsg))
