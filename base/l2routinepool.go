@@ -7,12 +7,36 @@ import (
 	"go.uber.org/zap"
 )
 
+// L2BaseTask - level 2 basetask
+type L2BaseTask struct {
+	taskID   int64
+	parentID string
+}
+
+// GetParentID - get parentID
+func (task *L2BaseTask) GetParentID() string {
+	return task.parentID
+}
+
+// GetTaskID - get taskID
+func (task *L2BaseTask) GetTaskID() int64 {
+	return task.taskID
+}
+
+// Init - init
+func (task *L2BaseTask) Init(pool L2RoutinePool, parentID string) {
+	task.taskID = pool.NewTaskID()
+	task.parentID = parentID
+}
+
 // L2Task - level 2 task
 type L2Task interface {
 	// Run - run task
 	Run(ctx context.Context) error
 	// GetParentID - get parentID
 	GetParentID() string
+	// GetTaskID - get taskID
+	GetTaskID() int64
 }
 
 // l2routine - l2routine
@@ -90,6 +114,8 @@ type L2RoutinePool interface {
 	Start(ctx context.Context, maxNums int) error
 	// GetStatus - get status
 	GetStatus() string
+	// NewTaskID - new taskID
+	NewTaskID() int64
 }
 
 // l2routinePool - l2routinePool
@@ -102,6 +128,8 @@ type l2routinePool struct {
 	maxNums     int
 	lstWaiting  []*l2routine
 	lstTotal    []*l2routine
+	curTaskID   int64
+	zeroTaskID  int64
 }
 
 // NewL2RoutinePool - new RoutinePool
@@ -116,7 +144,7 @@ func NewL2RoutinePool() L2RoutinePool {
 
 // GetStatus - get status
 func (pool *l2routinePool) GetStatus() string {
-	return fmt.Sprintf("l2routinePool - mapRoutine %v, chanRemove %v, chanWaiting %v, chanTask %v, lstTask %v, maxNums %v, lstWaiting %v, lstTotal %v",
+	return fmt.Sprintf("l2routinePool - mapRoutine %v, chanRemove %v, chanWaiting %v, chanTask %v, lstTask %v, maxNums %v, lstWaiting %v, lstTotal %v, curTaskID %v, zeroTaskID %v",
 		len(pool.mapRoutine),
 		len(pool.chanRemove),
 		len(pool.chanWaiting),
@@ -124,7 +152,9 @@ func (pool *l2routinePool) GetStatus() string {
 		len(pool.lstTask),
 		pool.maxNums,
 		len(pool.lstWaiting),
-		len(pool.lstTotal))
+		len(pool.lstTotal),
+		pool.curTaskID,
+		pool.zeroTaskID)
 }
 
 // SendTask - send new task
@@ -259,7 +289,13 @@ func (pool *l2routinePool) onNewWaiting(ctx context.Context) error {
 func (pool *l2routinePool) run(ctx context.Context, task L2Task) error {
 	pool.lstTask = append(pool.lstTask, task)
 
-	return pool.onNewWaiting(ctx)
+	if len(pool.lstTask) == 1 {
+		pool.zeroTaskID = task.GetTaskID()
+
+		return pool.onNewWaiting(ctx)
+	}
+
+	return nil
 }
 
 // startRountine - start a new routine
@@ -291,4 +327,10 @@ func (pool *l2routinePool) findRoutine(r *l2routine) int {
 	}
 
 	return -1
+}
+
+// NewTaskID - new taskID
+func (pool *l2routinePool) NewTaskID() int64 {
+	pool.curTaskID++
+	return pool.curTaskID
 }

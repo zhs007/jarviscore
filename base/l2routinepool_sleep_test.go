@@ -75,6 +75,8 @@ func (mgr *sleepl2taskMgr) isok() bool {
 }
 
 type sleepl2taskTest struct {
+	L2BaseTask
+
 	index int
 	j     int
 	mgr   *sleepl2taskMgr
@@ -103,11 +105,6 @@ func (task *sleepl2taskTest) Run(ctx context.Context) error {
 	return nil
 }
 
-// GetParentID - get parentID
-func (task *sleepl2taskTest) GetParentID() string {
-	return task.pid
-}
-
 func sleepl2makeTask(mgr *sleepl2taskMgr, pool L2RoutinePool, maxpid int, maxc int) {
 	time.Sleep(3 * time.Second)
 
@@ -125,6 +122,8 @@ func sleepl2makeTask(mgr *sleepl2taskMgr, pool L2RoutinePool, maxpid int, maxc i
 				mgr:   mgr,
 				pid:   fmt.Sprintf("pid%v", j),
 			}
+
+			task.Init(pool, fmt.Sprintf("pid%v", j))
 
 			pool.SendTask(task)
 			mgr.send()

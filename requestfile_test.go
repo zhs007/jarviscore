@@ -304,10 +304,13 @@ func (obj *objRF) onConnMe(ctx context.Context, funcCancel context.CancelFunc) e
 }
 
 func (obj *objRF) makeString() string {
-	return fmt.Sprintf("root(%v %v) node1(%v %v), node2(%v %v)",
+	return fmt.Sprintf("root(%v %v) node1(%v %v), node2(%v %v) 	requestnodes %v requestfile1 %v requestfile1ok %v",
 		obj.rootni.numsIConn, obj.rootni.numsConnMe,
 		obj.node1ni.numsIConn, obj.node1ni.numsConnMe,
-		obj.node2ni.numsIConn, obj.node2ni.numsConnMe)
+		obj.node2ni.numsIConn, obj.node2ni.numsConnMe,
+		obj.requestnodes,
+		obj.requestfile1,
+		obj.requestfile1ok)
 }
 
 func startTestNodeRF(ctx context.Context, cfgfilename string, ni *nodeinfoRF, obj *objRF,
@@ -454,6 +457,12 @@ func TestRequestFile(t *testing.T) {
 
 	if errobj != nil {
 		outputErrRF(t, errobj, "TestRequestFile", "")
+
+		return
+	}
+
+	if obj.err != nil {
+		outputErrRF(t, obj.err, "TestRequestFile", "")
 
 		return
 	}

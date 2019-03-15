@@ -58,6 +58,8 @@ func CountClientGroupProcMsgResultsEnd(lstResult []*ClientGroupProcMsgResults) i
 }
 
 type clientTask struct {
+	jarvisbase.L2BaseTask
+
 	servaddr     string
 	addr         string
 	client       *jarvisClient2
@@ -98,14 +100,14 @@ func (task *clientTask) Run(ctx context.Context) error {
 	return task.client._sendMsg(ctx, task.msg, task.funcOnResult)
 }
 
-// GetParentID - get parentID
-func (task *clientTask) GetParentID() string {
-	if task.msg == nil {
-		return task.addr
-	}
+// // GetParentID - get parentID
+// func (task *clientTask) GetParentID() string {
+// 	if task.msg == nil {
+// 		return task.addr
+// 	}
 
-	return ""
-}
+// 	return ""
+// }
 
 type clientInfo2 struct {
 	conn     *grpc.ClientConn
@@ -176,6 +178,8 @@ func (c *jarvisClient2) addSendMsgTask(msg *pb.JarvisMsg, node *coredbpb.NodeInf
 		funcOnResult: funcOnResult,
 		addr:         msg.DestAddr,
 	}
+
+	task.Init(c.poolMsg, msg.DestAddr)
 
 	c.poolMsg.SendTask(task)
 }
