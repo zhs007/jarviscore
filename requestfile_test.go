@@ -189,6 +189,7 @@ func (obj *objRF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 		obj.node1ni.numsConnMe >= 1 && obj.node1ni.numsIConn >= 1 &&
 		obj.node2ni.numsConnMe >= 1 && obj.node2ni.numsIConn >= 1 &&
 		!obj.requestnodes {
+
 		err := obj.node1.RequestNodes(ctx, nil)
 		if err != nil {
 			return err
@@ -209,6 +210,7 @@ func (obj *objRF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 		rf := &jarviscorepb.RequestFile{
 			Filename: "./test/rf001.dat",
 		}
+
 		err := obj.node1.RequestFile(ctx, obj.node2.GetMyInfo().Addr, rf,
 			func(ctx context.Context, jarvisnode JarvisNode,
 				lstResult []*ClientProcMsgResult) error {
@@ -266,28 +268,11 @@ func (obj *objRF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 					}
 				}
 
-				// jarvisbase.Info("obRF.onIConn:node1.UpdateAllNodes",
-				// 	zap.Int("numsNode", numsNode),
-				// 	jarvisbase.JSON("lstResult", lstResult))
-
-				// if numsNode == 2 && len(lstResult) == 2 && len(lstResult[0].Results) > 0 && len(lstResult[1].Results) > 0 &&
-				// 	lstResult[0].Results[len(lstResult[0].Results)-1].Msg == nil &&
-				// 	lstResult[1].Results[len(lstResult[1].Results)-1].Msg == nil {
-
-				// 	if (len(lstResult[0].Results) == 2 && len(lstResult[1].Results) == 4) ||
-				// 		(len(lstResult[1].Results) == 2 && len(lstResult[0].Results) == 4) {
-
-				// 		obj.endupdnodes = true
-
-				// 		funcCancel()
-
-				// 		return nil
-				// 	}
-				// }
-
 				return nil
 			})
 		if err != nil {
+			obj.err = err
+
 			return err
 		}
 

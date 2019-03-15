@@ -1066,6 +1066,8 @@ func (n *jarvisNode) onMsgRequestFile(ctx context.Context, msg *pb.JarvisMsg,
 // onMsgReplyRequestFile
 func (n *jarvisNode) onMsgReplyRequestFile(ctx context.Context, msg *pb.JarvisMsg) error {
 
+	jarvisbase.Info("jarvisNode.onMsgReplyRequestFile", jarvisbase.JSON("msg", msg))
+
 	fd := msg.GetFile()
 	if fd == nil {
 		jarvisbase.Warn("jarvisNode.onMsgReplyRequestFile", zap.Error(ErrNoFileData))
@@ -1102,19 +1104,6 @@ func (n *jarvisNode) RequestFile(ctx context.Context, addr string, rf *pb.Reques
 	}
 
 	n.mgrClient2.addSendMsgTask(sendmsg, nil, funcOnResult)
-
-	// msg, err := BuildLocalSendMsg(n, n.myinfo.Addr, "", sendmsg)
-	// if err != nil {
-	// 	jarvisbase.Warn("jarvisNode.RequestFile:BuildLocalSendMsg", zap.Error(err))
-
-	// 	return err
-	// }
-
-	// if funcReply != nil {
-	// 	n.mgrRequest.addRequestData(msg, funcReply)
-	// }
-
-	// n.PostMsg(msg, nil, nil, funcOnResult)
 
 	return nil
 }
