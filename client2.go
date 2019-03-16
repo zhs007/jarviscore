@@ -258,7 +258,12 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 
 	_, ok := c.mapClient.Load(smsg.DestAddr)
 	if !ok {
-		jarvisbase.Warn("jarvisClient2._sendMsg:getValidClientConn", zap.Error(ErrNotConnectedNode))
+		tmsg, _ := BuildOutputMsg(smsg)
+		if tmsg != nil {
+			jarvisbase.Warn("jarvisClient2._sendMsg:mapClient",
+				zap.Error(ErrNotConnectedNode),
+				jarvisbase.JSON("msg", tmsg))
+		}
 
 		if funcOnResult != nil {
 			lstResult = append(lstResult, &ClientProcMsgResult{
