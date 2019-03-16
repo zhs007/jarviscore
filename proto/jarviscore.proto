@@ -52,6 +52,8 @@ enum MSGTYPE {
     NODESTATUS = 22;
     // request node status
     REQUEST_NODESTATUS = 23;
+    // file hash data
+    FILE_HASH_DATA = 24;
 }
 
 // REPLYTYPE - reply type
@@ -125,6 +127,13 @@ message FileData {
     int64 start = 6;
     int64 length = 7;
     int64 totalLength = 8;
+    string fileMD5String = 9;
+}
+
+// FileHashData - file hash data
+message FileHashData {
+    string filename = 1;
+    string fileMD5String = 2;
 }
 
 // RequestFile - request file
@@ -231,6 +240,7 @@ message JarvisMsg {
         ReplyTransferFile replyTransferFile = 109;
         UpdateNode updateNode = 110;
         JarvisNodeStatus nodeStatus = 111;
+        FileHashData fileHashData = 112;
     }
 }
 

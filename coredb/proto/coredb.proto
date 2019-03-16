@@ -79,3 +79,8 @@ message NodeInfoList {
     int32 maxIndex = 3;
     repeated NodeInfo nodes = 4;
 }
+
+// FileSystem
+message FileSystem {
+    int64 curFileID = 1;
+}

@@ -73,4 +73,8 @@ var (
 	ErrInvalidFileDataMD5String = errors.New("invalid filedata md5tring")
 	// ErrNotConnectedNode - not connected node
 	ErrNotConnectedNode = errors.New("not connected node")
+	// ErrInvalidReadFileLength - invalid readfile length
+	ErrInvalidReadFileLength = errors.New("invalid readfile length")
+	// ErrInvalidSeekFileOffset - invalid seekfile offset
+	ErrInvalidSeekFileOffset = errors.New("invalid seekfile offset")
 )
