@@ -76,6 +76,8 @@ func (mgr *l2taskMgr) isok() bool {
 }
 
 type l2taskTest struct {
+	L2BaseTask
+
 	index int
 	j     int
 	mgr   *l2taskMgr
@@ -103,11 +105,6 @@ func (task *l2taskTest) Run(ctx context.Context) error {
 	return nil
 }
 
-// GetParentID - get parentID
-func (task *l2taskTest) GetParentID() string {
-	return task.pid
-}
-
 func l2makeTask(mgr *l2taskMgr, pool L2RoutinePool, maxpid int, maxc int) {
 	time.Sleep(3 * time.Second)
 
@@ -125,6 +122,8 @@ func l2makeTask(mgr *l2taskMgr, pool L2RoutinePool, maxpid int, maxc int) {
 				mgr:   mgr,
 				pid:   fmt.Sprintf("pid%v", j),
 			}
+
+			task.Init(pool, fmt.Sprintf("pid%v", j))
 
 			pool.SendTask(task)
 			mgr.send()
@@ -144,7 +143,7 @@ func TestL2RountinePool128(t *testing.T) {
 
 	pool := NewL2RoutinePool()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 40*time.Second)
 	defer cancel()
 
 	mgr := &l2taskMgr{

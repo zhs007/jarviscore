@@ -65,4 +65,16 @@ var (
 	ErrAssertGetNode = errors.New("assert(GetNode() is not nil)")
 	// ErrDeprecatedNode - deprecated node
 	ErrDeprecatedNode = errors.New("deprecated node")
+	// ErrNoFileData - no filedata
+	ErrNoFileData = errors.New("no filedata")
+	// ErrFileDataNoMD5String - filedata no md5tring
+	ErrFileDataNoMD5String = errors.New("filedata no md5tring")
+	// ErrInvalidFileDataMD5String - invalid filedata md5tring
+	ErrInvalidFileDataMD5String = errors.New("invalid filedata md5tring")
+	// ErrNotConnectedNode - not connected node
+	ErrNotConnectedNode = errors.New("not connected node")
+	// ErrInvalidReadFileLength - invalid readfile length
+	ErrInvalidReadFileLength = errors.New("invalid readfile length")
+	// ErrInvalidSeekFileOffset - invalid seekfile offset
+	ErrInvalidSeekFileOffset = errors.New("invalid seekfile offset")
 )

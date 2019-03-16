@@ -5,7 +5,31 @@ import (
 	"fmt"
 
 	"go.uber.org/zap"
+
+	"github.com/zhs007/jarviscore/proto"
 )
+
+// L2BaseTask - level 2 basetask
+type L2BaseTask struct {
+	taskID   int64
+	parentID string
+}
+
+// GetParentID - get parentID
+func (task *L2BaseTask) GetParentID() string {
+	return task.parentID
+}
+
+// GetTaskID - get taskID
+func (task *L2BaseTask) GetTaskID() int64 {
+	return task.taskID
+}
+
+// Init - init
+func (task *L2BaseTask) Init(pool L2RoutinePool, parentID string) {
+	task.taskID = pool.NewTaskID()
+	task.parentID = parentID
+}
 
 // L2Task - level 2 task
 type L2Task interface {
@@ -13,6 +37,8 @@ type L2Task interface {
 	Run(ctx context.Context) error
 	// GetParentID - get parentID
 	GetParentID() string
+	// GetTaskID - get taskID
+	GetTaskID() int64
 }
 
 // l2routine - l2routine
@@ -24,6 +50,15 @@ type l2routine struct {
 	chanWaiting chan *l2routine
 }
 
+// isFull - is full
+func (r *l2routine) isFull() bool {
+	if cap(r.chanTask) < len(r.chanTask) {
+		return false
+	}
+
+	return true
+}
+
 // sendTask - start a routine
 func (r *l2routine) sendTask(task L2Task) bool {
 	if r.parentID != "" && task.GetParentID() != r.parentID {
@@ -31,6 +66,10 @@ func (r *l2routine) sendTask(task L2Task) bool {
 			zap.String("myparentid", r.parentID),
 			zap.String("taskparentid", task.GetParentID()))
 
+		return false
+	}
+
+	if cap(r.chanTask) < len(r.chanTask) {
 		return false
 	}
 
@@ -90,6 +129,10 @@ type L2RoutinePool interface {
 	Start(ctx context.Context, maxNums int) error
 	// GetStatus - get status
 	GetStatus() string
+	// NewTaskID - new taskID
+	NewTaskID() int64
+	// BuildStatus - build status
+	BuildStatus() *jarviscorepb.L2PoolInfo
 }
 
 // l2routinePool - l2routinePool
@@ -102,6 +145,8 @@ type l2routinePool struct {
 	maxNums     int
 	lstWaiting  []*l2routine
 	lstTotal    []*l2routine
+	curTaskID   int64
+	zeroTaskID  int64
 }
 
 // NewL2RoutinePool - new RoutinePool
@@ -114,9 +159,25 @@ func NewL2RoutinePool() L2RoutinePool {
 	}
 }
 
+// BuildStatus - build status
+func (pool *l2routinePool) BuildStatus() *jarviscorepb.L2PoolInfo {
+	return &jarviscorepb.L2PoolInfo{
+		NumsMapRoutine:  int32(len(pool.mapRoutine)),
+		NumsChanRemove:  int32(len(pool.chanRemove)),
+		NumsChanWaiting: int32(len(pool.chanWaiting)),
+		NumsChanTask:    int32(len(pool.chanTask)),
+		NumsTasks:       int32(len(pool.lstTask)),
+		MaxNums:         int32(pool.maxNums),
+		NumsWaiting:     int32(len(pool.lstWaiting)),
+		NumsTotal:       int32(len(pool.lstTotal)),
+		CurTaskID:       int32(pool.curTaskID),
+		ZeroTaskID:      int32(pool.zeroTaskID),
+	}
+}
+
 // GetStatus - get status
 func (pool *l2routinePool) GetStatus() string {
-	return fmt.Sprintf("l2routinePool - mapRoutine %v, chanRemove %v, chanWaiting %v, chanTask %v, lstTask %v, maxNums %v, lstWaiting %v, lstTotal %v",
+	return fmt.Sprintf("l2routinePool - mapRoutine %v, chanRemove %v, chanWaiting %v, chanTask %v, lstTask %v, maxNums %v, lstWaiting %v, lstTotal %v, curTaskID %v, zeroTaskID %v",
 		len(pool.mapRoutine),
 		len(pool.chanRemove),
 		len(pool.chanWaiting),
@@ -124,7 +185,9 @@ func (pool *l2routinePool) GetStatus() string {
 		len(pool.lstTask),
 		pool.maxNums,
 		len(pool.lstWaiting),
-		len(pool.lstTotal))
+		len(pool.lstTotal),
+		pool.curTaskID,
+		pool.zeroTaskID)
 }
 
 // SendTask - send new task
@@ -198,18 +261,23 @@ func (pool *l2routinePool) onNewWaiting(ctx context.Context) error {
 	}
 
 	task := pool.lstTask[0]
-	pool.lstTask = append(pool.lstTask[:0], pool.lstTask[1:]...)
 
 	pid := task.GetParentID()
 	cr, ok := pool.mapRoutine[pid]
 	if ok {
-		if !cr.sendTask(task) {
-			pool.lstTask = append([]L2Task{task}, pool.lstTask...)
-			delete(pool.mapRoutine, pid)
+		if !cr.isFull() {
+			pool.lstTask = append(pool.lstTask[:0], pool.lstTask[1:]...)
+
+			if !cr.sendTask(task) {
+				pool.lstTask = append([]L2Task{task}, pool.lstTask...)
+				delete(pool.mapRoutine, pid)
+			}
 		}
 
 		return nil
 	}
+
+	pool.lstTask = append(pool.lstTask[:0], pool.lstTask[1:]...)
 
 	if len(pool.lstWaiting) > 0 {
 		r := pool.lstWaiting[0]
@@ -259,7 +327,13 @@ func (pool *l2routinePool) onNewWaiting(ctx context.Context) error {
 func (pool *l2routinePool) run(ctx context.Context, task L2Task) error {
 	pool.lstTask = append(pool.lstTask, task)
 
-	return pool.onNewWaiting(ctx)
+	if len(pool.lstTask) == 1 {
+		pool.zeroTaskID = task.GetTaskID()
+
+		return pool.onNewWaiting(ctx)
+	}
+
+	return nil
 }
 
 // startRountine - start a new routine
@@ -291,4 +365,10 @@ func (pool *l2routinePool) findRoutine(r *l2routine) int {
 	}
 
 	return -1
+}
+
+// NewTaskID - new taskID
+func (pool *l2routinePool) NewTaskID() int64 {
+	pool.curTaskID++
+	return pool.curTaskID
 }

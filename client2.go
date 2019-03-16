@@ -58,6 +58,8 @@ func CountClientGroupProcMsgResultsEnd(lstResult []*ClientGroupProcMsgResults) i
 }
 
 type clientTask struct {
+	jarvisbase.L2BaseTask
+
 	servaddr     string
 	addr         string
 	client       *jarvisClient2
@@ -98,14 +100,14 @@ func (task *clientTask) Run(ctx context.Context) error {
 	return task.client._sendMsg(ctx, task.msg, task.funcOnResult)
 }
 
-// GetParentID - get parentID
-func (task *clientTask) GetParentID() string {
-	if task.msg == nil {
-		return task.addr
-	}
+// // GetParentID - get parentID
+// func (task *clientTask) GetParentID() string {
+// 	if task.msg == nil {
+// 		return task.addr
+// 	}
 
-	return ""
-}
+// 	return ""
+// }
 
 type clientInfo2 struct {
 	conn     *grpc.ClientConn
@@ -130,6 +132,33 @@ func newClient2(node *jarvisNode) *jarvisClient2 {
 		poolMsg:  jarvisbase.NewL2RoutinePool(),
 		fsa:      newFailServAddr(),
 	}
+}
+
+// BuildStatus - build status
+func (c *jarvisClient2) BuildNodeStatus(ns *pb.JarvisNodeStatus) {
+	ns.MsgPool = c.poolMsg.BuildStatus()
+
+	c.mapClient.Range(func(key, v interface{}) bool {
+		addr, keyok := key.(string)
+		// ci, vok := v.(*clientInfo2)
+		if keyok {
+			ni := c.node.GetCoreDB().GetNode(addr)
+			if ni != nil {
+				nbi := &pb.NodeBaseInfo{
+					ServAddr:        ni.ServAddr,
+					Addr:            ni.Addr,
+					Name:            ni.Name,
+					NodeTypeVersion: ni.NodeTypeVersion,
+					NodeType:        ni.NodeType,
+					CoreVersion:     ni.CoreVersion,
+				}
+
+				ns.LstConnected = append(ns.LstConnected, nbi)
+			}
+		}
+
+		return true
+	})
 }
 
 // start - start goroutine to proc client task
@@ -176,6 +205,8 @@ func (c *jarvisClient2) addSendMsgTask(msg *pb.JarvisMsg, node *coredbpb.NodeInf
 		funcOnResult: funcOnResult,
 		addr:         msg.DestAddr,
 	}
+
+	task.Init(c.poolMsg, msg.DestAddr)
 
 	c.poolMsg.SendTask(task)
 }
@@ -227,7 +258,18 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 
 	_, ok := c.mapClient.Load(smsg.DestAddr)
 	if !ok {
-		return c._broadCastMsg(ctx, smsg)
+		jarvisbase.Warn("jarvisClient2._sendMsg:getValidClientConn", zap.Error(ErrNotConnectedNode))
+
+		if funcOnResult != nil {
+			lstResult = append(lstResult, &ClientProcMsgResult{
+				Err: ErrNotConnectedNode,
+			})
+
+			funcOnResult(ctx, c.node, lstResult)
+		}
+
+		return ErrNotConnectedNode
+		// return c._broadCastMsg(ctx, smsg)
 	}
 
 	jarvisbase.Debug("jarvisClient2._sendMsg", jarvisbase.JSON("msg", smsg))
@@ -579,25 +621,26 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 			}
 
 			return err
-		} else {
-			jarvisbase.Debug("jarvisClient2._connectNode:stream", jarvisbase.JSON("msg", msg))
-
-			if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT {
-				ni := msg.GetNodeInfo()
-
-				c.mapClient.Store(ni.Addr, ci)
-			}
-
-			c.node.PostMsg(msg, nil, nil, nil)
-
-			if funcOnResult != nil {
-				lstResult = append(lstResult, &ClientProcMsgResult{
-					Msg: msg,
-				})
-
-				funcOnResult(ctx, c.node, lstResult)
-			}
 		}
+
+		jarvisbase.Debug("jarvisClient2._connectNode:stream", jarvisbase.JSON("msg", msg))
+
+		if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT {
+			ni := msg.GetNodeInfo()
+
+			c.mapClient.Store(ni.Addr, ci)
+		}
+
+		c.node.PostMsg(msg, nil, nil, nil)
+
+		if funcOnResult != nil {
+			lstResult = append(lstResult, &ClientProcMsgResult{
+				Msg: msg,
+			})
+
+			funcOnResult(ctx, c.node, lstResult)
+		}
+
 	}
 
 	return nil

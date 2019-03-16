@@ -48,6 +48,12 @@ enum MSGTYPE {
     REPLY2 = 20;
     // update node
     UPDATENODE = 21;
+    // node status
+    NODESTATUS = 22;
+    // request node status
+    REQUEST_NODESTATUS = 23;
+    // file hash data
+    FILE_HASH_DATA = 24;
 }
 
 // REPLYTYPE - reply type
@@ -64,6 +70,8 @@ enum REPLYTYPE {
     ERROR = 4;
     // messageid error
     ERRMSGID = 5;
+    // I got it
+    IGOTIT = 6;
 }
 
 message NodeBaseInfo {
@@ -103,17 +111,37 @@ message ReplyTransferFile {
     string md5String = 1;
 }
 
+// FileType - file type
+enum FileType {
+    FT_BINARY = 0;
+    FT_UTF8 = 1;
+}
+
 // FileData - file data
 message FileData {
     bytes file = 1;
     string filename = 2;
     string destPath = 3;
     string md5String = 4;
+    FileType ft = 5;
+    int64 start = 6;
+    int64 length = 7;
+    int64 totalLength = 8;
+    string fileMD5String = 9;
+}
+
+// FileHashData - file hash data
+message FileHashData {
+    string filename = 1;
+    string fileMD5String = 2;
 }
 
 // RequestFile - request file
 message RequestFile {
     string filename = 1;
+    FileType ft = 2;
+    int64 start = 3;
+    int64 length = 4;
 }
 
 // CtrlScriptData - used in CtrlInfo.dat
@@ -161,6 +189,27 @@ message UpdateNode {
     string nodeType = 2;
 }
 
+// L2PoolInfo -
+message L2PoolInfo {
+	int32 numsMapRoutine = 1;
+	int32 numsChanRemove = 2;
+	int32 numsChanWaiting = 3;
+	int32 numsChanTask = 4;
+	int32 numsTasks = 5;
+	int32 maxNums = 6;
+	int32 numsWaiting = 7;
+	int32 numsTotal = 8;
+	int32 curTaskID = 9;
+	int32 zeroTaskID = 10;
+}
+
+// JarvisNodeStatus - for NODESTATUS
+message JarvisNodeStatus {
+    NodeBaseInfo myBaseInfo = 1;
+    repeated NodeBaseInfo lstConnected = 2;
+    L2PoolInfo msgPool = 3; 
+}
+
 // JarvisMsg - jarvis base msg
 //      sign(msgID + msgType + destAddr + curTime + srcAddr + data)
 message JarvisMsg {
@@ -190,6 +239,8 @@ message JarvisMsg {
         ReplyConnect2 replyConn2 = 108 [deprecated = true];
         ReplyTransferFile replyTransferFile = 109;
         UpdateNode updateNode = 110;
+        JarvisNodeStatus nodeStatus = 111;
+        FileHashData fileHashData = 112;
     }
 }
 
