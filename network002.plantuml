@@ -1,0 +1,18 @@
+@startuml 
+
+title Request Nodes
+
+Node001DB <- Node001: Get all nodes
+Node001DB -> Node001: All Node information, like Node002
+Node001 -> Node002: REQUEST_NODES - Request all the node information
+Node001 <- Node002: NODE_INFOs - Send all the node information
+Node001DB <- Node001: Update all the node information
+Node001 -> Node003: If Node003 is a new node, then CONNECT_NODE - Connect Node003 node
+Node001 <- Node003: REPLY_CONNECT - Send my base information
+Node001DB <- Node001: Update Node003 information
+Node003 -> Node003DB: Update Node001 info
+Node001 <- Node003: If Node003 not connected the Node001, then CONNECT_NODE - Connect Node001 node
+Node001 -> Node003: REPLY_CONNECT - Send my base information
+Node003 -> Node003DB: Update Node001 info
+
+@enduml

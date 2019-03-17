@@ -387,9 +387,10 @@ func (n *jarvisNode) ConnectNodeWithServAddr(servaddr string, funcOnResult FuncO
 		return nil
 	}
 
-	if cn.ConnType == coredbpb.CONNECTTYPE_UNKNOWN_CONN {
+	ts := time.Now().Unix()
+	if cn.ConnType == coredbpb.CONNECTTYPE_UNKNOWN_CONN && ts > basedef.TimeReconnect+cn.LastConnectTime {
 		cn.ConnectNums++
-		cn.LastConnectTime = time.Now().Unix()
+		cn.LastConnectTime = ts
 
 		n.mgrClient2.addConnTask(cn.ServAddr, cn, funcOnResult)
 
@@ -411,9 +412,10 @@ func (n *jarvisNode) ConnectNode(node *coredbpb.NodeInfo, funcOnResult FuncOnPro
 		return nil
 	}
 
-	if node.ConnType == coredbpb.CONNECTTYPE_UNKNOWN_CONN {
+	ts := time.Now().Unix()
+	if node.ConnType == coredbpb.CONNECTTYPE_UNKNOWN_CONN && ts > basedef.TimeReconnect+node.LastConnectTime {
 		node.ConnectNums++
-		node.LastConnectTime = time.Now().Unix()
+		node.LastConnectTime = ts
 
 		n.mgrClient2.addConnTask(node.ServAddr, node, funcOnResult)
 
