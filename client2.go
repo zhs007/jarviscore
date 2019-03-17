@@ -20,43 +20,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// ClientProcMsgResult - result for client.ProcMsg
-type ClientProcMsgResult struct {
-	Msg *pb.JarvisMsg `json:"msg"`
-	Err error         `json:"err"`
-}
-
-// FuncOnProcMsgResult - on procmsg recv the message
-type FuncOnProcMsgResult func(ctx context.Context, jarvisnode JarvisNode,
-	lstResult []*ClientProcMsgResult) error
-
-// IsClientProcMsgResultEnd - is end
-func IsClientProcMsgResultEnd(lstResult []*ClientProcMsgResult) bool {
-	return len(lstResult) > 0 && lstResult[len(lstResult)-1].Msg == nil
-}
-
-// ClientGroupProcMsgResults - result for FuncOnSendMsgResult
-type ClientGroupProcMsgResults struct {
-	Results []*ClientProcMsgResult `json:"results"`
-}
-
-// FuncOnGroupSendMsgResult - on group sendmsg recv the messages
-type FuncOnGroupSendMsgResult func(ctx context.Context, jarvisnode JarvisNode,
-	numsNode int, lstResult []*ClientGroupProcMsgResults) error
-
-// CountClientGroupProcMsgResultsEnd - count number for end
-func CountClientGroupProcMsgResultsEnd(lstResult []*ClientGroupProcMsgResults) int {
-	nums := 0
-	for i := 0; i < len(lstResult); i++ {
-		cr := lstResult[i]
-		if len(cr.Results) > 0 && cr.Results[len(cr.Results)-1].Msg == nil {
-			nums++
-		}
-	}
-
-	return nums
-}
-
 type clientTask struct {
 	jarvisbase.L2BaseTask
 
@@ -217,25 +180,34 @@ func (c *jarvisClient2) isConnected(addr string) bool {
 	return ok
 }
 
-func (c *jarvisClient2) _getValidClientConn(addr string) (*clientInfo2, error) {
+func (c *jarvisClient2) _getClientConn(addr string) *clientInfo2 {
 	mi, ok := c.mapClient.Load(addr)
 	if ok {
-		ci, ok := mi.(*clientInfo2)
-		if ok {
-			if mgrConn.isValidConn(ci.servAddr) {
-				return ci, nil
-			}
+		ci, typeok := mi.(*clientInfo2)
+		if typeok {
+			return ci
 		}
 	}
 
-	ci, ok := mi.(*clientInfo2)
-	if ok {
+	return nil
+}
+
+func (c *jarvisClient2) _getValidClientConn(addr string) (*clientInfo2, error) {
+	ci := c._getClientConn(addr)
+	if ci != nil {
 		if mgrConn.isValidConn(ci.servAddr) {
 			return ci, nil
 		}
 	}
 
-	conn, err := mgrConn.getConn(ci.servAddr)
+	cn := c.node.GetCoreDB().GetNode(addr)
+	if cn == nil {
+		jarvisbase.Warn("jarvisClient2.getValidClientConn:GetNode", zap.Error(ErrCannotFindNodeWithAddr))
+
+		return nil, ErrCannotFindNodeWithAddr
+	}
+
+	conn, err := mgrConn.getConn(cn.ServAddr)
 	if err != nil {
 		jarvisbase.Warn("jarvisClient2.getValidClientConn", zap.Error(err))
 
