@@ -29,7 +29,7 @@ func updateNode(params *UpdateNodeParam, scriptUpd string) (string, string, erro
 
 	out, err := exec.Command("sh", "-c", b.String()).CombinedOutput()
 	if err != nil {
-		return "", "", err
+		return "", string(out), err
 	}
 
 	return b.String(), string(out), nil

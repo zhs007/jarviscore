@@ -26,7 +26,7 @@ func (ctrl *CtrlScriptFile) Run(ci *pb.CtrlInfo) ([]byte, error) {
 
 	out, err := exec.Command("sh", "-c", string(csd.File)).CombinedOutput()
 	if err != nil {
-		return nil, err
+		return out, err
 	}
 
 	return out, nil

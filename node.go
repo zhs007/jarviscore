@@ -60,11 +60,9 @@ func NewNode(cfg *Config) (JarvisNode, error) {
 			ServAddr:    cfg.BaseNodeInfo.ServAddr,
 			CoreVersion: basedef.VERSION,
 		},
-		coredb: db,
-		cfg:    cfg,
-		mgrCtrl: &ctrlMgr{
-			mapCtrl: make(map[string](Ctrl)),
-		},
+		coredb:  db,
+		cfg:     cfg,
+		mgrCtrl: &ctrlMgr{},
 		// mgrRequest: &requestMgr{},
 	}
 
@@ -472,6 +470,10 @@ func (n *jarvisNode) runRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 	ci := msg.GetCtrlInfo()
 	ret, err := n.mgrCtrl.Run(ci)
 	if err != nil {
+		if ret != nil {
+			n.replyCtrlResult(ctx, msg, string(ret))
+		}
+
 		n.replyCtrlResult(ctx, msg, err.Error())
 
 		return
