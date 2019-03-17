@@ -222,7 +222,7 @@ func (c *jarvisClient2) _getValidClientConn(addr string) (*clientInfo2, error) {
 	if ok {
 		ci, ok := mi.(*clientInfo2)
 		if ok {
-			if mgrconn.isValidConn(ci.servAddr) {
+			if mgrConn.isValidConn(ci.servAddr) {
 				return ci, nil
 			}
 		}
@@ -230,12 +230,12 @@ func (c *jarvisClient2) _getValidClientConn(addr string) (*clientInfo2, error) {
 
 	ci, ok := mi.(*clientInfo2)
 	if ok {
-		if mgrconn.isValidConn(ci.servAddr) {
+		if mgrConn.isValidConn(ci.servAddr) {
 			return ci, nil
 		}
 	}
 
-	conn, err := mgrconn.getConn(ci.servAddr)
+	conn, err := mgrConn.getConn(ci.servAddr)
 	if err != nil {
 		jarvisbase.Warn("jarvisClient2.getValidClientConn", zap.Error(err))
 
@@ -483,7 +483,7 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 		return ErrServAddrIsMe
 	}
 
-	conn, err := mgrconn.getConn(servaddr)
+	conn, err := mgrConn.getConn(servaddr)
 	if err != nil {
 		jarvisbase.Warn("jarvisClient2._connectNode", zap.Error(err))
 
@@ -567,7 +567,7 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 			jarvisbase.Warn("jarvisClient2._connectNode:Close", zap.Error(err1))
 		}
 
-		mgrconn.delConn(servaddr)
+		mgrConn.delConn(servaddr)
 
 		c.fsa.onConnFail(servaddr)
 
@@ -606,7 +606,7 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 					jarvisbase.Warn("jarvisClient2._connectNode:Close", zap.Error(err))
 				}
 
-				mgrconn.delConn(servaddr)
+				mgrConn.delConn(servaddr)
 
 				c.fsa.onConnFail(servaddr)
 

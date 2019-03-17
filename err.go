@@ -77,4 +77,6 @@ var (
 	ErrInvalidReadFileLength = errors.New("invalid readfile length")
 	// ErrInvalidSeekFileOffset - invalid seekfile offset
 	ErrInvalidSeekFileOffset = errors.New("invalid seekfile offset")
+	// ErrNoConnOrInvalidConn - no connection or invalid connection
+	ErrNoConnOrInvalidConn = errors.New("no connection or invalid connection")
 )

@@ -532,17 +532,16 @@ func (db *CoreDB) hasNode(addr string) bool {
 
 // GetNode - get node with addr
 func (db *CoreDB) GetNode(addr string) *coredbpb.NodeInfo {
-	var cni *coredbpb.NodeInfo
+	// var cni *coredbpb.NodeInfo
 	ifcni, ok := db.mapNodes.Load(addr)
 	if ok {
-		cni, ok = ifcni.(*coredbpb.NodeInfo)
+		cni, typeok := ifcni.(*coredbpb.NodeInfo)
+		if typeok {
+			return cni
+		}
 	}
 
-	if !ok {
-		return nil
-	}
-
-	return cni
+	return nil
 }
 
 // FindNodeWithServAddr - get node

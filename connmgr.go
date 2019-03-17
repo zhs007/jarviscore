@@ -12,30 +12,38 @@ import (
 
 // connMgr -
 type connMgr struct {
-	sync.RWMutex
+	mapConn sync.Map
+}
 
-	mapConn map[string]*grpc.ClientConn
+func (mgr *connMgr) _getConn(servaddr string) *grpc.ClientConn {
+	val, ok := mgr.mapConn.Load(servaddr)
+	if ok {
+		conn, typeok := val.(*grpc.ClientConn)
+		if typeok {
+			return conn
+		}
+	}
+
+	return nil
 }
 
 func (mgr *connMgr) isValidConn(servaddr string) bool {
-	mgr.Lock()
-	defer mgr.Unlock()
+	conn := mgr._getConn(servaddr)
+	if conn == nil {
+		return false
+	}
 
-	if conn, ok := mgr.mapConn[servaddr]; ok {
-		cs := conn.GetState()
-		if !(cs == connectivity.Shutdown || cs == connectivity.TransientFailure) {
-			return true
-		}
+	cs := conn.GetState()
+	if !(cs == connectivity.Shutdown || cs == connectivity.TransientFailure) {
+		return true
 	}
 
 	return false
 }
 
 func (mgr *connMgr) getConn(servaddr string) (*grpc.ClientConn, error) {
-	mgr.Lock()
-	defer mgr.Unlock()
-
-	if conn, ok := mgr.mapConn[servaddr]; ok {
+	conn := mgr._getConn(servaddr)
+	if conn != nil {
 		cs := conn.GetState()
 		if !(cs == connectivity.Shutdown || cs == connectivity.TransientFailure) {
 			return conn, nil
@@ -57,17 +65,11 @@ func (mgr *connMgr) getConn(servaddr string) (*grpc.ClientConn, error) {
 		return nil, err
 	}
 
-	mgr.mapConn[servaddr] = conn
+	mgr.mapConn.Store(servaddr, conn)
 
 	return conn, nil
 }
 
 func (mgr *connMgr) delConn(servaddr string) {
-	mgr.Lock()
-	defer mgr.Unlock()
-
-	_, ok := mgr.mapConn[servaddr]
-	if ok {
-		delete(mgr.mapConn, servaddr)
-	}
+	mgr.mapConn.Delete(servaddr)
 }
