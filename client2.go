@@ -273,7 +273,7 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 			funcOnResult(ctx, c.node, lstResult)
 		}
 
-		return ErrNotConnectedNode
+		// return ErrNotConnectedNode
 		// return c._broadCastMsg(ctx, smsg)
 	}
 
