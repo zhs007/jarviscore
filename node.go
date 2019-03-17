@@ -419,6 +419,67 @@ func (n *jarvisNode) ConnectNode(node *coredbpb.NodeInfo, funcOnResult FuncOnPro
 	return nil
 }
 
+// replyCtrlResult
+func (n *jarvisNode) replyCtrlResult(ctx context.Context, msg *pb.JarvisMsg, info string) error {
+
+	ci := msg.GetCtrlInfo()
+	if ci == nil {
+		jarvisbase.Warn("jarvisNode.replyCtrlResult:GetCtrlInfo", zap.Error(ErrNoCtrlInfo))
+
+		n.reply2(msg, pb.REPLYTYPE_ERROR, ErrNoCtrlInfo.Error())
+
+		return ErrNoCtrlInfo
+	}
+
+	sendmsg2, err := BuildCtrlResult(n, n.myinfo.Addr, msg.SrcAddr, ci.CtrlID, msg.MsgID, info)
+
+	if err != nil {
+		jarvisbase.Warn("jarvisNode.replyCtrlResult:BuildCtrlResult", zap.Error(err))
+
+		n.reply2(msg, pb.REPLYTYPE_ERROR, err.Error())
+
+		return err
+	}
+
+	jarvisbase.Info("jarvisNode.replyCtrlResult",
+		jarvisbase.JSON("msg", msg),
+		jarvisbase.JSON("sendmsg", sendmsg2))
+
+	n.mgrClient2.addSendMsgTask(sendmsg2, nil, nil)
+
+	return nil
+}
+
+// reply2
+func (n *jarvisNode) reply2(msg *pb.JarvisMsg, rt pb.REPLYTYPE, strErr string) error {
+
+	sendmsg, err := BuildReply2(n, n.myinfo.Addr, msg.SrcAddr, rt, strErr, msg.MsgID)
+	if err != nil {
+		jarvisbase.Warn("jarvisNode.reply2:BuildReply2", zap.Error(err))
+
+		return err
+	}
+
+	n.mgrClient2.addSendMsgTask(sendmsg, nil, nil)
+
+	return nil
+}
+
+// runRequestCtrl
+func (n *jarvisNode) runRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
+	stream pb.JarvisCoreServ_ProcMsgServer, funcOnResult FuncOnProcMsgResult) {
+
+	ci := msg.GetCtrlInfo()
+	ret, err := n.mgrCtrl.Run(ci)
+	if err != nil {
+		n.replyCtrlResult(ctx, msg, err.Error())
+
+		return
+	}
+
+	n.replyCtrlResult(ctx, msg, string(ret))
+}
+
 // onMsgRequestCtrl
 func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 	stream pb.JarvisCoreServ_ProcMsgServer, funcOnResult FuncOnProcMsgResult) error {
@@ -430,32 +491,7 @@ func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 
 	n.mgrEvent.onMsgEvent(ctx, EventOnCtrl, msg)
 
-	ci := msg.GetCtrlInfo()
-	ret, err := n.mgrCtrl.Run(ci)
-	if err != nil {
-		sendmsg2, err := BuildCtrlResult(n, n.myinfo.Addr, msg.SrcAddr, ci.CtrlID, msg.MsgID, err.Error())
-		if err != nil {
-			jarvisbase.Warn("jarvisNode.onMsgRequestCtrl:BuildCtrlResult", zap.Error(err))
-
-			return err
-		}
-
-		jarvisbase.Info("jarvisNode.onMsgRequestCtrl",
-			jarvisbase.JSON("msg", msg),
-			jarvisbase.JSON("sendmsg", sendmsg2))
-
-		n.mgrClient2.addSendMsgTask(sendmsg2, nil, funcOnResult)
-
-		return nil
-	}
-
-	sendmsg2, err := BuildCtrlResult(n, n.myinfo.Addr, msg.SrcAddr, ci.CtrlID, msg.MsgID, string(ret))
-
-	jarvisbase.Info("jarvisNode.onMsgRequestCtrl",
-		jarvisbase.JSON("msg", msg),
-		jarvisbase.JSON("sendmsg", sendmsg2))
-
-	n.mgrClient2.addSendMsgTask(sendmsg2, nil, funcOnResult)
+	go n.runRequestCtrl(ctx, msg, stream, funcOnResult)
 
 	return nil
 }
@@ -499,16 +535,16 @@ func (n *jarvisNode) onMsgCtrlResult(ctx context.Context, msg *pb.JarvisMsg) err
 	return nil
 }
 
-// onMsgLocalSendMsg
-func (n *jarvisNode) onMsgLocalSendMsg(ctx context.Context, msg *pb.JarvisMsg,
-	funcOnResult FuncOnProcMsgResult) error {
+// // onMsgLocalSendMsg
+// func (n *jarvisNode) onMsgLocalSendMsg(ctx context.Context, msg *pb.JarvisMsg,
+// 	funcOnResult FuncOnProcMsgResult) error {
 
-	sendmsg := msg.GetMsg()
+// 	sendmsg := msg.GetMsg()
 
-	n.mgrClient2.addSendMsgTask(sendmsg, nil, funcOnResult)
+// 	n.mgrClient2.addSendMsgTask(sendmsg, nil, funcOnResult)
 
-	return nil
-}
+// 	return nil
+// }
 
 // onMsgUpdateNode
 func (n *jarvisNode) onMsgUpdateNode(ctx context.Context, msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer) error {

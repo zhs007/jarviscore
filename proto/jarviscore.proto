@@ -72,6 +72,8 @@ enum REPLYTYPE {
     ERRMSGID = 5;
     // I got it
     IGOTIT = 6;
+    // end
+    END = 7;    
 }
 
 message NodeBaseInfo {

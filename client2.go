@@ -20,43 +20,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// ClientProcMsgResult - result for client.ProcMsg
-type ClientProcMsgResult struct {
-	Msg *pb.JarvisMsg `json:"msg"`
-	Err error         `json:"err"`
-}
-
-// FuncOnProcMsgResult - on procmsg recv the message
-type FuncOnProcMsgResult func(ctx context.Context, jarvisnode JarvisNode,
-	lstResult []*ClientProcMsgResult) error
-
-// IsClientProcMsgResultEnd - is end
-func IsClientProcMsgResultEnd(lstResult []*ClientProcMsgResult) bool {
-	return len(lstResult) > 0 && lstResult[len(lstResult)-1].Msg == nil
-}
-
-// ClientGroupProcMsgResults - result for FuncOnSendMsgResult
-type ClientGroupProcMsgResults struct {
-	Results []*ClientProcMsgResult `json:"results"`
-}
-
-// FuncOnGroupSendMsgResult - on group sendmsg recv the messages
-type FuncOnGroupSendMsgResult func(ctx context.Context, jarvisnode JarvisNode,
-	numsNode int, lstResult []*ClientGroupProcMsgResults) error
-
-// CountClientGroupProcMsgResultsEnd - count number for end
-func CountClientGroupProcMsgResultsEnd(lstResult []*ClientGroupProcMsgResults) int {
-	nums := 0
-	for i := 0; i < len(lstResult); i++ {
-		cr := lstResult[i]
-		if len(cr.Results) > 0 && cr.Results[len(cr.Results)-1].Msg == nil {
-			nums++
-		}
-	}
-
-	return nums
-}
-
 type clientTask struct {
 	jarvisbase.L2BaseTask
 
@@ -217,25 +180,34 @@ func (c *jarvisClient2) isConnected(addr string) bool {
 	return ok
 }
 
-func (c *jarvisClient2) _getValidClientConn(addr string) (*clientInfo2, error) {
+func (c *jarvisClient2) _getClientConn(addr string) *clientInfo2 {
 	mi, ok := c.mapClient.Load(addr)
 	if ok {
-		ci, ok := mi.(*clientInfo2)
-		if ok {
-			if mgrconn.isValidConn(ci.servAddr) {
-				return ci, nil
-			}
+		ci, typeok := mi.(*clientInfo2)
+		if typeok {
+			return ci
 		}
 	}
 
-	ci, ok := mi.(*clientInfo2)
-	if ok {
-		if mgrconn.isValidConn(ci.servAddr) {
+	return nil
+}
+
+func (c *jarvisClient2) _getValidClientConn(addr string) (*clientInfo2, error) {
+	ci := c._getClientConn(addr)
+	if ci != nil {
+		if mgrConn.isValidConn(ci.servAddr) {
 			return ci, nil
 		}
 	}
 
-	conn, err := mgrconn.getConn(ci.servAddr)
+	cn := c.node.GetCoreDB().GetNode(addr)
+	if cn == nil {
+		jarvisbase.Warn("jarvisClient2.getValidClientConn:GetNode", zap.Error(ErrCannotFindNodeWithAddr))
+
+		return nil, ErrCannotFindNodeWithAddr
+	}
+
+	conn, err := mgrConn.getConn(cn.ServAddr)
 	if err != nil {
 		jarvisbase.Warn("jarvisClient2.getValidClientConn", zap.Error(err))
 
@@ -258,7 +230,12 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 
 	_, ok := c.mapClient.Load(smsg.DestAddr)
 	if !ok {
-		jarvisbase.Warn("jarvisClient2._sendMsg:getValidClientConn", zap.Error(ErrNotConnectedNode))
+		tmsg, _ := BuildOutputMsg(smsg)
+		if tmsg != nil {
+			jarvisbase.Warn("jarvisClient2._sendMsg:mapClient",
+				zap.Error(ErrNotConnectedNode),
+				jarvisbase.JSON("msg", tmsg))
+		}
 
 		if funcOnResult != nil {
 			lstResult = append(lstResult, &ClientProcMsgResult{
@@ -268,7 +245,7 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 			funcOnResult(ctx, c.node, lstResult)
 		}
 
-		return ErrNotConnectedNode
+		// return ErrNotConnectedNode
 		// return c._broadCastMsg(ctx, smsg)
 	}
 
@@ -478,7 +455,7 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 		return ErrServAddrIsMe
 	}
 
-	conn, err := mgrconn.getConn(servaddr)
+	conn, err := mgrConn.getConn(servaddr)
 	if err != nil {
 		jarvisbase.Warn("jarvisClient2._connectNode", zap.Error(err))
 
@@ -562,7 +539,7 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 			jarvisbase.Warn("jarvisClient2._connectNode:Close", zap.Error(err1))
 		}
 
-		mgrconn.delConn(servaddr)
+		mgrConn.delConn(servaddr)
 
 		c.fsa.onConnFail(servaddr)
 
@@ -601,7 +578,7 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 					jarvisbase.Warn("jarvisClient2._connectNode:Close", zap.Error(err))
 				}
 
-				mgrconn.delConn(servaddr)
+				mgrConn.delConn(servaddr)
 
 				c.fsa.onConnFail(servaddr)
 

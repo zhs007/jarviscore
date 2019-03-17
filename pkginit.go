@@ -1,15 +1,11 @@
 package jarviscore
 
-import (
-	"google.golang.org/grpc"
-)
-
-var mgrconn *connMgr
+var mgrConn *connMgr
 
 // var mgrCtrl *ctrlMgr
 
 func init() {
-	mgrconn = &connMgr{mapConn: make(map[string]*grpc.ClientConn)}
+	mgrConn = &connMgr{}
 
 	// mgrCtrl = &ctrlMgr{mapCtrl: make(map[string](Ctrl))}
 	// mgrCtrl.Reg(CtrlTypeShell, &CtrlShell{})

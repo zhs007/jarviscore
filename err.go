@@ -77,4 +77,10 @@ var (
 	ErrInvalidReadFileLength = errors.New("invalid readfile length")
 	// ErrInvalidSeekFileOffset - invalid seekfile offset
 	ErrInvalidSeekFileOffset = errors.New("invalid seekfile offset")
+	// ErrNoConnOrInvalidConn - no connection or invalid connection
+	ErrNoConnOrInvalidConn = errors.New("no connection or invalid connection")
+	// ErrNoCtrlInfo - no ctrlinfo
+	ErrNoCtrlInfo = errors.New("no ctrlinfo")
+	// ErrCannotFindNodeWithAddr - can not find node with addr
+	ErrCannotFindNodeWithAddr = errors.New("can not find node with addr")
 )
