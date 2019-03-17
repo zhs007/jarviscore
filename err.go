@@ -79,4 +79,6 @@ var (
 	ErrInvalidSeekFileOffset = errors.New("invalid seekfile offset")
 	// ErrNoConnOrInvalidConn - no connection or invalid connection
 	ErrNoConnOrInvalidConn = errors.New("no connection or invalid connection")
+	// ErrNoCtrlInfo - no ctrlinfo
+	ErrNoCtrlInfo = errors.New("no ctrlinfo")
 )
