@@ -213,17 +213,19 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 			return nil
 		}
 
-		err = n.checkMsgID(ctx, msg)
-		if err != nil {
-			jarvisbase.Warn("jarvisNode.OnMsg:checkMsgID", zap.Error(err))
+		if stream != nil {
+			err = n.checkMsgID(ctx, msg)
+			if err != nil {
+				jarvisbase.Warn("jarvisNode.OnMsg:checkMsgID", zap.Error(err))
 
-			if err == ErrInvalidMsgID {
-				n.replyStream2(msg, stream, pb.REPLYTYPE_ERRMSGID, "")
-			} else {
-				n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
+				if err == ErrInvalidMsgID {
+					n.replyStream2(msg, stream, pb.REPLYTYPE_ERRMSGID, "")
+				} else {
+					n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
+				}
+
+				return nil
 			}
-
-			return nil
 		}
 
 		if msg.MsgType == pb.MSGTYPE_NODE_INFO {
@@ -1422,7 +1424,7 @@ func (n *jarvisNode) sendMsg2ClientStream(stream pb.JarvisCoreServ_ProcMsgServer
 		return ErrStreamNil
 	}
 
-	sendmsg.MsgID = n.GetCoreDB().GetNewSendMsgID(sendmsg.DestAddr)
+	// sendmsg.MsgID = n.GetCoreDB().GetNewSendMsgID(sendmsg.DestAddr)
 	sendmsg.CurTime = time.Now().Unix()
 
 	err := SignJarvisMsg(n.GetCoreDB().GetPrivateKey(), sendmsg)
