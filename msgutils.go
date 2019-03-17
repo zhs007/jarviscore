@@ -5,7 +5,10 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/zhs007/jarviscore/base"
+
 	"github.com/golang/protobuf/proto"
+	"go.uber.org/zap"
 
 	"github.com/zhs007/jarviscore/crypto"
 	pb "github.com/zhs007/jarviscore/proto"
@@ -436,4 +439,17 @@ func BuildOutputMsg(src *pb.JarvisMsg) (*pb.JarvisMsg, error) {
 	}
 
 	return src, nil
+}
+
+// JSONMsg2Zap - I use this interface to output jarvismsg to the zap log.
+//		This interface will hide the long data in jarvismsg.
+func JSONMsg2Zap(key string, src *pb.JarvisMsg) zap.Field {
+	msg, err := BuildOutputMsg(src)
+	if err != nil {
+		jarvisbase.Warn("JSONMsg2Zap:BuildOutputMsg", zap.Error(err))
+
+		return jarvisbase.JSON(key, src)
+	}
+
+	return jarvisbase.JSON(key, msg)
 }

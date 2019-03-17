@@ -59,7 +59,7 @@ func (s *jarvisServer2) ProcMsg(in *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcM
 	// if isme
 	if in.SrcAddr == s.node.myinfo.Addr {
 		jarvisbase.Warn("jarvisServer2.ProcMsg:isme",
-			jarvisbase.JSON("msg", in))
+			JSONMsg2Zap("msg", in))
 
 		err := s.node.replyStream2(in, stream, pb.REPLYTYPE_ISME, "")
 		if err != nil {

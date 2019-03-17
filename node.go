@@ -164,11 +164,15 @@ func (n *jarvisNode) GetCoreDB() *coredb.CoreDB {
 
 // OnMsg - proc JarvisMsg
 func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer, funcOnResult FuncOnProcMsgResult) error {
-	jarvisbase.Debug("jarvisNode.OnMsg", jarvisbase.JSON("msg", msg))
+
+	jarvisbase.Debug("jarvisNode.OnMsg",
+		JSONMsg2Zap("msg", msg))
 
 	// is timeout
 	if IsTimeOut(msg) {
-		jarvisbase.Warn("jarvisNode.OnMsg", zap.Error(ErrJarvisMsgTimeOut))
+		jarvisbase.Warn("jarvisNode.OnMsg",
+			zap.Error(ErrJarvisMsgTimeOut),
+			JSONMsg2Zap("msg", msg))
 
 		n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, ErrJarvisMsgTimeOut.Error())
 
@@ -182,7 +186,7 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 		if err != nil {
 			jarvisbase.Warn("jarvisNode.OnMsg",
 				zap.Error(err),
-				jarvisbase.JSON("msg", msg))
+				JSONMsg2Zap("msg", msg))
 
 			n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
 
@@ -202,7 +206,7 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 		if err != nil {
 			jarvisbase.Warn("jarvisNode.OnMsg:VerifyJarvisMsg",
 				zap.Error(err),
-				jarvisbase.JSON("msg", msg))
+				JSONMsg2Zap("msg", msg))
 
 			n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
 
@@ -440,8 +444,8 @@ func (n *jarvisNode) replyCtrlResult(ctx context.Context, msg *pb.JarvisMsg, inf
 	}
 
 	jarvisbase.Info("jarvisNode.replyCtrlResult",
-		jarvisbase.JSON("msg", msg),
-		jarvisbase.JSON("sendmsg", sendmsg2))
+		JSONMsg2Zap("msg", msg),
+		JSONMsg2Zap("sendmsg", sendmsg2))
 
 	n.mgrClient2.addSendMsgTask(sendmsg2, nil, nil)
 
@@ -487,7 +491,7 @@ func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 	stream pb.JarvisCoreServ_ProcMsgServer, funcOnResult FuncOnProcMsgResult) error {
 
 	jarvisbase.Info("jarvisNode.onMsgRequestCtrl:recvmsg",
-		jarvisbase.JSON("msg", msg))
+		JSONMsg2Zap("msg", msg))
 
 	n.replyStream2(msg, stream, pb.REPLYTYPE_ISME, "")
 
@@ -551,7 +555,8 @@ func (n *jarvisNode) onMsgCtrlResult(ctx context.Context, msg *pb.JarvisMsg) err
 // onMsgUpdateNode
 func (n *jarvisNode) onMsgUpdateNode(ctx context.Context, msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer) error {
 
-	jarvisbase.Info("jarvisNode.onMsgUpdateNode", jarvisbase.JSON("msg", msg))
+	jarvisbase.Info("jarvisNode.onMsgUpdateNode",
+		JSONMsg2Zap("msg", msg))
 
 	if n.cfg.AutoUpdate {
 		n.replyStream2(msg, stream, pb.REPLYTYPE_ISME, "")
@@ -1333,7 +1338,7 @@ func (n *jarvisNode) checkMsgID(ctx context.Context, msg *pb.JarvisMsg) error {
 			zap.String("srcaddr", msg.SrcAddr),
 			zap.Int64("msgid", msg.MsgID),
 			zap.Int64("lasrrevmsgid", cn.LastRecvMsgID),
-			jarvisbase.JSON("msg", msg))
+			JSONMsg2Zap("msg", msg))
 
 		return ErrInvalidMsgID
 	}
