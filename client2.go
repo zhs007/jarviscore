@@ -628,6 +628,7 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 func (c *jarvisClient2) _signJarvisMsg(msg *pb.JarvisMsg) error {
 	msg.MsgID = c.node.GetCoreDB().GetNewSendMsgID(msg.DestAddr)
 	msg.CurTime = time.Now().Unix()
+	msg.LastMsgID = c.node.GetCoreDB().GetCurRecvMsgID(msg.DestAddr)
 
 	return SignJarvisMsg(c.node.GetCoreDB().GetPrivateKey(), msg)
 }
