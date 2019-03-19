@@ -220,12 +220,7 @@ func (obj *objRF2) oncheck(ctx context.Context, funcCancel context.CancelFunc) e
 
 				for i := 0; i < len(lstResult); i++ {
 					if lstResult[i].Msg != nil {
-						cm, err := BuildOutputMsg(lstResult[i].Msg)
-						if err != nil {
-							jarvisbase.Info("obj.node1.RequestFile:BuildOutputMsg", zap.Error(err))
-						}
-
-						jarvisbase.Info("obj.node1.RequestFile", jarvisbase.JSON("result", cm))
+						jarvisbase.Info("obj.node1.RequestFile", JSONMsg2Zap("result", lstResult[i].Msg))
 					}
 				}
 
@@ -255,21 +250,21 @@ func (obj *objRF2) oncheck(ctx context.Context, funcCancel context.CancelFunc) e
 								return nil
 							}
 
-							// if fd.Md5String == "" {
-							// 	obj.err = ErrFileDataNoMD5String
+							if fd.Md5String == "" {
+								obj.err = ErrFileDataNoMD5String
 
-							// 	funcCancel()
+								funcCancel()
 
-							// 	return nil
-							// }
+								return nil
+							}
 
-							// if fd.Md5String != GetMD5String(fd.File) {
-							// 	obj.err = ErrInvalidFileDataMD5String
+							if fd.Md5String != GetMD5String(fd.File) {
+								obj.err = ErrInvalidFileDataMD5String
 
-							// 	funcCancel()
+								funcCancel()
 
-							// 	return nil
-							// }
+								return nil
+							}
 						}
 
 						if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
@@ -310,12 +305,7 @@ func (obj *objRF2) oncheck(ctx context.Context, funcCancel context.CancelFunc) e
 
 				for i := 0; i < len(lstResult); i++ {
 					if lstResult[i].Msg != nil {
-						cm, err := BuildOutputMsg(lstResult[i].Msg)
-						if err != nil {
-							jarvisbase.Info("obj.node2.RequestFile:BuildOutputMsg", zap.Error(err))
-						}
-
-						jarvisbase.Info("obj.node2.RequestFile", jarvisbase.JSON("result", cm))
+						jarvisbase.Info("obj.node2.RequestFile", JSONMsg2Zap("result", lstResult[i].Msg))
 					}
 				}
 
@@ -345,21 +335,21 @@ func (obj *objRF2) oncheck(ctx context.Context, funcCancel context.CancelFunc) e
 								return nil
 							}
 
-							// if fd.Md5String == "" {
-							// 	obj.err = ErrFileDataNoMD5String
+							if fd.Md5String == "" {
+								obj.err = ErrFileDataNoMD5String
 
-							// 	funcCancel()
+								funcCancel()
 
-							// 	return nil
-							// }
+								return nil
+							}
 
-							// if fd.Md5String != GetMD5String(fd.File) {
-							// 	obj.err = ErrInvalidFileDataMD5String
+							if fd.Md5String != GetMD5String(fd.File) {
+								obj.err = ErrInvalidFileDataMD5String
 
-							// 	funcCancel()
+								funcCancel()
 
-							// 	return nil
-							// }
+								return nil
+							}
 						}
 
 						if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
