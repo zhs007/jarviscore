@@ -955,43 +955,6 @@ func (n *jarvisNode) SetNodeTypeInfo(nodetype string, nodetypeversion string) {
 	n.myinfo.NodeTypeVersion = nodetypeversion
 }
 
-// // replyFullFile
-// func (n *jarvisNode) replyFullFile(ctx context.Context, msg *pb.JarvisMsg, rf *pb.RequestFile,
-// 	stream pb.JarvisCoreServ_ProcMsgServer) error {
-
-// 	buf, err := ioutil.ReadFile(rf.Filename)
-// 	if err != nil {
-// 		jarvisbase.Warn("jarvisNode.replyFullFile:ReadFile", zap.Error(err))
-
-// 		n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
-
-// 		return err
-// 	}
-
-// 	fd := &pb.FileData{
-// 		File:     buf,
-// 		Filename: rf.Filename,
-// 	}
-
-// 	sendmsg, err := BuildReplyRequestFile(n, n.myinfo.Addr, msg.SrcAddr, fd, msg.MsgID)
-// 	if err != nil {
-// 		jarvisbase.Warn("jarvisNode.replyFullFile:BuildReplyRequestFile", zap.Error(err))
-
-// 		n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
-
-// 		return err
-// 	}
-
-// 	err = n.sendMsg2ClientStream(stream, sendmsg)
-// 	if err != nil {
-// 		jarvisbase.Warn("jarvisNode.replyFullFile:sendMsg2ClientStream", zap.Error(err))
-
-// 		return err
-// 	}
-
-// 	return nil
-// }
-
 // replyFile
 func (n *jarvisNode) replyFile(ctx context.Context, msg *pb.JarvisMsg, rf *pb.RequestFile,
 	stream pb.JarvisCoreServ_ProcMsgServer) error {
@@ -1026,117 +989,6 @@ func (n *jarvisNode) replyFile(ctx context.Context, msg *pb.JarvisMsg, rf *pb.Re
 
 		return err
 	}
-
-	// fl, err := GetFileLength(rf.Filename)
-	// if err != nil {
-	// 	jarvisbase.Warn("jarvisNode.replyFile:GetFileLength", zap.Error(err))
-
-	// 	n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
-
-	// 	return err
-	// }
-
-	// jarvisbase.Info("jarvisNode.replyFile",
-	// 	zap.Int64("filelength", fl))
-
-	// if fl <= basedef.BigFileLength {
-	// 	return n.replyFullFile(ctx, msg, rf, stream)
-	// }
-
-	// fdata, err := os.Open(rf.Filename)
-	// if err != nil {
-	// 	jarvisbase.Warn("jarvisNode.replyFile:Open", zap.Error(err))
-
-	// 	n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
-
-	// 	return err
-	// }
-
-	// defer fdata.Close()
-
-	// curstart := int64(0)
-	// curlength := int64(basedef.BigFileLength)
-	// buf := make([]byte, curlength)
-	// len := 0
-	// totalmd5 := ""
-
-	// for curstart < fl {
-	// 	if curstart+curlength >= fl {
-	// 		len, err = fdata.Read(buf)
-	// 		if err != nil {
-	// 			jarvisbase.Warn("jarvisNode.replyFile:ReadAtEnd", zap.Error(err))
-
-	// 			n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
-
-	// 			return err
-	// 		}
-
-	// 		if curstart+int64(len) != fl {
-	// 			jarvisbase.Warn("jarvisNode.replyFile:ReadAtEnd", zap.Error(ErrInvalidReadFileLength))
-
-	// 			n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, ErrInvalidReadFileLength.Error())
-
-	// 			return ErrInvalidReadFileLength
-	// 		}
-
-	// 		totalmd5, err = MD5File(rf.Filename)
-	// 		if err != nil {
-	// 			jarvisbase.Warn("jarvisNode.replyFile:MD5File", zap.Error(err))
-
-	// 			n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
-
-	// 			return err
-	// 		}
-	// 	} else {
-	// 		len, err = fdata.Read(buf)
-	// 		if err != nil {
-	// 			jarvisbase.Warn("jarvisNode.replyFile:Read", zap.Error(err))
-
-	// 			n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
-
-	// 			return err
-	// 		}
-
-	// 		if int64(len) != curlength {
-	// 			jarvisbase.Warn("jarvisNode.replyFile:Read", zap.Error(ErrInvalidReadFileLength))
-
-	// 			n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, ErrInvalidReadFileLength.Error())
-
-	// 			return ErrInvalidReadFileLength
-	// 		}
-	// 	}
-
-	// 	jarvisbase.Info("jarvisNode.replyFile",
-	// 		zap.Int("buflen", len))
-
-	// 	fd := &pb.FileData{
-	// 		File:          buf[0:len],
-	// 		Filename:      rf.Filename,
-	// 		Ft:            pb.FileType_FT_BINARY,
-	// 		Start:         curstart,
-	// 		Length:        int64(len),
-	// 		TotalLength:   fl,
-	// 		FileMD5String: totalmd5,
-	// 	}
-
-	// 	sendmsg, err := BuildReplyRequestFile(n, n.myinfo.Addr, msg.SrcAddr, fd, msg.MsgID)
-	// 	if err != nil {
-	// 		jarvisbase.Warn("jarvisNode.replyFile:BuildReplyRequestFile", zap.Error(err))
-
-	// 		n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
-
-	// 		return err
-	// 	}
-
-	// 	err = n.sendMsg2ClientStream(stream, sendmsg)
-	// 	if err != nil {
-	// 		jarvisbase.Warn("jarvisNode.replyFile:sendMsg2ClientStream", zap.Error(err))
-
-	// 		return err
-	// 	}
-
-	// 	curstart += int64(len)
-	// }
 
 	return nil
 }
@@ -1237,15 +1089,6 @@ func (n *jarvisNode) onMsgRequestFile(ctx context.Context, msg *pb.JarvisMsg,
 
 	rf := msg.GetRequestFile()
 
-	// fl, err := GetFileLength(rf.Filename)
-	// if err != nil {
-	// 	jarvisbase.Warn("jarvisNode.onMsgRequestFile:GetFileLength", zap.Error(err))
-
-	// 	n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
-
-	// 	return err
-	// }
-
 	if rf.Length > 0 {
 		if rf.Length > basedef.BigFileLength {
 			rf.Length = basedef.BigFileLength
@@ -1254,11 +1097,7 @@ func (n *jarvisNode) onMsgRequestFile(ctx context.Context, msg *pb.JarvisMsg,
 		return n.replyPartFile(ctx, msg, rf, stream)
 	}
 
-	// if fl > basedef.BigFileLength {
 	return n.replyFile(ctx, msg, rf, stream)
-	// }
-
-	// return n.replyFullFile(ctx, msg, rf, stream)
 }
 
 // onMsgReplyRequestFile
