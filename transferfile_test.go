@@ -3,6 +3,7 @@ package jarviscore
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"sync"
@@ -16,6 +17,20 @@ import (
 
 	"go.uber.org/zap"
 )
+
+func sendfile2node(ctx context.Context, fn string, destfn string, srcnode JarvisNode, destaddr string, funcOnResult FuncOnProcMsgResult) error {
+	dat, err := ioutil.ReadFile(fn)
+	if err != nil {
+		return err
+	}
+
+	fd := &jarviscorepb.FileData{
+		File:     dat,
+		Filename: destfn,
+	}
+
+	return srcnode.SendFile(ctx, destaddr, fd, funcOnResult)
+}
 
 func randfillFileTF(fn string, len int) error {
 	f, err := os.Create(fn)
@@ -155,18 +170,18 @@ func (ni *nodeinfoTF) onNodeConnected(node *coredbpb.NodeInfo) error {
 }
 
 type objTF struct {
-	root           JarvisNode
-	node1          JarvisNode
-	node2          JarvisNode
-	rootni         nodeinfoTF
-	node1ni        nodeinfoTF
-	node2ni        nodeinfoTF
-	requestnodes   bool
-	requestfile1   bool
-	requestfile1ok bool
-	requestfile2   bool
-	requestfile2ok bool
-	err            error
+	root            JarvisNode
+	node1           JarvisNode
+	node2           JarvisNode
+	rootni          nodeinfoTF
+	node1ni         nodeinfoTF
+	node2ni         nodeinfoTF
+	requestnodes    bool
+	transferfile1   bool
+	transferfile1ok bool
+	transferfile2   bool
+	transferfile2ok bool
+	err             error
 }
 
 func newObjTF() *objTF {
@@ -183,138 +198,7 @@ func (obj *objTF) isDone() bool {
 		return false
 	}
 
-	return obj.requestfile1 && obj.requestfile1ok && obj.requestfile2 && obj.requestfile2ok
-}
-
-func (obj *objTF) oncheckrequestfile2(ctx context.Context, funcCancel context.CancelFunc) error {
-	if obj.requestfile1 && obj.requestfile1ok &&
-		!obj.requestfile2 {
-
-		curresultnums := 0
-
-		rf := &jarviscorepb.RequestFile{
-			Filename: "./test/rf002.dat",
-		}
-
-		err := obj.node2.RequestFile(ctx, obj.node1.GetMyInfo().Addr, rf,
-			func(ctx context.Context, jarvisnode JarvisNode,
-				lstResult []*ClientProcMsgResult) error {
-
-				for i := 0; i < len(lstResult); i++ {
-					if lstResult[i].Msg != nil {
-						cm, err := BuildOutputMsg(lstResult[i].Msg)
-						if err != nil {
-							jarvisbase.Info("obj.node2.RequestFile:BuildOutputMsg", zap.Error(err))
-						}
-
-						jarvisbase.Info("obj.node2.RequestFile", jarvisbase.JSON("result", cm))
-					}
-				}
-
-				if len(lstResult) > curresultnums {
-					for ; curresultnums < len(lstResult); curresultnums++ {
-						if lstResult[curresultnums].Err != nil {
-							obj.err = fmt.Errorf("lstResult[%v].Err %v", curresultnums, lstResult[curresultnums].Err)
-
-							curresultnums++
-
-							funcCancel()
-
-							return nil
-						}
-
-						if lstResult[curresultnums].Msg != nil &&
-							lstResult[curresultnums].Msg.MsgType == jarviscorepb.MSGTYPE_REPLY_REQUEST_FILE {
-
-							fd := lstResult[curresultnums].Msg.GetFile()
-							if fd == nil {
-								obj.err = ErrNoFileData
-
-								funcCancel()
-
-								return nil
-							}
-
-							// if fd.Md5String == "" {
-							// 	obj.err = ErrFileDataNoMD5String
-
-							// 	funcCancel()
-
-							// 	return nil
-							// }
-
-							// if fd.Md5String != GetMD5String(fd.File) {
-							// 	obj.err = ErrInvalidFileDataMD5String
-
-							// 	funcCancel()
-
-							// 	return nil
-							// }
-						}
-
-						if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
-
-							var lst []*jarviscorepb.FileData
-							totalmd5 := ""
-							totallen := int64(0)
-							for i := 0; i < len(lstResult); i++ {
-								if lstResult[i].Msg != nil && lstResult[i].Msg.GetFile() != nil {
-									lst = append(lst, lstResult[i].Msg.GetFile())
-
-									if lstResult[i].Msg.GetFile().FileMD5String != "" {
-										totalmd5 = lstResult[i].Msg.GetFile().FileMD5String
-									}
-
-									totallen = lstResult[i].Msg.GetFile().TotalLength
-								}
-							}
-
-							tl, md5str, err := CountMD5String(lst)
-							if err != nil {
-								obj.err = err
-
-								funcCancel()
-
-								return nil
-							}
-
-							if tl != totallen {
-								obj.err = fmt.Errorf("obj.node2.RequestFile length %v %v", tl, totallen)
-
-								funcCancel()
-
-								return nil
-							}
-
-							if md5str != totalmd5 {
-								obj.err = fmt.Errorf("obj.node2.RequestFile md5check %v %v", md5str, totalmd5)
-
-								funcCancel()
-
-								return nil
-							}
-
-							obj.requestfile2ok = true
-
-							funcCancel()
-
-							return nil
-						}
-					}
-				}
-
-				return nil
-			})
-		if err != nil {
-			obj.err = err
-
-			return err
-		}
-
-		obj.requestfile2 = true
-	}
-
-	return nil
+	return obj.transferfile1 && obj.transferfile1ok && obj.transferfile2 && obj.transferfile2ok
 }
 
 func (obj *objTF) oncheck(ctx context.Context, funcCancel context.CancelFunc) error {
@@ -337,26 +221,17 @@ func (obj *objTF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 	}
 
 	if obj.node1ni.numsConnMe == 2 && obj.node2ni.numsConnMe == 2 &&
-		obj.node1ni.numsIConn == 2 && obj.node2ni.numsIConn == 2 && !obj.requestfile1 {
+		obj.node1ni.numsIConn == 2 && obj.node2ni.numsIConn == 2 && !obj.transferfile1 {
 
 		curresultnums := 0
 
-		rf := &jarviscorepb.RequestFile{
-			Filename: "./test/rf001.dat",
-		}
-
-		err := obj.node1.RequestFile(ctx, obj.node2.GetMyInfo().Addr, rf,
+		err := sendfile2node(ctx, "./test/tf001.dat", "./test/node1_tf001.dat", obj.node1, obj.node2.GetMyInfo().Addr,
 			func(ctx context.Context, jarvisnode JarvisNode,
 				lstResult []*ClientProcMsgResult) error {
 
 				for i := 0; i < len(lstResult); i++ {
 					if lstResult[i].Msg != nil {
-						cm, err := BuildOutputMsg(lstResult[i].Msg)
-						if err != nil {
-							jarvisbase.Info("obj.node1.RequestFile:BuildOutputMsg", zap.Error(err))
-						}
-
-						jarvisbase.Info("obj.node1.RequestFile", jarvisbase.JSON("result", cm))
+						jarvisbase.Info("sendfile2node obj.node1", JSONMsg2Zap("result", lstResult[i].Msg))
 					}
 				}
 
@@ -386,27 +261,29 @@ func (obj *objTF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 								return nil
 							}
 
-							// if fd.Md5String == "" {
-							// 	obj.err = ErrFileDataNoMD5String
+							if fd.Md5String == "" {
+								obj.err = ErrFileDataNoMD5String
 
-							// 	funcCancel()
+								funcCancel()
 
-							// 	return nil
-							// }
+								return nil
+							}
 
-							// if fd.Md5String != GetMD5String(fd.File) {
-							// 	obj.err = ErrInvalidFileDataMD5String
+							if fd.Md5String != GetMD5String(fd.File) {
+								obj.err = ErrInvalidFileDataMD5String
 
-							// 	funcCancel()
+								funcCancel()
 
-							// 	return nil
-							// }
+								return nil
+							}
 						}
 
 						if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
-							obj.requestfile1ok = true
+							obj.transferfile1ok = true
 
-							obj.oncheckrequestfile2(ctx, funcCancel)
+							if obj.isDone() {
+								funcCancel()
+							}
 
 							return nil
 						}
@@ -421,7 +298,88 @@ func (obj *objTF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 			return err
 		}
 
-		obj.requestfile1 = true
+		obj.transferfile1 = true
+	}
+
+	if obj.node1ni.numsConnMe == 2 && obj.node2ni.numsConnMe == 2 &&
+		obj.node1ni.numsIConn == 2 && obj.node2ni.numsIConn == 2 && !obj.transferfile2 {
+
+		curresultnums := 0
+
+		err := sendfile2node(ctx, "./test/tf001.dat", "./test/node2_tf001.dat", obj.node2, obj.node1.GetMyInfo().Addr,
+			func(ctx context.Context, jarvisnode JarvisNode,
+				lstResult []*ClientProcMsgResult) error {
+
+				for i := 0; i < len(lstResult); i++ {
+					if lstResult[i].Msg != nil {
+						jarvisbase.Info("sendfile2node obj.node2", JSONMsg2Zap("result", lstResult[i].Msg))
+					}
+				}
+
+				// jarvisbase.Info("obj.node1.RequestFile", jarvisbase.JSON("result", lstResult))
+
+				if len(lstResult) > curresultnums {
+					for ; curresultnums < len(lstResult); curresultnums++ {
+						if lstResult[curresultnums].Err != nil {
+							obj.err = fmt.Errorf("lstResult[%v].Err %v", curresultnums, lstResult[curresultnums].Err)
+
+							curresultnums++
+
+							funcCancel()
+
+							return nil
+						}
+
+						if lstResult[curresultnums].Msg != nil &&
+							lstResult[curresultnums].Msg.MsgType == jarviscorepb.MSGTYPE_REPLY_REQUEST_FILE {
+
+							fd := lstResult[curresultnums].Msg.GetFile()
+							if fd == nil {
+								obj.err = ErrNoFileData
+
+								funcCancel()
+
+								return nil
+							}
+
+							if fd.Md5String == "" {
+								obj.err = ErrFileDataNoMD5String
+
+								funcCancel()
+
+								return nil
+							}
+
+							if fd.Md5String != GetMD5String(fd.File) {
+								obj.err = ErrInvalidFileDataMD5String
+
+								funcCancel()
+
+								return nil
+							}
+						}
+
+						if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
+							obj.transferfile2ok = true
+
+							if obj.isDone() {
+								funcCancel()
+							}
+
+							return nil
+						}
+					}
+				}
+
+				return nil
+			})
+		if err != nil {
+			obj.err = err
+
+			return err
+		}
+
+		obj.transferfile2 = true
 	}
 
 	return nil
@@ -436,15 +394,15 @@ func (obj *objTF) onConnMe(ctx context.Context, funcCancel context.CancelFunc) e
 }
 
 func (obj *objTF) makeString() string {
-	return fmt.Sprintf("root(%v %v) node1(%v %v), node2(%v %v) requestnodes %v requestfile1 %v requestfile1ok %v requestfile2 %v requestfile2ok %v root %v node1 %v node2 %v",
+	return fmt.Sprintf("root(%v %v) node1(%v %v), node2(%v %v) requestnodes %v transferfile1 %v transferfile1ok %v transferfile2 %v transferfile2ok %v root %v node1 %v node2 %v",
 		obj.rootni.numsIConn, obj.rootni.numsConnMe,
 		obj.node1ni.numsIConn, obj.node1ni.numsConnMe,
 		obj.node2ni.numsIConn, obj.node2ni.numsConnMe,
 		obj.requestnodes,
-		obj.requestfile1,
-		obj.requestfile1ok,
-		obj.requestfile2,
-		obj.requestfile2ok,
+		obj.transferfile1,
+		obj.transferfile1ok,
+		obj.transferfile2,
+		obj.transferfile2ok,
 		obj.root.BuildStatus(),
 		obj.node1.BuildStatus(),
 		obj.node2.BuildStatus())
