@@ -901,7 +901,6 @@ func (n *jarvisNode) replyTransferFile(msg *pb.JarvisMsg, stream pb.JarvisCoreSe
 	}
 
 	n.sendMsg2ClientStream(stream, sendmsg)
-	// err = stream.SendMsg(sendmsg)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.replyTransferFile:sendMsg2ClientStream", zap.Error(err))
 
@@ -915,13 +914,13 @@ func (n *jarvisNode) replyTransferFile(msg *pb.JarvisMsg, stream pb.JarvisCoreSe
 func (n *jarvisNode) onMsgTransferFile(ctx context.Context, msg *pb.JarvisMsg,
 	stream pb.JarvisCoreServ_ProcMsgServer) error {
 
-	// jarvisbase.Debug("jarvisNode.onMsgTransferFile")
-
 	if stream == nil {
 		jarvisbase.Warn("jarvisNode.onMsgTransferFile", zap.Error(ErrStreamNil))
 
 		return ErrStreamNil
 	}
+
+	n.replyStream2(msg, stream, pb.REPLYTYPE_IGOTIT, "")
 
 	fd := msg.GetFile()
 
@@ -998,7 +997,7 @@ func (n *jarvisNode) replyFullFile(ctx context.Context, msg *pb.JarvisMsg, rf *p
 func (n *jarvisNode) replyFile(ctx context.Context, msg *pb.JarvisMsg, rf *pb.RequestFile,
 	stream pb.JarvisCoreServ_ProcMsgServer) error {
 
-	jarvisbase.Info("jarvisNode.replyFile")
+	// jarvisbase.Info("jarvisNode.replyFile")
 
 	fl, err := GetFileLength(rf.Filename)
 	if err != nil {
