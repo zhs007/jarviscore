@@ -16,6 +16,7 @@ import (
 	"github.com/golang/protobuf/proto"
 
 	"github.com/zhs007/jarviscore/base"
+	"github.com/zhs007/jarviscore/basedef"
 	"github.com/zhs007/jarviscore/coredb/proto"
 	pb "github.com/zhs007/jarviscore/proto"
 )
@@ -256,4 +257,159 @@ func CountMD5String(lst []*pb.FileData) (int64, string, error) {
 	}
 
 	return totallen, fmt.Sprintf("%x", md5hash.Sum(nil)), nil
+}
+
+// FuncOnFileData - on proc filedata
+type FuncOnFileData func(fd *pb.FileData, isend bool) error
+
+// ProcFileDataWithBuff - proc filedata
+func ProcFileDataWithBuff(buf []byte, onfunc FuncOnFileData) error {
+	if onfunc == nil {
+		return ErrNoFuncOnFileData
+	}
+
+	fl := len(buf)
+
+	if fl <= basedef.BigFileLength {
+
+		md5str := GetMD5String(buf)
+
+		onfunc(&pb.FileData{
+			File:          buf,
+			Ft:            pb.FileType_FT_BINARY,
+			Start:         0,
+			Length:        int64(fl),
+			TotalLength:   int64(fl),
+			FileMD5String: md5str,
+		}, true)
+
+	} else {
+		curstart := int64(0)
+		curlength := int64(basedef.BigFileLength)
+
+		for curstart < int64(fl) {
+			if curstart+curlength >= int64(fl) {
+
+				onfunc(&pb.FileData{
+					File:          buf[curstart:fl],
+					Ft:            pb.FileType_FT_BINARY,
+					Start:         curstart,
+					Length:        int64(int64(fl) - curstart),
+					TotalLength:   int64(fl),
+					FileMD5String: GetMD5String(buf),
+				}, true)
+
+				return nil
+
+			}
+
+			onfunc(&pb.FileData{
+				File:        buf[curstart:(curstart + curlength)],
+				Ft:          pb.FileType_FT_BINARY,
+				Start:       curstart,
+				Length:      int64(curlength),
+				TotalLength: int64(fl),
+			}, false)
+
+			curstart = curstart + curlength
+		}
+	}
+
+	return nil
+}
+
+// ProcFileData - proc filedata
+func ProcFileData(fn string, onfunc FuncOnFileData) error {
+	if onfunc == nil {
+		return ErrNoFuncOnFileData
+	}
+
+	fdata, err := os.Open(fn)
+	if err != nil {
+		return err
+	}
+
+	defer fdata.Close()
+
+	fs, err := fdata.Stat()
+	if err != nil {
+		return err
+	}
+
+	fl := fs.Size()
+
+	if fl <= basedef.BigFileLength {
+
+		buf := make([]byte, fl)
+
+		rn, err := fdata.Read(buf)
+		if err != nil {
+			return err
+		}
+
+		if int64(rn) != fl {
+			return ErrLoadFileReadSize
+		}
+
+		onfunc(&pb.FileData{
+			File: buf,
+		}, true)
+
+	} else {
+		curstart := int64(0)
+		curlength := int64(basedef.BigFileLength)
+		buf := make([]byte, curlength)
+
+		for curstart < int64(fl) {
+			if curstart+curlength >= int64(fl) {
+
+				rn, err := fdata.Read(buf)
+				if err != nil {
+					return err
+				}
+
+				if curstart+int64(rn) != fl {
+					return ErrLoadFileReadSize
+				}
+
+				totalmd5, err := MD5File(fn)
+				if err != nil {
+					return err
+				}
+
+				onfunc(&pb.FileData{
+					File:          buf[0:rn],
+					Ft:            pb.FileType_FT_BINARY,
+					Start:         curstart,
+					Length:        int64(rn),
+					TotalLength:   fl,
+					FileMD5String: totalmd5,
+				}, true)
+
+				return nil
+
+			}
+
+			rn, err := fdata.Read(buf)
+			if err != nil {
+				return err
+			}
+
+			if int64(rn) != curlength {
+				return ErrLoadFileReadSize
+			}
+
+			onfunc(&pb.FileData{
+				File:        buf,
+				Ft:          pb.FileType_FT_BINARY,
+				Start:       curstart,
+				Length:      int64(rn),
+				TotalLength: fl,
+			}, false)
+
+			curstart = curstart + curlength
+		}
+	}
+
+	return nil
 }

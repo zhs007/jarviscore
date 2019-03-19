@@ -3,7 +3,6 @@ package jarviscore
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"time"
 
@@ -60,11 +59,9 @@ func NewNode(cfg *Config) (JarvisNode, error) {
 			ServAddr:    cfg.BaseNodeInfo.ServAddr,
 			CoreVersion: basedef.VERSION,
 		},
-		coredb: db,
-		cfg:    cfg,
-		mgrCtrl: &ctrlMgr{
-			mapCtrl: make(map[string](Ctrl)),
-		},
+		coredb:  db,
+		cfg:     cfg,
+		mgrCtrl: &ctrlMgr{},
 		// mgrRequest: &requestMgr{},
 	}
 
@@ -166,11 +163,15 @@ func (n *jarvisNode) GetCoreDB() *coredb.CoreDB {
 
 // OnMsg - proc JarvisMsg
 func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer, funcOnResult FuncOnProcMsgResult) error {
-	jarvisbase.Debug("jarvisNode.OnMsg", jarvisbase.JSON("msg", msg))
+
+	jarvisbase.Debug("jarvisNode.OnMsg",
+		JSONMsg2Zap("msg", msg))
 
 	// is timeout
 	if IsTimeOut(msg) {
-		jarvisbase.Warn("jarvisNode.OnMsg", zap.Error(ErrJarvisMsgTimeOut))
+		jarvisbase.Warn("jarvisNode.OnMsg",
+			zap.Error(ErrJarvisMsgTimeOut),
+			JSONMsg2Zap("msg", msg))
 
 		n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, ErrJarvisMsgTimeOut.Error())
 
@@ -184,7 +185,7 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 		if err != nil {
 			jarvisbase.Warn("jarvisNode.OnMsg",
 				zap.Error(err),
-				jarvisbase.JSON("msg", msg))
+				JSONMsg2Zap("msg", msg))
 
 			n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
 
@@ -204,24 +205,26 @@ func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.Jar
 		if err != nil {
 			jarvisbase.Warn("jarvisNode.OnMsg:VerifyJarvisMsg",
 				zap.Error(err),
-				jarvisbase.JSON("msg", msg))
+				JSONMsg2Zap("msg", msg))
 
 			n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
 
 			return nil
 		}
 
-		err = n.checkMsgID(ctx, msg)
-		if err != nil {
-			jarvisbase.Warn("jarvisNode.OnMsg:checkMsgID", zap.Error(err))
+		if stream != nil {
+			err = n.checkMsgID(ctx, msg)
+			if err != nil {
+				jarvisbase.Warn("jarvisNode.OnMsg:checkMsgID", zap.Error(err))
 
-			if err == ErrInvalidMsgID {
-				n.replyStream2(msg, stream, pb.REPLYTYPE_ERRMSGID, "")
-			} else {
-				n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
+				if err == ErrInvalidMsgID {
+					n.replyStream2(msg, stream, pb.REPLYTYPE_ERRMSGID, "")
+				} else {
+					n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
+				}
+
+				return nil
 			}
-
-			return nil
 		}
 
 		if msg.MsgType == pb.MSGTYPE_NODE_INFO {
@@ -383,9 +386,10 @@ func (n *jarvisNode) ConnectNodeWithServAddr(servaddr string, funcOnResult FuncO
 		return nil
 	}
 
-	if cn.ConnType == coredbpb.CONNECTTYPE_UNKNOWN_CONN {
+	ts := time.Now().Unix()
+	if cn.ConnType == coredbpb.CONNECTTYPE_UNKNOWN_CONN && ts > basedef.TimeReconnect+cn.LastConnectTime {
 		cn.ConnectNums++
-		cn.LastConnectTime = time.Now().Unix()
+		cn.LastConnectTime = ts
 
 		n.mgrClient2.addConnTask(cn.ServAddr, cn, funcOnResult)
 
@@ -407,9 +411,10 @@ func (n *jarvisNode) ConnectNode(node *coredbpb.NodeInfo, funcOnResult FuncOnPro
 		return nil
 	}
 
-	if node.ConnType == coredbpb.CONNECTTYPE_UNKNOWN_CONN {
+	ts := time.Now().Unix()
+	if node.ConnType == coredbpb.CONNECTTYPE_UNKNOWN_CONN && ts > basedef.TimeReconnect+node.LastConnectTime {
 		node.ConnectNums++
-		node.LastConnectTime = time.Now().Unix()
+		node.LastConnectTime = ts
 
 		n.mgrClient2.addConnTask(node.ServAddr, node, funcOnResult)
 
@@ -442,8 +447,8 @@ func (n *jarvisNode) replyCtrlResult(ctx context.Context, msg *pb.JarvisMsg, inf
 	}
 
 	jarvisbase.Info("jarvisNode.replyCtrlResult",
-		jarvisbase.JSON("msg", msg),
-		jarvisbase.JSON("sendmsg", sendmsg2))
+		JSONMsg2Zap("msg", msg),
+		JSONMsg2Zap("sendmsg", sendmsg2))
 
 	n.mgrClient2.addSendMsgTask(sendmsg2, nil, nil)
 
@@ -472,6 +477,10 @@ func (n *jarvisNode) runRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 	ci := msg.GetCtrlInfo()
 	ret, err := n.mgrCtrl.Run(ci)
 	if err != nil {
+		if ret != nil {
+			n.replyCtrlResult(ctx, msg, string(ret))
+		}
+
 		n.replyCtrlResult(ctx, msg, err.Error())
 
 		return
@@ -485,7 +494,7 @@ func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 	stream pb.JarvisCoreServ_ProcMsgServer, funcOnResult FuncOnProcMsgResult) error {
 
 	jarvisbase.Info("jarvisNode.onMsgRequestCtrl:recvmsg",
-		jarvisbase.JSON("msg", msg))
+		JSONMsg2Zap("msg", msg))
 
 	n.replyStream2(msg, stream, pb.REPLYTYPE_ISME, "")
 
@@ -549,7 +558,8 @@ func (n *jarvisNode) onMsgCtrlResult(ctx context.Context, msg *pb.JarvisMsg) err
 // onMsgUpdateNode
 func (n *jarvisNode) onMsgUpdateNode(ctx context.Context, msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer) error {
 
-	jarvisbase.Info("jarvisNode.onMsgUpdateNode", jarvisbase.JSON("msg", msg))
+	jarvisbase.Info("jarvisNode.onMsgUpdateNode",
+		JSONMsg2Zap("msg", msg))
 
 	if n.cfg.AutoUpdate {
 		n.replyStream2(msg, stream, pb.REPLYTYPE_ISME, "")
@@ -718,6 +728,8 @@ func (n *jarvisNode) RequestCtrl(ctx context.Context, addr string, ci *pb.CtrlIn
 // SendFile - send filedata to jarvisnode with addr
 func (n *jarvisNode) SendFile(ctx context.Context, addr string, fd *pb.FileData,
 	funcOnResult FuncOnProcMsgResult) error {
+
+	// ProcFileDataWithBuff(fd.File, )
 
 	sendmsg, err := BuildTransferFile(n, n.myinfo.Addr, addr, fd)
 	if err != nil {
@@ -890,7 +902,6 @@ func (n *jarvisNode) replyTransferFile(msg *pb.JarvisMsg, stream pb.JarvisCoreSe
 	}
 
 	n.sendMsg2ClientStream(stream, sendmsg)
-	// err = stream.SendMsg(sendmsg)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.replyTransferFile:sendMsg2ClientStream", zap.Error(err))
 
@@ -904,13 +915,13 @@ func (n *jarvisNode) replyTransferFile(msg *pb.JarvisMsg, stream pb.JarvisCoreSe
 func (n *jarvisNode) onMsgTransferFile(ctx context.Context, msg *pb.JarvisMsg,
 	stream pb.JarvisCoreServ_ProcMsgServer) error {
 
-	// jarvisbase.Debug("jarvisNode.onMsgTransferFile")
-
 	if stream == nil {
 		jarvisbase.Warn("jarvisNode.onMsgTransferFile", zap.Error(ErrStreamNil))
 
 		return ErrStreamNil
 	}
+
+	n.replyStream2(msg, stream, pb.REPLYTYPE_IGOTIT, "")
 
 	fd := msg.GetFile()
 
@@ -946,140 +957,16 @@ func (n *jarvisNode) SetNodeTypeInfo(nodetype string, nodetypeversion string) {
 	n.myinfo.NodeTypeVersion = nodetypeversion
 }
 
-// replyFullFile
-func (n *jarvisNode) replyFullFile(ctx context.Context, msg *pb.JarvisMsg, rf *pb.RequestFile,
-	stream pb.JarvisCoreServ_ProcMsgServer) error {
-
-	buf, err := ioutil.ReadFile(rf.Filename)
-	if err != nil {
-		jarvisbase.Warn("jarvisNode.replyFullFile:ReadFile", zap.Error(err))
-
-		n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
-
-		return err
-	}
-
-	fd := &pb.FileData{
-		File:     buf,
-		Filename: rf.Filename,
-	}
-
-	sendmsg, err := BuildReplyRequestFile(n, n.myinfo.Addr, msg.SrcAddr, fd, msg.MsgID)
-	if err != nil {
-		jarvisbase.Warn("jarvisNode.replyFullFile:BuildReplyRequestFile", zap.Error(err))
-
-		n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
-
-		return err
-	}
-
-	err = n.sendMsg2ClientStream(stream, sendmsg)
-	if err != nil {
-		jarvisbase.Warn("jarvisNode.replyFullFile:sendMsg2ClientStream", zap.Error(err))
-
-		return err
-	}
-
-	return nil
-}
-
 // replyFile
 func (n *jarvisNode) replyFile(ctx context.Context, msg *pb.JarvisMsg, rf *pb.RequestFile,
 	stream pb.JarvisCoreServ_ProcMsgServer) error {
 
-	jarvisbase.Info("jarvisNode.replyFile")
-
-	fl, err := GetFileLength(rf.Filename)
-	if err != nil {
-		jarvisbase.Warn("jarvisNode.replyFile:GetFileLength", zap.Error(err))
-
-		n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
-
-		return err
-	}
-
-	jarvisbase.Info("jarvisNode.replyFile",
-		zap.Int64("filelength", fl))
-
-	if fl <= basedef.BigFileLength {
-		return n.replyFullFile(ctx, msg, rf, stream)
-	}
-
-	fdata, err := os.Open(rf.Filename)
-	if err != nil {
-		jarvisbase.Warn("jarvisNode.replyFile:Open", zap.Error(err))
-
-		n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
-
-		return err
-	}
-
-	defer fdata.Close()
-
-	curstart := int64(0)
-	curlength := int64(basedef.BigFileLength)
-	buf := make([]byte, curlength)
-	len := 0
-	totalmd5 := ""
-
-	for curstart < fl {
-		if curstart+curlength >= fl {
-			len, err = fdata.Read(buf)
-			if err != nil {
-				jarvisbase.Warn("jarvisNode.replyFile:ReadAtEnd", zap.Error(err))
-
-				n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
-
-				return err
-			}
-
-			if curstart+int64(len) != fl {
-				jarvisbase.Warn("jarvisNode.replyFile:ReadAtEnd", zap.Error(ErrInvalidReadFileLength))
-
-				n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, ErrInvalidReadFileLength.Error())
-
-				return ErrInvalidReadFileLength
-			}
-
-			totalmd5, err = MD5File(rf.Filename)
-			if err != nil {
-				jarvisbase.Warn("jarvisNode.replyFile:MD5File", zap.Error(err))
-
-				n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
-
-				return err
-			}
-		} else {
-			len, err = fdata.Read(buf)
-			if err != nil {
-				jarvisbase.Warn("jarvisNode.replyFile:Read", zap.Error(err))
-
-				n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
-
-				return err
-			}
-
-			if int64(len) != curlength {
-				jarvisbase.Warn("jarvisNode.replyFile:Read", zap.Error(ErrInvalidReadFileLength))
-
-				n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, ErrInvalidReadFileLength.Error())
-
-				return ErrInvalidReadFileLength
-			}
-		}
-
+	err := ProcFileData(rf.Filename, func(fd *pb.FileData, isend bool) error {
 		jarvisbase.Info("jarvisNode.replyFile",
-			zap.Int("buflen", len))
+			zap.Int("buflen", len(fd.File)),
+			zap.Int64("filelen", fd.TotalLength))
 
-		fd := &pb.FileData{
-			File:          buf[0:len],
-			Filename:      rf.Filename,
-			Ft:            pb.FileType_FT_BINARY,
-			Start:         curstart,
-			Length:        int64(len),
-			TotalLength:   fl,
-			FileMD5String: totalmd5,
-		}
+		fd.Filename = rf.Filename
 
 		sendmsg, err := BuildReplyRequestFile(n, n.myinfo.Addr, msg.SrcAddr, fd, msg.MsgID)
 		if err != nil {
@@ -1097,7 +984,12 @@ func (n *jarvisNode) replyFile(ctx context.Context, msg *pb.JarvisMsg, rf *pb.Re
 			return err
 		}
 
-		curstart += int64(len)
+		return nil
+	})
+	if err != nil {
+		n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
+
+		return err
 	}
 
 	return nil
@@ -1199,15 +1091,6 @@ func (n *jarvisNode) onMsgRequestFile(ctx context.Context, msg *pb.JarvisMsg,
 
 	rf := msg.GetRequestFile()
 
-	fl, err := GetFileLength(rf.Filename)
-	if err != nil {
-		jarvisbase.Warn("jarvisNode.onMsgRequestFile:GetFileLength", zap.Error(err))
-
-		n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
-
-		return err
-	}
-
 	if rf.Length > 0 {
 		if rf.Length > basedef.BigFileLength {
 			rf.Length = basedef.BigFileLength
@@ -1216,11 +1099,7 @@ func (n *jarvisNode) onMsgRequestFile(ctx context.Context, msg *pb.JarvisMsg,
 		return n.replyPartFile(ctx, msg, rf, stream)
 	}
 
-	if fl > basedef.BigFileLength {
-		return n.replyFile(ctx, msg, rf, stream)
-	}
-
-	return n.replyFullFile(ctx, msg, rf, stream)
+	return n.replyFile(ctx, msg, rf, stream)
 }
 
 // onMsgReplyRequestFile
@@ -1331,7 +1210,7 @@ func (n *jarvisNode) checkMsgID(ctx context.Context, msg *pb.JarvisMsg) error {
 			zap.String("srcaddr", msg.SrcAddr),
 			zap.Int64("msgid", msg.MsgID),
 			zap.Int64("lasrrevmsgid", cn.LastRecvMsgID),
-			jarvisbase.JSON("msg", msg))
+			JSONMsg2Zap("msg", msg))
 
 		return ErrInvalidMsgID
 	}
@@ -1415,7 +1294,7 @@ func (n *jarvisNode) sendMsg2ClientStream(stream pb.JarvisCoreServ_ProcMsgServer
 		return ErrStreamNil
 	}
 
-	sendmsg.MsgID = n.GetCoreDB().GetNewSendMsgID(sendmsg.DestAddr)
+	// sendmsg.MsgID = n.GetCoreDB().GetNewSendMsgID(sendmsg.DestAddr)
 	sendmsg.CurTime = time.Now().Unix()
 
 	err := SignJarvisMsg(n.GetCoreDB().GetPrivateKey(), sendmsg)

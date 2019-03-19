@@ -1,7 +1,7 @@
 package basedef
 
 // VERSION - jarviscore version
-const VERSION = "0.7.84"
+const VERSION = "0.7.94"
 
 // TimeFailedServAddr - if the servaddr is failed, we won't try to connect it within this time
 const TimeFailedServAddr = 60
@@ -14,3 +14,6 @@ var LastTimeDeprecated = []int64{30, 5 * 60, 30 * 60, 60 * 60, 2 * 60 * 60, 4 * 
 
 // BigFileLength -if file length >= BigFileLength, the file is bigfile
 const BigFileLength = 4*1024*1024 - 1024
+
+// TimeReconnect - If the LastConnectTime time is within 30s, we will not repeat the connection.
+const TimeReconnect = 30

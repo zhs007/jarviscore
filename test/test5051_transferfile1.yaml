@@ -1,7 +1,7 @@
 #jarvis node config
 
 # rootservaddr - jarvis root node address
-rootservaddr: '127.0.0.1:10002'
+rootservaddr: '127.0.0.1:5050'
 # lsttrustnode - trust node list
 lsttrustnode: ['1JJaKpZGhYPuVHc1EKiiHZEswPAB5SybW5']
 
@@ -16,7 +16,7 @@ maxmsglength: 4194304
 # ankadb - ankadb config
 ankadb:
   # dbpath - dbpath
-  dbpath: './test/dat10'
+  dbpath: './test/test5051_transferfile1'
   # httpserv - http service address, it can be empty
   httpserv: ''
   # ankadb engine
@@ -25,7 +25,7 @@ ankadb:
 # log - log config
 log:
   # logpath - log path
-  logpath: './test/logs2'
+  logpath: './test/test5051_transferfile1'
   # loglevel - log level, it can be debug, info, warn, error
   loglevel: 'info'
   # logconsole - it can be output to console
@@ -34,8 +34,17 @@ log:
 # basenodeinfo - my node base config  
 basenodeinfo:
   # nodename - my node name
-  nodename: 'node010'
+  nodename: 'test5051_transferfile1'
   # bindaddr - my bind address
-  bindaddr: ':10001'
+  bindaddr: ':5051'
   # servaddr - other node connct me
-  servaddr: '127.0.0.1:10001'
+  servaddr: '127.0.0.1:5051'
+
+# autoupdate - enable automatic update  
+autoupdate: true
+# updatescript - If automatic updates are enabled, the script will run when the update was starting.  
+#     There are some variables that can be used in this script.
+#       - NewVersion: new version
+updatescript: |
+  echo {{.NewVersion}}
+ 

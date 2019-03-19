@@ -8,22 +8,28 @@ import (
 
 // ctrlMgr -
 type ctrlMgr struct {
-	sync.RWMutex
-	mapCtrl map[string](Ctrl)
+	mapCtrl sync.Map
 }
 
 func (mgr *ctrlMgr) Reg(ctrltype string, ctrl Ctrl) {
-	mgr.Lock()
-	defer mgr.Unlock()
+	mgr.mapCtrl.Store(ctrltype, ctrl)
+}
 
-	mgr.mapCtrl[ctrltype] = ctrl
+func (mgr *ctrlMgr) getCtrl(ctrltype string) Ctrl {
+	val, ok := mgr.mapCtrl.Load(ctrltype)
+	if ok {
+		ctrl, typeok := val.(Ctrl)
+		if typeok {
+			return ctrl
+		}
+	}
+
+	return nil
 }
 
 func (mgr *ctrlMgr) Run(ci *pb.CtrlInfo) ([]byte, error) {
-	mgr.RLock()
-	defer mgr.RUnlock()
-
-	if c, ok := mgr.mapCtrl[ci.CtrlType]; ok {
+	c := mgr.getCtrl(ci.CtrlType)
+	if c != nil {
 		return c.Run(ci)
 	}
 

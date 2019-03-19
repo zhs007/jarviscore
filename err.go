@@ -83,4 +83,6 @@ var (
 	ErrNoCtrlInfo = errors.New("no ctrlinfo")
 	// ErrCannotFindNodeWithAddr - can not find node with addr
 	ErrCannotFindNodeWithAddr = errors.New("can not find node with addr")
+	// ErrNoFuncOnFileData - no FuncOnFileData
+	ErrNoFuncOnFileData = errors.New("no FuncOnFileData")
 )

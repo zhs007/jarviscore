@@ -230,12 +230,9 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 
 	_, ok := c.mapClient.Load(smsg.DestAddr)
 	if !ok {
-		tmsg, _ := BuildOutputMsg(smsg)
-		if tmsg != nil {
-			jarvisbase.Warn("jarvisClient2._sendMsg:mapClient",
-				zap.Error(ErrNotConnectedNode),
-				jarvisbase.JSON("msg", tmsg))
-		}
+		jarvisbase.Warn("jarvisClient2._sendMsg:mapClient",
+			zap.Error(ErrNotConnectedNode),
+			JSONMsg2Zap("msg", smsg))
 
 		if funcOnResult != nil {
 			lstResult = append(lstResult, &ClientProcMsgResult{
@@ -249,7 +246,8 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 		// return c._broadCastMsg(ctx, smsg)
 	}
 
-	jarvisbase.Debug("jarvisClient2._sendMsg", jarvisbase.JSON("msg", smsg))
+	jarvisbase.Debug("jarvisClient2._sendMsg",
+		JSONMsg2Zap("msg", smsg))
 
 	ci2, err := c._getValidClientConn(smsg.DestAddr)
 	if err != nil {
@@ -323,7 +321,8 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 
 			break
 		} else {
-			jarvisbase.Debug("jarvisClient2._sendMsg:stream", jarvisbase.JSON("msg", getmsg))
+			jarvisbase.Debug("jarvisClient2._sendMsg:stream",
+				JSONMsg2Zap("msg", getmsg))
 
 			c.node.PostMsg(getmsg, nil, nil, nil)
 
@@ -341,7 +340,9 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 }
 
 func (c *jarvisClient2) _broadCastMsg(ctx context.Context, msg *pb.JarvisMsg) error {
-	jarvisbase.Debug("jarvisClient2._broadCastMsg", jarvisbase.JSON("msg", msg))
+
+	jarvisbase.Debug("jarvisClient2._broadCastMsg",
+		JSONMsg2Zap("msg", msg))
 
 	// c.mapClient.Range(func(key, v interface{}) bool {
 	// 	ci, ok := v.(*clientInfo2)
@@ -600,7 +601,8 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 			return err
 		}
 
-		jarvisbase.Debug("jarvisClient2._connectNode:stream", jarvisbase.JSON("msg", msg))
+		jarvisbase.Debug("jarvisClient2._connectNode:stream",
+			JSONMsg2Zap("msg", msg))
 
 		if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT {
 			ni := msg.GetNodeInfo()
@@ -626,6 +628,7 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 func (c *jarvisClient2) _signJarvisMsg(msg *pb.JarvisMsg) error {
 	msg.MsgID = c.node.GetCoreDB().GetNewSendMsgID(msg.DestAddr)
 	msg.CurTime = time.Now().Unix()
+	msg.LastMsgID = c.node.GetCoreDB().GetCurRecvMsgID(msg.DestAddr)
 
 	return SignJarvisMsg(c.node.GetCoreDB().GetPrivateKey(), msg)
 }

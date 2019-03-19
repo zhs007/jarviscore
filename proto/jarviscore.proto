@@ -54,6 +54,8 @@ enum MSGTYPE {
     REQUEST_NODESTATUS = 23;
     // file hash data
     FILE_HASH_DATA = 24;
+    // reply connect3
+    REPLY_CONNECT3 = 25;
 }
 
 // REPLYTYPE - reply type

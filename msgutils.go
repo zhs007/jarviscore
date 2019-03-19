@@ -5,7 +5,10 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/zhs007/jarviscore/base"
+
 	"github.com/golang/protobuf/proto"
+	"go.uber.org/zap"
 
 	"github.com/zhs007/jarviscore/crypto"
 	pb "github.com/zhs007/jarviscore/proto"
@@ -182,12 +185,12 @@ func BuildConnNode(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	servaddr string, ni *pb.NodeBaseInfo) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		CurTime:   time.Now().Unix(),
-		SrcAddr:   srcAddr,
-		MyAddr:    srcAddr,
-		DestAddr:  destAddr,
-		MsgType:   pb.MSGTYPE_CONNECT_NODE,
-		LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_CONNECT_NODE,
+		// LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
 		Data: &pb.JarvisMsg_ConnInfo{
 			ConnInfo: &pb.ConnectInfo{
 				ServAddr: servaddr,
@@ -204,12 +207,12 @@ func BuildReplyConn(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	ni *pb.NodeBaseInfo) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		CurTime:   time.Now().Unix(),
-		SrcAddr:   srcAddr,
-		MyAddr:    srcAddr,
-		DestAddr:  destAddr,
-		MsgType:   pb.MSGTYPE_REPLY_CONNECT,
-		LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_REPLY_CONNECT,
+		// LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
 		Data: &pb.JarvisMsg_NodeInfo{
 			NodeInfo: ni,
 		},
@@ -223,12 +226,12 @@ func BuildRequestCtrl(jarvisnode JarvisNode, srcAddr string,
 	destAddr string, ci *pb.CtrlInfo) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		CurTime:   time.Now().Unix(),
-		SrcAddr:   srcAddr,
-		MyAddr:    srcAddr,
-		DestAddr:  destAddr,
-		MsgType:   pb.MSGTYPE_REQUEST_CTRL,
-		LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_REQUEST_CTRL,
+		// LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
 		Data: &pb.JarvisMsg_CtrlInfo{
 			CtrlInfo: ci,
 		},
@@ -242,12 +245,12 @@ func BuildReply2(jarvisnode JarvisNode, srcAddr string,
 	destAddr string, rt pb.REPLYTYPE, strErr string, replyMsgID int64) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		CurTime:    time.Now().Unix(),
-		SrcAddr:    srcAddr,
-		MyAddr:     srcAddr,
-		DestAddr:   destAddr,
-		MsgType:    pb.MSGTYPE_REPLY2,
-		LastMsgID:  jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_REPLY2,
+		// LastMsgID:  jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
 		ReplyType:  rt,
 		Err:        strErr,
 		ReplyMsgID: replyMsgID,
@@ -261,12 +264,12 @@ func BuildCtrlResult(jarvisnode JarvisNode, srcAddr string,
 	destAddr string, ctrlid int64, msgid int64, result string) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		CurTime:    time.Now().Unix(),
-		SrcAddr:    srcAddr,
-		MyAddr:     srcAddr,
-		DestAddr:   destAddr,
-		MsgType:    pb.MSGTYPE_REPLY_CTRL_RESULT,
-		LastMsgID:  jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_REPLY_CTRL_RESULT,
+		// LastMsgID:  jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
 		ReplyMsgID: msgid,
 		Data: &pb.JarvisMsg_CtrlResult{
 			CtrlResult: &pb.CtrlResult{
@@ -284,12 +287,12 @@ func BuildRequestNodes(jarvisnode JarvisNode, srcAddr string,
 	destAddr string) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		CurTime:   time.Now().Unix(),
-		SrcAddr:   srcAddr,
-		MyAddr:    srcAddr,
-		DestAddr:  destAddr,
-		MsgType:   pb.MSGTYPE_REQUEST_NODES,
-		LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_REQUEST_NODES,
+		// LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
 	}
 
 	return msg, nil
@@ -300,12 +303,12 @@ func BuildNodeInfo(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	ni *pb.NodeBaseInfo) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		CurTime:   time.Now().Unix(),
-		SrcAddr:   srcAddr,
-		MyAddr:    srcAddr,
-		DestAddr:  destAddr,
-		MsgType:   pb.MSGTYPE_NODE_INFO,
-		LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_NODE_INFO,
+		// LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
 		Data: &pb.JarvisMsg_NodeInfo{
 			NodeInfo: ni,
 		},
@@ -321,12 +324,12 @@ func BuildTransferFile(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	fd.Md5String = GetMD5String(fd.File)
 
 	msg := &pb.JarvisMsg{
-		CurTime:   time.Now().Unix(),
-		SrcAddr:   srcAddr,
-		MyAddr:    srcAddr,
-		DestAddr:  destAddr,
-		MsgType:   pb.MSGTYPE_TRANSFER_FILE,
-		LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_TRANSFER_FILE,
+		// LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
 		Data: &pb.JarvisMsg_File{
 			File: fd,
 		},
@@ -340,12 +343,12 @@ func BuildRequestFile(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	rf *pb.RequestFile) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		CurTime:   time.Now().Unix(),
-		SrcAddr:   srcAddr,
-		MyAddr:    srcAddr,
-		DestAddr:  destAddr,
-		MsgType:   pb.MSGTYPE_REQUEST_FILE,
-		LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_REQUEST_FILE,
+		// LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
 		Data: &pb.JarvisMsg_RequestFile{
 			RequestFile: rf,
 		},
@@ -361,12 +364,12 @@ func BuildReplyRequestFile(jarvisnode JarvisNode, srcAddr string, destAddr strin
 	fd.Md5String = GetMD5String(fd.File)
 
 	msg := &pb.JarvisMsg{
-		CurTime:    time.Now().Unix(),
-		SrcAddr:    srcAddr,
-		MyAddr:     srcAddr,
-		DestAddr:   destAddr,
-		MsgType:    pb.MSGTYPE_REPLY_REQUEST_FILE,
-		LastMsgID:  jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_REPLY_REQUEST_FILE,
+		// LastMsgID:  jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
 		ReplyMsgID: replyMsgID,
 		Data: &pb.JarvisMsg_File{
 			File: fd,
@@ -381,12 +384,12 @@ func BuildReplyTransferFile(jarvisnode JarvisNode, srcAddr string, destAddr stri
 	md5str string, replyMsgID int64) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		CurTime:    time.Now().Unix(),
-		SrcAddr:    srcAddr,
-		MyAddr:     srcAddr,
-		DestAddr:   destAddr,
-		MsgType:    pb.MSGTYPE_REPLY_TRANSFER_FILE,
-		LastMsgID:  jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_REPLY_TRANSFER_FILE,
+		// LastMsgID:  jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
 		ReplyMsgID: replyMsgID,
 		Data: &pb.JarvisMsg_ReplyTransferFile{
 			ReplyTransferFile: &pb.ReplyTransferFile{
@@ -403,12 +406,12 @@ func BuildUpdateNode(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	nodetype string, nodetypever string) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
-		CurTime:   time.Now().Unix(),
-		SrcAddr:   srcAddr,
-		MyAddr:    srcAddr,
-		DestAddr:  destAddr,
-		MsgType:   pb.MSGTYPE_UPDATENODE,
-		LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_UPDATENODE,
+		// LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
 		Data: &pb.JarvisMsg_UpdateNode{
 			UpdateNode: &pb.UpdateNode{
 				NodeType:        nodetype,
@@ -436,4 +439,17 @@ func BuildOutputMsg(src *pb.JarvisMsg) (*pb.JarvisMsg, error) {
 	}
 
 	return src, nil
+}
+
+// JSONMsg2Zap - I use this interface to output jarvismsg to the zap log.
+//		This interface will hide the long data in jarvismsg.
+func JSONMsg2Zap(key string, src *pb.JarvisMsg) zap.Field {
+	msg, err := BuildOutputMsg(src)
+	if err != nil {
+		jarvisbase.Warn("JSONMsg2Zap:BuildOutputMsg", zap.Error(err))
+
+		return jarvisbase.JSON(key, src)
+	}
+
+	return jarvisbase.JSON(key, msg)
 }
