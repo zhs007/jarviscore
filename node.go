@@ -1059,6 +1059,7 @@ func (n *jarvisNode) replyPartFile(ctx context.Context, msg *pb.JarvisMsg, rf *p
 		Start:       rf.Start,
 		Length:      int64(len),
 		TotalLength: fl,
+		Md5String:   GetMD5String(buf),
 	}
 
 	sendmsg, err := BuildReplyRequestFile(n, n.myinfo.Addr, msg.SrcAddr, fd, msg.MsgID)

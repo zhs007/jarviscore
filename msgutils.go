@@ -361,7 +361,7 @@ func BuildRequestFile(jarvisnode JarvisNode, srcAddr string, destAddr string,
 func BuildReplyRequestFile(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	fd *pb.FileData, replyMsgID int64) (*pb.JarvisMsg, error) {
 
-	fd.Md5String = GetMD5String(fd.File)
+	// fd.Md5String = GetMD5String(fd.File)
 
 	msg := &pb.JarvisMsg{
 		CurTime:  time.Now().Unix(),

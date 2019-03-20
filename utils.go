@@ -351,8 +351,16 @@ func ProcFileData(fn string, onfunc FuncOnFileData) error {
 			return ErrLoadFileReadSize
 		}
 
+		totalmd5 := GetMD5String(buf)
+
 		onfunc(&pb.FileData{
-			File: buf,
+			File:          buf,
+			Ft:            pb.FileType_FT_BINARY,
+			Start:         0,
+			Length:        int64(rn),
+			TotalLength:   fl,
+			FileMD5String: totalmd5,
+			Md5String:     totalmd5,
 		}, true)
 
 	} else {
@@ -384,6 +392,7 @@ func ProcFileData(fn string, onfunc FuncOnFileData) error {
 					Length:        int64(rn),
 					TotalLength:   fl,
 					FileMD5String: totalmd5,
+					Md5String:     GetMD5String(buf[0:rn]),
 				}, true)
 
 				return nil
@@ -405,6 +414,7 @@ func ProcFileData(fn string, onfunc FuncOnFileData) error {
 				Start:       curstart,
 				Length:      int64(rn),
 				TotalLength: fl,
+				Md5String:   GetMD5String(buf),
 			}, false)
 
 			curstart = curstart + curlength
