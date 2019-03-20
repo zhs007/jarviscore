@@ -413,3 +413,8 @@ func ProcFileData(fn string, onfunc FuncOnFileData) error {
 
 	return nil
 }
+
+// IsValidNodeAddr - is valid nodeaddr
+func IsValidNodeAddr(addr string) bool {
+	return len(addr) == 34
+}
