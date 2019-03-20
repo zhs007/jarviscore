@@ -57,6 +57,8 @@ type JarvisNode interface {
 
 	// FindNodeWithName - find node with name
 	FindNodeWithName(name string) *coredbpb.NodeInfo
+	// FindNode - find node
+	FindNode(addr string) *coredbpb.NodeInfo
 
 	// SetNodeTypeInfo - set node type and version
 	SetNodeTypeInfo(nodetype string, nodetypeversion string)

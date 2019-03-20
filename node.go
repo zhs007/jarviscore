@@ -865,6 +865,11 @@ func (n *jarvisNode) FindNodeWithName(name string) *coredbpb.NodeInfo {
 	return n.coredb.FindMapNode(name)
 }
 
+// FindNode - find node
+func (n *jarvisNode) FindNode(addr string) *coredbpb.NodeInfo {
+	return n.coredb.GetNode(addr)
+}
+
 // replyStream2
 func (n *jarvisNode) replyStream2(msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer,
 	rt pb.REPLYTYPE, strErr string) error {
