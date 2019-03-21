@@ -26,6 +26,9 @@ type JarvisNode interface {
 	// SendFile - send filedata to jarvisnode with addr
 	SendFile(ctx context.Context, addr string, fd *pb.FileData,
 		funcOnResult FuncOnProcMsgResult) error
+	// SendFile2 - send filedata to jarvisnode with addr
+	SendFile2(ctx context.Context, addr string, fd *pb.FileData,
+		funcOnResult FuncOnProcMsgResult) error
 	// RequestFile - request node send filedata to me
 	RequestFile(ctx context.Context, addr string, rf *pb.RequestFile,
 		funcOnResult FuncOnProcMsgResult) error
@@ -42,7 +45,7 @@ type JarvisNode interface {
 	AddNodeBaseInfo(nbi *pb.NodeBaseInfo) error
 
 	// OnMsg - proc JarvisMsg
-	OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer, funcOnResult FuncOnProcMsgResult) error
+	OnMsg(ctx context.Context, task *JarvisTask) error
 
 	// GetMyInfo - get my nodeinfo
 	GetMyInfo() *BaseInfo
@@ -57,6 +60,8 @@ type JarvisNode interface {
 
 	// FindNodeWithName - find node with name
 	FindNodeWithName(name string) *coredbpb.NodeInfo
+	// FindNode - find node
+	FindNode(addr string) *coredbpb.NodeInfo
 
 	// SetNodeTypeInfo - set node type and version
 	SetNodeTypeInfo(nodetype string, nodetypeversion string)
@@ -65,8 +70,9 @@ type JarvisNode interface {
 	RegCtrl(ctrltype string, ctrl Ctrl) error
 
 	// PostMsg - like windows postMessage
-	PostMsg(msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer, chanEnd chan int,
-		funcOnResult FuncOnProcMsgResult)
+	PostMsg(normal *NormalTaskInfo, chanEnd chan int)
+	// PostStreamMsg - like windows postMessage
+	PostStreamMsg(stream *StreamTaskInfo, chanEnd chan int)
 
 	// ConnectNode - connect node
 	ConnectNode(node *coredbpb.NodeInfo, funcOnResult FuncOnProcMsgResult) error

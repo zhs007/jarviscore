@@ -107,6 +107,26 @@ func StoreLocalFile(file *pb.FileData) error {
 	return nil
 }
 
+// StoreLocalFileEx - store filedata array to local file systems
+func StoreLocalFileEx(files []*pb.FileData) error {
+	f, err := os.Create(files[0].Filename)
+	if err != nil {
+		jarvisbase.Warn("StoreLocalFileEx:os.Create err", zap.Error(err))
+
+		return err
+	}
+
+	defer f.Close()
+
+	for i := 0; i < len(files); i++ {
+		f.Write(files[i].File)
+	}
+
+	f.Close()
+
+	return nil
+}
+
 // GetNodeBaseInfo - get nodebaseinfo from nodeinfo
 func GetNodeBaseInfo(node *coredbpb.NodeInfo) *pb.NodeBaseInfo {
 	return &pb.NodeBaseInfo{
@@ -281,6 +301,7 @@ func ProcFileDataWithBuff(buf []byte, onfunc FuncOnFileData) error {
 			Length:        int64(fl),
 			TotalLength:   int64(fl),
 			FileMD5String: md5str,
+			Md5String:     md5str,
 		}, true)
 
 	} else {
@@ -297,6 +318,7 @@ func ProcFileDataWithBuff(buf []byte, onfunc FuncOnFileData) error {
 					Length:        int64(int64(fl) - curstart),
 					TotalLength:   int64(fl),
 					FileMD5String: GetMD5String(buf),
+					Md5String:     GetMD5String(buf[curstart:fl]),
 				}, true)
 
 				return nil
@@ -309,6 +331,7 @@ func ProcFileDataWithBuff(buf []byte, onfunc FuncOnFileData) error {
 				Start:       curstart,
 				Length:      int64(curlength),
 				TotalLength: int64(fl),
+				Md5String:   GetMD5String(buf[curstart:(curstart + curlength)]),
 			}, false)
 
 			curstart = curstart + curlength
@@ -351,8 +374,16 @@ func ProcFileData(fn string, onfunc FuncOnFileData) error {
 			return ErrLoadFileReadSize
 		}
 
+		totalmd5 := GetMD5String(buf)
+
 		onfunc(&pb.FileData{
-			File: buf,
+			File:          buf,
+			Ft:            pb.FileType_FT_BINARY,
+			Start:         0,
+			Length:        int64(rn),
+			TotalLength:   fl,
+			FileMD5String: totalmd5,
+			Md5String:     totalmd5,
 		}, true)
 
 	} else {
@@ -384,6 +415,7 @@ func ProcFileData(fn string, onfunc FuncOnFileData) error {
 					Length:        int64(rn),
 					TotalLength:   fl,
 					FileMD5String: totalmd5,
+					Md5String:     GetMD5String(buf[0:rn]),
 				}, true)
 
 				return nil
@@ -405,6 +437,7 @@ func ProcFileData(fn string, onfunc FuncOnFileData) error {
 				Start:       curstart,
 				Length:      int64(rn),
 				TotalLength: fl,
+				Md5String:   GetMD5String(buf),
 			}, false)
 
 			curstart = curstart + curlength
@@ -412,4 +445,9 @@ func ProcFileData(fn string, onfunc FuncOnFileData) error {
 	}
 
 	return nil
+}
+
+// IsValidNodeAddr - is valid nodeaddr
+func IsValidNodeAddr(addr string) bool {
+	return len(addr) == 34
 }

@@ -75,7 +75,8 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 
 		return str, nil
 	} else if msg.MsgType == pb.MSGTYPE_TRANSFER_FILE ||
-		msg.MsgType == pb.MSGTYPE_REPLY_REQUEST_FILE {
+		msg.MsgType == pb.MSGTYPE_REPLY_REQUEST_FILE ||
+		msg.MsgType == pb.MSGTYPE_TRANSFER_FILE2 {
 
 		f := msg.GetFile()
 		if f != nil {
@@ -338,6 +339,27 @@ func BuildTransferFile(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	return msg, nil
 }
 
+// BuildTransferFile2 - build jarvismsg with TRANSFER_FILE2
+func BuildTransferFile2(jarvisnode JarvisNode, srcAddr string, destAddr string,
+	fd *pb.FileData) (*pb.JarvisMsg, error) {
+
+	// fd.Md5String = GetMD5String(fd.File)
+
+	msg := &pb.JarvisMsg{
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_TRANSFER_FILE2,
+		// LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+		Data: &pb.JarvisMsg_File{
+			File: fd,
+		},
+	}
+
+	return msg, nil
+}
+
 // BuildRequestFile - build jarvismsg with REQUEST_FILE
 func BuildRequestFile(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	rf *pb.RequestFile) (*pb.JarvisMsg, error) {
@@ -361,7 +383,7 @@ func BuildRequestFile(jarvisnode JarvisNode, srcAddr string, destAddr string,
 func BuildReplyRequestFile(jarvisnode JarvisNode, srcAddr string, destAddr string,
 	fd *pb.FileData, replyMsgID int64) (*pb.JarvisMsg, error) {
 
-	fd.Md5String = GetMD5String(fd.File)
+	// fd.Md5String = GetMD5String(fd.File)
 
 	msg := &pb.JarvisMsg{
 		CurTime:  time.Now().Unix(),

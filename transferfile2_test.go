@@ -3,6 +3,7 @@ package jarviscore
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"sync"
@@ -17,7 +18,21 @@ import (
 	"go.uber.org/zap"
 )
 
-func randfillFile2(fn string, len int) error {
+func sendfile22node(ctx context.Context, fn string, destfn string, srcnode JarvisNode, destaddr string, funcOnResult FuncOnProcMsgResult) error {
+	dat, err := ioutil.ReadFile(fn)
+	if err != nil {
+		return err
+	}
+
+	fd := &jarviscorepb.FileData{
+		File:     dat,
+		Filename: destfn,
+	}
+
+	return srcnode.SendFile2(ctx, destaddr, fd, funcOnResult)
+}
+
+func randfillFileTF2(fn string, len int) error {
 	f, err := os.Create(fn)
 	if err != nil {
 		return err
@@ -42,7 +57,7 @@ func randfillFile2(fn string, len int) error {
 		}
 
 		if n != 4 {
-			return fmt.Errorf("randfillFile2 len err")
+			return fmt.Errorf("randfillFile len err")
 		}
 	}
 
@@ -57,14 +72,14 @@ func randfillFile2(fn string, len int) error {
 		}
 
 		if n != 1 {
-			return fmt.Errorf("randfillFile2 len err")
+			return fmt.Errorf("randfillFile len err")
 		}
 	}
 
 	return nil
 }
 
-func outputErrRF2(t *testing.T, err error, msg string, info string) {
+func outputErrTF2(t *testing.T, err error, msg string, info string) {
 	if err == nil && info == "" {
 		jarvisbase.Error(msg)
 		t.Fatalf(msg)
@@ -81,29 +96,29 @@ func outputErrRF2(t *testing.T, err error, msg string, info string) {
 	t.Fatalf(msg+" err %v", err)
 }
 
-func outputRF2(t *testing.T, msg string) {
+func outputTF2(t *testing.T, msg string) {
 	jarvisbase.Info(msg)
 	t.Logf(msg)
 }
 
-// funconcallRF2
-type funconcallRF2 func(ctx context.Context, err error, obj *objRF2) error
+// funconcallTF2
+type funconcallTF2 func(ctx context.Context, err error, obj *objTF2) error
 
-type mapnodeinfoRF2 struct {
+type mapnodeinfoTF2 struct {
 	iconn  bool
 	connme bool
 }
 
-type nodeinfoRF2 struct {
+type nodeinfoTF2 struct {
 	mapAddr    sync.Map
 	numsIConn  int
 	numsConnMe int
 }
 
-func (ni *nodeinfoRF2) onIConnectNode(node *coredbpb.NodeInfo) error {
+func (ni *nodeinfoTF2) onIConnectNode(node *coredbpb.NodeInfo) error {
 	d, ok := ni.mapAddr.Load(node.Addr)
 	if ok {
-		mni, ok := d.(*mapnodeinfoRF2)
+		mni, ok := d.(*mapnodeinfoTF2)
 		if !ok {
 			return fmt.Errorf("nodeinfoRF2.onIConnectNode:mapAddr2mapnodeinfo err")
 		}
@@ -117,7 +132,7 @@ func (ni *nodeinfoRF2) onIConnectNode(node *coredbpb.NodeInfo) error {
 		return nil
 	}
 
-	mni := &mapnodeinfoRF2{
+	mni := &mapnodeinfoTF2{
 		iconn: true,
 	}
 
@@ -127,10 +142,10 @@ func (ni *nodeinfoRF2) onIConnectNode(node *coredbpb.NodeInfo) error {
 	return nil
 }
 
-func (ni *nodeinfoRF2) onNodeConnected(node *coredbpb.NodeInfo) error {
+func (ni *nodeinfoTF2) onNodeConnected(node *coredbpb.NodeInfo) error {
 	d, ok := ni.mapAddr.Load(node.Addr)
 	if ok {
-		mni, ok := d.(*mapnodeinfoRF2)
+		mni, ok := d.(*mapnodeinfoTF2)
 		if !ok {
 			return fmt.Errorf("nodeinfoRF2.onNodeConnected:mapAddr2mapnodeinfo err")
 		}
@@ -144,7 +159,7 @@ func (ni *nodeinfoRF2) onNodeConnected(node *coredbpb.NodeInfo) error {
 		return nil
 	}
 
-	mni := &mapnodeinfoRF2{
+	mni := &mapnodeinfoTF2{
 		connme: true,
 	}
 
@@ -154,39 +169,39 @@ func (ni *nodeinfoRF2) onNodeConnected(node *coredbpb.NodeInfo) error {
 	return nil
 }
 
-type objRF2 struct {
-	root           JarvisNode
-	node1          JarvisNode
-	node2          JarvisNode
-	rootni         nodeinfoRF2
-	node1ni        nodeinfoRF2
-	node2ni        nodeinfoRF2
-	requestnodes   bool
-	requestfile1   bool
-	requestfile1ok bool
-	requestfile2   bool
-	requestfile2ok bool
-	err            error
+type objTF2 struct {
+	root            JarvisNode
+	node1           JarvisNode
+	node2           JarvisNode
+	rootni          nodeinfoTF2
+	node1ni         nodeinfoTF2
+	node2ni         nodeinfoTF2
+	requestnodes    bool
+	transferfile1   bool
+	transferfile1ok bool
+	transferfile2   bool
+	transferfile2ok bool
+	err             error
 }
 
-func newObjRF2() *objRF2 {
-	return &objRF2{
-		rootni:       nodeinfoRF2{},
-		node1ni:      nodeinfoRF2{},
-		node2ni:      nodeinfoRF2{},
+func newObjTF2() *objTF2 {
+	return &objTF2{
+		rootni:       nodeinfoTF2{},
+		node1ni:      nodeinfoTF2{},
+		node2ni:      nodeinfoTF2{},
 		requestnodes: false,
 	}
 }
 
-func (obj *objRF2) isDone() bool {
+func (obj *objTF2) isDone() bool {
 	if obj.rootni.numsConnMe != 2 || obj.rootni.numsIConn != 2 {
 		return false
 	}
 
-	return obj.requestfile1 && obj.requestfile1ok && obj.requestfile2 && obj.requestfile2ok
+	return obj.transferfile1 && obj.transferfile1ok && obj.transferfile2 && obj.transferfile2ok
 }
 
-func (obj *objRF2) oncheck(ctx context.Context, funcCancel context.CancelFunc) error {
+func (obj *objTF2) oncheck(ctx context.Context, funcCancel context.CancelFunc) error {
 	if obj.rootni.numsConnMe == 2 &&
 		obj.node1ni.numsConnMe >= 1 && obj.node1ni.numsIConn >= 1 &&
 		obj.node2ni.numsConnMe >= 1 && obj.node2ni.numsIConn >= 1 &&
@@ -206,21 +221,17 @@ func (obj *objRF2) oncheck(ctx context.Context, funcCancel context.CancelFunc) e
 	}
 
 	if obj.node1ni.numsConnMe == 2 && obj.node2ni.numsConnMe == 2 &&
-		obj.node1ni.numsIConn == 2 && obj.node2ni.numsIConn == 2 && !obj.requestfile1 {
+		obj.node1ni.numsIConn == 2 && obj.node2ni.numsIConn == 2 && !obj.transferfile1 {
 
 		curresultnums := 0
 
-		rf := &jarviscorepb.RequestFile{
-			Filename: "./test/rf2001.dat",
-		}
-
-		err := obj.node1.RequestFile(ctx, obj.node2.GetMyInfo().Addr, rf,
+		err := sendfile22node(ctx, "./test/tf2001.dat", "./test/node1_tf2001.dat", obj.node1, obj.node2.GetMyInfo().Addr,
 			func(ctx context.Context, jarvisnode JarvisNode,
 				lstResult []*JarvisMsgInfo) error {
 
-				for i := 0; i < len(lstResult); i++ {
+				for i := len(lstResult) - 1; i < len(lstResult); i++ {
 					if lstResult[i].Msg != nil {
-						jarvisbase.Info("obj.node1.RequestFile", JSONMsg2Zap("result", lstResult[i].Msg))
+						jarvisbase.Info("sendfile22node obj.node1", JSONMsg2Zap("result", lstResult[i].Msg))
 					}
 				}
 
@@ -239,37 +250,14 @@ func (obj *objRF2) oncheck(ctx context.Context, funcCancel context.CancelFunc) e
 						}
 
 						if lstResult[curresultnums].Msg != nil &&
-							lstResult[curresultnums].Msg.MsgType == jarviscorepb.MSGTYPE_REPLY_REQUEST_FILE {
+							lstResult[curresultnums].Msg.MsgType == jarviscorepb.MSGTYPE_REPLY2 {
 
-							fd := lstResult[curresultnums].Msg.GetFile()
-							if fd == nil {
-								obj.err = ErrNoFileData
-
-								funcCancel()
-
-								return nil
-							}
-
-							if fd.Md5String == "" {
-								obj.err = ErrFileDataNoMD5String
-
-								funcCancel()
-
-								return nil
-							}
-
-							if fd.Md5String != GetMD5String(fd.File) {
-								obj.err = ErrInvalidFileDataMD5String
-
-								funcCancel()
-
-								return nil
+							if lstResult[curresultnums].Msg.ReplyType == jarviscorepb.REPLYTYPE_END {
+								obj.transferfile1ok = true
 							}
 						}
 
 						if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
-							obj.requestfile1ok = true
-
 							if obj.isDone() {
 								funcCancel()
 							}
@@ -287,25 +275,21 @@ func (obj *objRF2) oncheck(ctx context.Context, funcCancel context.CancelFunc) e
 			return err
 		}
 
-		obj.requestfile1 = true
+		obj.transferfile1 = true
 	}
 
 	if obj.node1ni.numsConnMe == 2 && obj.node2ni.numsConnMe == 2 &&
-		obj.node1ni.numsIConn == 2 && obj.node2ni.numsIConn == 2 && !obj.requestfile2 {
+		obj.node1ni.numsIConn == 2 && obj.node2ni.numsIConn == 2 && !obj.transferfile2 {
 
 		curresultnums := 0
 
-		rf := &jarviscorepb.RequestFile{
-			Filename: "./test/rf2002.dat",
-		}
-
-		err := obj.node2.RequestFile(ctx, obj.node1.GetMyInfo().Addr, rf,
+		err := sendfile22node(ctx, "./test/tf2002.dat", "./test/node2_tf2002.dat", obj.node2, obj.node1.GetMyInfo().Addr,
 			func(ctx context.Context, jarvisnode JarvisNode,
 				lstResult []*JarvisMsgInfo) error {
 
-				for i := 0; i < len(lstResult); i++ {
+				for i := len(lstResult) - 1; i < len(lstResult); i++ {
 					if lstResult[i].Msg != nil {
-						jarvisbase.Info("obj.node2.RequestFile", JSONMsg2Zap("result", lstResult[i].Msg))
+						jarvisbase.Info("sendfile22node obj.node2", JSONMsg2Zap("result", lstResult[i].Msg))
 					}
 				}
 
@@ -324,37 +308,14 @@ func (obj *objRF2) oncheck(ctx context.Context, funcCancel context.CancelFunc) e
 						}
 
 						if lstResult[curresultnums].Msg != nil &&
-							lstResult[curresultnums].Msg.MsgType == jarviscorepb.MSGTYPE_REPLY_REQUEST_FILE {
+							lstResult[curresultnums].Msg.MsgType == jarviscorepb.MSGTYPE_REPLY2 {
 
-							fd := lstResult[curresultnums].Msg.GetFile()
-							if fd == nil {
-								obj.err = ErrNoFileData
-
-								funcCancel()
-
-								return nil
-							}
-
-							if fd.Md5String == "" {
-								obj.err = ErrFileDataNoMD5String
-
-								funcCancel()
-
-								return nil
-							}
-
-							if fd.Md5String != GetMD5String(fd.File) {
-								obj.err = ErrInvalidFileDataMD5String
-
-								funcCancel()
-
-								return nil
+							if lstResult[curresultnums].Msg.ReplyType == jarviscorepb.REPLYTYPE_END {
+								obj.transferfile2ok = true
 							}
 						}
 
 						if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
-							obj.requestfile2ok = true
-
 							if obj.isDone() {
 								funcCancel()
 							}
@@ -372,37 +333,37 @@ func (obj *objRF2) oncheck(ctx context.Context, funcCancel context.CancelFunc) e
 			return err
 		}
 
-		obj.requestfile2 = true
+		obj.transferfile2 = true
 	}
 
 	return nil
 }
 
-func (obj *objRF2) onIConn(ctx context.Context, funcCancel context.CancelFunc) error {
+func (obj *objTF2) onIConn(ctx context.Context, funcCancel context.CancelFunc) error {
 	return obj.oncheck(ctx, funcCancel)
 }
 
-func (obj *objRF2) onConnMe(ctx context.Context, funcCancel context.CancelFunc) error {
+func (obj *objTF2) onConnMe(ctx context.Context, funcCancel context.CancelFunc) error {
 	return obj.oncheck(ctx, funcCancel)
 }
 
-func (obj *objRF2) makeString() string {
-	return fmt.Sprintf("root(%v %v) node1(%v %v), node2(%v %v) requestnodes %v requestfile1 %v requestfile1ok %v requestfile2 %v requestfile2ok %v root %v node1 %v node2 %v",
+func (obj *objTF2) makeString() string {
+	return fmt.Sprintf("root(%v %v) node1(%v %v), node2(%v %v) requestnodes %v transferfile1 %v transferfile1ok %v transferfile2 %v transferfile2ok %v root %v node1 %v node2 %v",
 		obj.rootni.numsIConn, obj.rootni.numsConnMe,
 		obj.node1ni.numsIConn, obj.node1ni.numsConnMe,
 		obj.node2ni.numsIConn, obj.node2ni.numsConnMe,
 		obj.requestnodes,
-		obj.requestfile1,
-		obj.requestfile1ok,
-		obj.requestfile2,
-		obj.requestfile2ok,
+		obj.transferfile1,
+		obj.transferfile1ok,
+		obj.transferfile2,
+		obj.transferfile2ok,
 		obj.root.BuildStatus(),
 		obj.node1.BuildStatus(),
 		obj.node2.BuildStatus())
 }
 
-func startTestNodeRF2(ctx context.Context, cfgfilename string, ni *nodeinfoRF2, obj *objRF2,
-	oniconn funconcallRF2, onconnme funconcallRF2) (JarvisNode, error) {
+func startTestNodeTF2(ctx context.Context, cfgfilename string, ni *nodeinfoTF2, obj *objTF2,
+	oniconn funconcallTF2, onconnme funconcallTF2) (JarvisNode, error) {
 
 	cfg, err := LoadConfig(cfgfilename)
 	if err != nil {
@@ -437,13 +398,13 @@ func startTestNodeRF2(ctx context.Context, cfgfilename string, ni *nodeinfoRF2, 
 	return curnode, nil
 }
 
-func TestRequestFile2(t *testing.T) {
-	randfillFile2("./test/rf2001.dat", 2*1024*1024)
-	randfillFile2("./test/rf2002.dat", 10*1024*1024)
+func TestTransferFile2(t *testing.T) {
+	randfillFileTF2("./test/tf2001.dat", 2*1024*1024)
+	randfillFileTF2("./test/tf2002.dat", 10*1024*1024)
 
-	rootcfg, err := LoadConfig("./test/test5030_reqfile2root.yaml")
+	rootcfg, err := LoadConfig("./test/test5060_transferfile2root.yaml")
 	if err != nil {
-		t.Fatalf("TestRequestFile2 load config %v err is %v", "./test/test5030_reqfile2root.yaml", err)
+		t.Fatalf("TestTransferFile2 load config %v err is %v", "./test/test5060_transferfile2root.yaml", err)
 
 		return
 	}
@@ -451,14 +412,14 @@ func TestRequestFile2(t *testing.T) {
 	InitJarvisCore(rootcfg)
 	defer ReleaseJarvisCore()
 
-	obj := newObjRF2()
+	obj := newObjTF2()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
 	var errobj error
 
-	oniconn := func(ctx context.Context, err error, obj *objRF2) error {
+	oniconn := func(ctx context.Context, err error, obj *objTF2) error {
 		if err != nil {
 			errobj = err
 
@@ -485,7 +446,7 @@ func TestRequestFile2(t *testing.T) {
 		return nil
 	}
 
-	onconnme := func(ctx context.Context, err error, obj *objRF2) error {
+	onconnme := func(ctx context.Context, err error, obj *objTF2) error {
 		if err != nil {
 			errobj = err
 
@@ -512,26 +473,26 @@ func TestRequestFile2(t *testing.T) {
 		return nil
 	}
 
-	obj.root, err = startTestNodeRF2(ctx, "./test/test5030_reqfile2root.yaml", &obj.rootni, obj,
+	obj.root, err = startTestNodeTF2(ctx, "./test/test5060_transferfile2root.yaml", &obj.rootni, obj,
 		oniconn, onconnme)
 	if err != nil {
-		outputErrRF2(t, err, "TestRequestFile2 startTestNodeRF2 root", "")
+		outputErrTF2(t, err, "TestTransferFile2 startTestNodeTF2 root", "")
 
 		return
 	}
 
-	obj.node1, err = startTestNodeRF2(ctx, "./test/test5031_reqfile21.yaml", &obj.node1ni, obj,
+	obj.node1, err = startTestNodeTF2(ctx, "./test/test5061_transferfile21.yaml", &obj.node1ni, obj,
 		oniconn, onconnme)
 	if err != nil {
-		outputErrRF2(t, err, "TestRequestFile2 startTestNodeRF2 node1", "")
+		outputErrTF2(t, err, "TestTransferFile2 startTestNodeTF2 node1", "")
 
 		return
 	}
 
-	obj.node2, err = startTestNodeRF2(ctx, "./test/test5032_reqfile22.yaml", &obj.node2ni, obj,
+	obj.node2, err = startTestNodeTF2(ctx, "./test/test5062_transferfile22.yaml", &obj.node2ni, obj,
 		oniconn, onconnme)
 	if err != nil {
-		outputErrRF2(t, err, "TestRequestFile2 startTestNodeRF2 node2", "")
+		outputErrTF2(t, err, "TestTransferFile2 startTestNodeTF2 node2", "")
 
 		return
 	}
@@ -544,22 +505,22 @@ func TestRequestFile2(t *testing.T) {
 	<-ctx.Done()
 
 	if errobj != nil {
-		outputErrRF2(t, errobj, "TestRequestFile2", "")
+		outputErrTF2(t, errobj, "TestTransferFile2", "")
 
 		return
 	}
 
 	if obj.err != nil {
-		outputErrRF2(t, obj.err, "TestRequestFile2", "")
+		outputErrTF2(t, obj.err, "TestTransferFile2", "")
 
 		return
 	}
 
 	if !obj.isDone() {
-		outputErrRF2(t, nil, "TestRequestFile2 no done", obj.makeString())
+		outputErrTF2(t, nil, "TestTransferFile2 no done", obj.makeString())
 
 		return
 	}
 
-	outputRF2(t, "TestRequestFile2 OK")
+	outputTF2(t, "TestTransferFile2 OK")
 }

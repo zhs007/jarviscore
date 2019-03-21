@@ -2,6 +2,7 @@ package jarviscore
 
 import (
 	"context"
+	"io"
 	"net"
 
 	"go.uber.org/zap"
@@ -61,7 +62,8 @@ func (s *jarvisServer2) ProcMsg(in *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcM
 		jarvisbase.Warn("jarvisServer2.ProcMsg:isme",
 			JSONMsg2Zap("msg", in))
 
-		err := s.node.replyStream2(in, stream, pb.REPLYTYPE_ISME, "")
+		err := s.node.replyStream2(in.SrcAddr, in.MsgID,
+			NewJarvisMsgReplyStream(stream, nil), pb.REPLYTYPE_ISME, "")
 		if err != nil {
 			jarvisbase.Warn("jarvisServer2.ProcMsg:isme:err", zap.Error(err))
 
@@ -73,7 +75,68 @@ func (s *jarvisServer2) ProcMsg(in *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcM
 
 	chanEnd := make(chan int)
 
-	s.node.PostMsg(in, stream, chanEnd, nil)
+	s.node.PostMsg(&NormalTaskInfo{
+		Msg: in,
+		ReplyStream: &JarvisMsgReplyStream{
+			procMsg: stream,
+		},
+	}, chanEnd)
+
+	<-chanEnd
+
+	return nil
+}
+
+// ProcMsgStream implements jarviscorepb.JarvisCoreServ
+func (s *jarvisServer2) ProcMsgStream(stream pb.JarvisCoreServ_ProcMsgStreamServer) error {
+
+	var lstmsgs []JarvisMsgInfo
+	var firstmsg *pb.JarvisMsg
+
+	for {
+		in, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+
+		if firstmsg == nil && in != nil {
+			firstmsg = in
+		}
+
+		if err != nil {
+			jarvisbase.Warn("jarvisServer2.ProcMsgStream:stream.Recv",
+				zap.Error(err))
+
+			if firstmsg != nil {
+				err := s.node.replyStream2(firstmsg.SrcAddr, firstmsg.MsgID,
+					NewJarvisMsgReplyStream(nil, stream), pb.REPLYTYPE_ERROR, err.Error())
+
+				if err != nil {
+					jarvisbase.Warn("jarvisServer2.ProcMsg:replyStream2:err",
+						zap.Error(err))
+				}
+			}
+
+			lstmsgs = append(lstmsgs, JarvisMsgInfo{
+				Err: err,
+			})
+
+			break
+		}
+
+		lstmsgs = append(lstmsgs, JarvisMsgInfo{
+			Msg: in,
+		})
+	}
+
+	chanEnd := make(chan int)
+
+	s.node.PostStreamMsg(&StreamTaskInfo{
+		Msgs: lstmsgs,
+		ReplyStream: &JarvisMsgReplyStream{
+			procMsgStream: stream,
+		},
+	}, chanEnd)
 
 	<-chanEnd
 

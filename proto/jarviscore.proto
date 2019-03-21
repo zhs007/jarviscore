@@ -56,6 +56,8 @@ enum MSGTYPE {
     FILE_HASH_DATA = 24;
     // reply connect3
     REPLY_CONNECT3 = 25;
+    // transfer file2
+    TRANSFER_FILE2 = 26;    
 }
 
 // REPLYTYPE - reply type
@@ -75,12 +77,14 @@ enum REPLYTYPE {
     // I got it
     IGOTIT = 6;
     // end
-    END = 7;    
+    END = 7;
+    // wait for me to push the message
+    WAITPUSH = 8;
 }
 
 message NodeBaseInfo {
     // node server address
-    string servAddr = 1;
+    string servAddr = 1; 
     // node address
     string addr = 2;
     // node name
@@ -250,4 +254,5 @@ message JarvisMsg {
 
 service JarvisCoreServ {
     rpc procMsg(JarvisMsg) returns (stream JarvisMsg) {}
+    rpc procMsgStream(stream JarvisMsg) returns (stream JarvisMsg) {}
 }

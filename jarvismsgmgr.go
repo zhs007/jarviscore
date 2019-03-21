@@ -4,19 +4,16 @@ import (
 	"context"
 
 	"github.com/zhs007/jarviscore/base"
-	pb "github.com/zhs007/jarviscore/proto"
 )
 
 type jarvisMsgTask struct {
-	msg          *pb.JarvisMsg
-	stream       pb.JarvisCoreServ_ProcMsgServer
-	mgr          *jarvisMsgMgr
-	chanEnd      chan int
-	funcOnResult FuncOnProcMsgResult
+	mgr      *jarvisMsgMgr
+	chanEnd  chan int
+	taskinfo *JarvisTask
 }
 
 func (task *jarvisMsgTask) Run(ctx context.Context) error {
-	err := task.mgr.node.OnMsg(ctx, task.msg, task.stream, task.funcOnResult)
+	err := task.mgr.node.OnMsg(ctx, task.taskinfo)
 
 	if task.chanEnd != nil {
 		task.chanEnd <- 0
@@ -29,7 +26,6 @@ func (task *jarvisMsgTask) Run(ctx context.Context) error {
 type jarvisMsgMgr struct {
 	pool jarvisbase.RoutinePool
 	node JarvisNode
-	// mgrClient2 *jarvisClient2
 }
 
 // newJarvisMsgMgr - new jarvisMsgMgr
@@ -37,22 +33,34 @@ func newJarvisMsgMgr(node JarvisNode) *jarvisMsgMgr {
 	mgr := &jarvisMsgMgr{
 		pool: jarvisbase.NewRoutinePool(),
 		node: node,
-		// mgrClient2: newClient2(node),
 	}
 
 	return mgr
 }
 
 // sendMsg - send a ctrl msg
-func (mgr *jarvisMsgMgr) sendMsg(msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer,
-	chanEnd chan int, funcOnResult FuncOnProcMsgResult) {
+func (mgr *jarvisMsgMgr) sendMsg(normal *NormalTaskInfo, chanEnd chan int) {
 
 	task := &jarvisMsgTask{
-		msg:          msg,
-		stream:       stream,
-		mgr:          mgr,
-		chanEnd:      chanEnd,
-		funcOnResult: funcOnResult,
+		taskinfo: &JarvisTask{
+			Normal: normal,
+		},
+		mgr:     mgr,
+		chanEnd: chanEnd,
+	}
+
+	mgr.pool.SendTask(task)
+}
+
+// sendStreamMsg - send stream msg
+func (mgr *jarvisMsgMgr) sendStreamMsg(stream *StreamTaskInfo, chanEnd chan int) {
+
+	task := &jarvisMsgTask{
+		taskinfo: &JarvisTask{
+			Stream: stream,
+		},
+		mgr:     mgr,
+		chanEnd: chanEnd,
 	}
 
 	mgr.pool.SendTask(task)
