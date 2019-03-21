@@ -803,7 +803,7 @@ func (n *jarvisNode) RequestNodes(ctx context.Context, funcOnResult FuncOnGroupS
 			totalResults = append(totalResults, curResult)
 
 			err := n.RequestNode(ctx, v.Addr,
-				func(ctx context.Context, jarvisnode JarvisNode, lstResult []*ClientProcMsgResult) error {
+				func(ctx context.Context, jarvisnode JarvisNode, lstResult []*JarvisMsgInfo) error {
 					curResult.Results = lstResult
 
 					if funcOnResult != nil {
@@ -1170,10 +1170,15 @@ func (n *jarvisNode) RegCtrl(ctrltype string, ctrl Ctrl) error {
 }
 
 // PostMsg - like windows postMessage
-func (n *jarvisNode) PostMsg(msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer,
-	chanEnd chan int, funcOnResult FuncOnProcMsgResult) {
+func (n *jarvisNode) PostMsg(normal *NormalTaskInfo, chanEnd chan int) {
 
-	n.mgrJasvisMsg.sendMsg(msg, stream, chanEnd, funcOnResult)
+	n.mgrJasvisMsg.sendMsg(normal, chanEnd)
+}
+
+// PostStreamMsg - like windows postMessage
+func (n *jarvisNode) PostStreamMsg(stream *StreamTaskInfo, chanEnd chan int) {
+
+	n.mgrJasvisMsg.sendStreamMsg(stream, chanEnd)
 }
 
 // AddNodeBaseInfo - add nodeinfo
@@ -1280,7 +1285,7 @@ func (n *jarvisNode) UpdateAllNodes(ctx context.Context, nodetype string, nodety
 			totalResults = append(totalResults, curResult)
 
 			err := n.UpdateNode(ctx, addr, nodetype, nodetypever,
-				func(ctx context.Context, jarvisnode JarvisNode, lstResult []*ClientProcMsgResult) error {
+				func(ctx context.Context, jarvisnode JarvisNode, lstResult []*JarvisMsgInfo) error {
 					curResult.Results = lstResult
 
 					if funcOnResult != nil {

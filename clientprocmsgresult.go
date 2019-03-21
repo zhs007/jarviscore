@@ -2,28 +2,20 @@ package jarviscore
 
 import (
 	"context"
-
-	pb "github.com/zhs007/jarviscore/proto"
 )
-
-// ClientProcMsgResult - result for client.ProcMsg
-type ClientProcMsgResult struct {
-	Msg *pb.JarvisMsg `json:"msg"`
-	Err error         `json:"err"`
-}
 
 // FuncOnProcMsgResult - on procmsg recv the message
 type FuncOnProcMsgResult func(ctx context.Context, jarvisnode JarvisNode,
-	lstResult []*ClientProcMsgResult) error
+	lstResult []*JarvisMsgInfo) error
 
 // IsClientProcMsgResultEnd - is end
-func IsClientProcMsgResultEnd(lstResult []*ClientProcMsgResult) bool {
+func IsClientProcMsgResultEnd(lstResult []*JarvisMsgInfo) bool {
 	return len(lstResult) > 0 && lstResult[len(lstResult)-1].Msg == nil
 }
 
 // ClientGroupProcMsgResults - result for FuncOnSendMsgResult
 type ClientGroupProcMsgResults struct {
-	Results []*ClientProcMsgResult `json:"results"`
+	Results []*JarvisMsgInfo `json:"results"`
 }
 
 // FuncOnGroupSendMsgResult - on group sendmsg recv the messages

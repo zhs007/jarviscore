@@ -198,7 +198,7 @@ func (obj *objRF) oncheckrequestfile2(ctx context.Context, funcCancel context.Ca
 
 		err := obj.node2.RequestFile(ctx, obj.node1.GetMyInfo().Addr, rf,
 			func(ctx context.Context, jarvisnode JarvisNode,
-				lstResult []*ClientProcMsgResult) error {
+				lstResult []*JarvisMsgInfo) error {
 
 				for i := 0; i < len(lstResult); i++ {
 					if lstResult[i].Msg != nil {
@@ -342,7 +342,7 @@ func (obj *objRF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 
 		err := obj.node1.RequestFile(ctx, obj.node2.GetMyInfo().Addr, rf,
 			func(ctx context.Context, jarvisnode JarvisNode,
-				lstResult []*ClientProcMsgResult) error {
+				lstResult []*JarvisMsgInfo) error {
 
 				for i := 0; i < len(lstResult); i++ {
 					if lstResult[i].Msg != nil {

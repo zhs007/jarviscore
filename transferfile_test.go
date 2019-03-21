@@ -227,7 +227,7 @@ func (obj *objTF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 
 		err := sendfile2node(ctx, "./test/tf001.dat", "./test/node1_tf001.dat", obj.node1, obj.node2.GetMyInfo().Addr,
 			func(ctx context.Context, jarvisnode JarvisNode,
-				lstResult []*ClientProcMsgResult) error {
+				lstResult []*JarvisMsgInfo) error {
 
 				for i := 0; i < len(lstResult); i++ {
 					if lstResult[i].Msg != nil {
@@ -308,7 +308,7 @@ func (obj *objTF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 
 		err := sendfile2node(ctx, "./test/tf001.dat", "./test/node2_tf001.dat", obj.node2, obj.node1.GetMyInfo().Addr,
 			func(ctx context.Context, jarvisnode JarvisNode,
-				lstResult []*ClientProcMsgResult) error {
+				lstResult []*JarvisMsgInfo) error {
 
 				for i := 0; i < len(lstResult); i++ {
 					if lstResult[i].Msg != nil {

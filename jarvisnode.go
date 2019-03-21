@@ -67,8 +67,9 @@ type JarvisNode interface {
 	RegCtrl(ctrltype string, ctrl Ctrl) error
 
 	// PostMsg - like windows postMessage
-	PostMsg(msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer, chanEnd chan int,
-		funcOnResult FuncOnProcMsgResult)
+	PostMsg(normal *NormalTaskInfo, chanEnd chan int)
+	// PostStreamMsg - like windows postMessage
+	PostStreamMsg(stream *StreamTaskInfo, chanEnd chan int)
 
 	// ConnectNode - connect node
 	ConnectNode(node *coredbpb.NodeInfo, funcOnResult FuncOnProcMsgResult) error

@@ -2,6 +2,7 @@ package jarviscore
 
 import (
 	"context"
+	"io"
 	"net"
 
 	"go.uber.org/zap"
@@ -73,7 +74,10 @@ func (s *jarvisServer2) ProcMsg(in *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcM
 
 	chanEnd := make(chan int)
 
-	s.node.PostMsg(in, stream, chanEnd, nil)
+	s.node.PostMsg(&NormalTaskInfo{
+		Msg:    in,
+		Stream: stream,
+	}, chanEnd)
 
 	<-chanEnd
 
@@ -82,9 +86,34 @@ func (s *jarvisServer2) ProcMsg(in *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcM
 
 // ProcMsgStream implements jarviscorepb.JarvisCoreServ
 func (s *jarvisServer2) ProcMsgStream(stream pb.JarvisCoreServ_ProcMsgStreamServer) error {
+
+	var lstmsgs []JarvisMsgInfo
+
+	for {
+		in, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			lstmsgs = append(lstmsgs, JarvisMsgInfo{
+				Err: err,
+			})
+
+			break
+		}
+
+		lstmsgs = append(lstmsgs, JarvisMsgInfo{
+			Msg: in,
+		})
+	}
+
 	chanEnd := make(chan int)
 
-	s.node.PostMsg(nil, stream, chanEnd, nil)
+	s.node.PostStreamMsg(&StreamTaskInfo{
+		Msgs:   lstmsgs,
+		Stream: stream,
+	}, chanEnd)
 
 	<-chanEnd
 
