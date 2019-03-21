@@ -774,6 +774,21 @@ func (c *jarvisClient2) _sendMsgStream(ctx context.Context, destAddr string, sms
 		}
 	}
 
+	err = stream.CloseSend()
+	if err != nil {
+		jarvisbase.Warn("jarvisClient2._sendMsgStream:CloseSend", zap.Error(err))
+
+		if funcOnResult != nil {
+			lstResult = append(lstResult, &JarvisMsgInfo{
+				Err: err,
+			})
+
+			funcOnResult(ctx, c.node, lstResult)
+		}
+
+		return err
+	}
+
 	<-chanEnd
 
 	return nil
