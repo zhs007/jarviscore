@@ -42,7 +42,7 @@ type JarvisNode interface {
 	AddNodeBaseInfo(nbi *pb.NodeBaseInfo) error
 
 	// OnMsg - proc JarvisMsg
-	OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer, funcOnResult FuncOnProcMsgResult) error
+	OnMsg(ctx context.Context, task JarvisTask) error
 
 	// GetMyInfo - get my nodeinfo
 	GetMyInfo() *BaseInfo

@@ -161,96 +161,105 @@ func (n *jarvisNode) GetCoreDB() *coredb.CoreDB {
 	return n.coredb
 }
 
-// OnMsg - proc JarvisMsg
-func (n *jarvisNode) OnMsg(ctx context.Context, msg *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer, funcOnResult FuncOnProcMsgResult) error {
-
-	jarvisbase.Debug("jarvisNode.OnMsg",
-		JSONMsg2Zap("msg", msg))
+// onNormalMsg - proc JarvisMsg
+func (n *jarvisNode) onNormalMsg(ctx context.Context, normal NormalTaskInfo) error {
+	jarvisbase.Debug("jarvisNode.onNormalMsg",
+		JSONMsg2Zap("msg", normal.Msg))
 
 	// is timeout
-	if IsTimeOut(msg) {
-		jarvisbase.Warn("jarvisNode.OnMsg",
+	if IsTimeOut(normal.Msg) {
+		jarvisbase.Warn("jarvisNode.onNormalMsg",
 			zap.Error(ErrJarvisMsgTimeOut),
-			JSONMsg2Zap("msg", msg))
+			JSONMsg2Zap("msg", normal.Msg))
 
-		n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, ErrJarvisMsgTimeOut.Error())
+		n.replyStream2(normal.Msg, normal.Stream, pb.REPLYTYPE_ERROR, ErrJarvisMsgTimeOut.Error())
 
 		return nil
 	}
 
 	// proc connect msg
-	if msg.MsgType == pb.MSGTYPE_CONNECT_NODE {
+	if normal.Msg.MsgType == pb.MSGTYPE_CONNECT_NODE {
 		// verify msg
-		err := VerifyJarvisMsg(msg)
+		err := VerifyJarvisMsg(normal.Msg)
 		if err != nil {
-			jarvisbase.Warn("jarvisNode.OnMsg",
+			jarvisbase.Warn("jarvisNode.onNormalMsg",
 				zap.Error(err),
-				JSONMsg2Zap("msg", msg))
+				JSONMsg2Zap("msg", normal.Msg))
 
-			n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
+			n.replyStream2(normal.Msg, normal.Stream, pb.REPLYTYPE_ERROR, err.Error())
 
 			return nil
 		}
 
-		return n.onMsgConnectNode(ctx, msg, stream)
+		return n.onMsgConnectNode(ctx, normal.Msg, normal.Stream)
 	}
 
 	// if is not my msg, broadcast msg
-	if n.myinfo.Addr != msg.DestAddr {
+	if n.myinfo.Addr != normal.Msg.DestAddr {
 		//!!! 先不考虑转发协议
 		// n.mgrClient2.addTask(msg, "", nil, nil)
 	} else {
 		// verify msg
-		err := VerifyJarvisMsg(msg)
+		err := VerifyJarvisMsg(normal.Msg)
 		if err != nil {
-			jarvisbase.Warn("jarvisNode.OnMsg:VerifyJarvisMsg",
+			jarvisbase.Warn("jarvisNode.onNormalMsg:VerifyJarvisMsg",
 				zap.Error(err),
-				JSONMsg2Zap("msg", msg))
+				JSONMsg2Zap("msg", normal.Msg))
 
-			n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
+			n.replyStream2(normal.Msg, normal.Stream, pb.REPLYTYPE_ERROR, err.Error())
 
 			return nil
 		}
 
-		if stream != nil {
-			err = n.checkMsgID(ctx, msg)
+		if normal.Stream != nil {
+			err = n.checkMsgID(ctx, normal.Msg)
 			if err != nil {
-				jarvisbase.Warn("jarvisNode.OnMsg:checkMsgID", zap.Error(err))
+				jarvisbase.Warn("jarvisNode.onNormalMsg:checkMsgID", zap.Error(err))
 
 				if err == ErrInvalidMsgID {
-					n.replyStream2(msg, stream, pb.REPLYTYPE_ERRMSGID, "")
+					n.replyStream2(normal.Msg, normal.Stream, pb.REPLYTYPE_ERRMSGID, "")
 				} else {
-					n.replyStream2(msg, stream, pb.REPLYTYPE_ERROR, err.Error())
+					n.replyStream2(normal.Msg, normal.Stream, pb.REPLYTYPE_ERROR, err.Error())
 				}
 
 				return nil
 			}
 		}
 
-		if msg.MsgType == pb.MSGTYPE_NODE_INFO {
-			return n.onMsgNodeInfo(ctx, msg)
-		} else if msg.MsgType == pb.MSGTYPE_REPLY_CONNECT {
-			return n.onMsgReplyConnect(ctx, msg)
-		} else if msg.MsgType == pb.MSGTYPE_REQUEST_CTRL {
-			return n.onMsgRequestCtrl(ctx, msg, stream, funcOnResult)
-		} else if msg.MsgType == pb.MSGTYPE_REPLY_CTRL_RESULT {
-			return n.onMsgCtrlResult(ctx, msg)
-		} else if msg.MsgType == pb.MSGTYPE_REQUEST_NODES {
-			return n.onMsgRequestNodes(ctx, msg, stream)
-		} else if msg.MsgType == pb.MSGTYPE_TRANSFER_FILE {
-			return n.onMsgTransferFile(ctx, msg, stream)
-		} else if msg.MsgType == pb.MSGTYPE_REQUEST_FILE {
-			return n.onMsgRequestFile(ctx, msg, stream)
-		} else if msg.MsgType == pb.MSGTYPE_REPLY_REQUEST_FILE {
-			return n.onMsgReplyRequestFile(ctx, msg)
-		} else if msg.MsgType == pb.MSGTYPE_REPLY_TRANSFER_FILE {
-			return n.onMsgReplyTransferFile(ctx, msg)
-		} else if msg.MsgType == pb.MSGTYPE_REPLY2 {
-			return n.onMsgReply2(ctx, msg)
-		} else if msg.MsgType == pb.MSGTYPE_UPDATENODE {
-			return n.onMsgUpdateNode(ctx, msg, stream)
+		if normal.Msg.MsgType == pb.MSGTYPE_NODE_INFO {
+			return n.onMsgNodeInfo(ctx, normal.Msg)
+		} else if normal.Msg.MsgType == pb.MSGTYPE_REPLY_CONNECT {
+			return n.onMsgReplyConnect(ctx, normal.Msg)
+		} else if normal.Msg.MsgType == pb.MSGTYPE_REQUEST_CTRL {
+			return n.onMsgRequestCtrl(ctx, normal.Msg, normal.Stream, normal.OnResult)
+		} else if normal.Msg.MsgType == pb.MSGTYPE_REPLY_CTRL_RESULT {
+			return n.onMsgCtrlResult(ctx, normal.Msg)
+		} else if normal.Msg.MsgType == pb.MSGTYPE_REQUEST_NODES {
+			return n.onMsgRequestNodes(ctx, normal.Msg, normal.Stream)
+		} else if normal.Msg.MsgType == pb.MSGTYPE_TRANSFER_FILE {
+			return n.onMsgTransferFile(ctx, normal.Msg, normal.Stream)
+		} else if normal.Msg.MsgType == pb.MSGTYPE_REQUEST_FILE {
+			return n.onMsgRequestFile(ctx, normal.Msg, normal.Stream)
+		} else if normal.Msg.MsgType == pb.MSGTYPE_REPLY_REQUEST_FILE {
+			return n.onMsgReplyRequestFile(ctx, normal.Msg)
+		} else if normal.Msg.MsgType == pb.MSGTYPE_REPLY_TRANSFER_FILE {
+			return n.onMsgReplyTransferFile(ctx, normal.Msg)
+		} else if normal.Msg.MsgType == pb.MSGTYPE_REPLY2 {
+			return n.onMsgReply2(ctx, normal.Msg)
+		} else if normal.Msg.MsgType == pb.MSGTYPE_UPDATENODE {
+			return n.onMsgUpdateNode(ctx, normal.Msg, normal.Stream)
 		}
 
+	}
+
+	return nil
+}
+
+// OnMsg - proc JarvisMsg
+func (n *jarvisNode) OnMsg(ctx context.Context, task JarvisTask) error {
+
+	if task.Normal != nil {
+		return n.onNormalMsg(ctx, *task.Normal)
 	}
 
 	return nil

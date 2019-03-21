@@ -250,4 +250,5 @@ message JarvisMsg {
 
 service JarvisCoreServ {
     rpc procMsg(JarvisMsg) returns (stream JarvisMsg) {}
+    rpc procMsgStream(stream JarvisMsg) returns (stream JarvisMsg) {}
 }

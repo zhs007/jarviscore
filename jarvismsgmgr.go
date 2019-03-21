@@ -8,15 +8,18 @@ import (
 )
 
 type jarvisMsgTask struct {
-	msg          *pb.JarvisMsg
-	stream       pb.JarvisCoreServ_ProcMsgServer
-	mgr          *jarvisMsgMgr
-	chanEnd      chan int
-	funcOnResult FuncOnProcMsgResult
+	// msg                *pb.JarvisMsg
+	// msgstream          pb.JarvisCoreServ_ProcMsgServer
+	// lstmsg             []*pb.JarvisMsg
+	// lstmsgstreamstream pb.JarvisCoreServ_ProcMsgStreamServer
+	mgr      *jarvisMsgMgr
+	chanEnd  chan int
+	taskinfo JarvisTask
+	// funcOnResult       FuncOnProcMsgResult
 }
 
 func (task *jarvisMsgTask) Run(ctx context.Context) error {
-	err := task.mgr.node.OnMsg(ctx, task.msg, task.stream, task.funcOnResult)
+	err := task.mgr.node.OnMsg(ctx, task.taskinfo)
 
 	if task.chanEnd != nil {
 		task.chanEnd <- 0
@@ -48,11 +51,34 @@ func (mgr *jarvisMsgMgr) sendMsg(msg *pb.JarvisMsg, stream pb.JarvisCoreServ_Pro
 	chanEnd chan int, funcOnResult FuncOnProcMsgResult) {
 
 	task := &jarvisMsgTask{
-		msg:          msg,
-		stream:       stream,
-		mgr:          mgr,
-		chanEnd:      chanEnd,
-		funcOnResult: funcOnResult,
+		taskinfo: JarvisTask{
+			Normal: &NormalTaskInfo{
+				Msg:      msg,
+				Stream:   stream,
+				OnResult: funcOnResult,
+			},
+		},
+		mgr:     mgr,
+		chanEnd: chanEnd,
+	}
+
+	mgr.pool.SendTask(task)
+}
+
+// sendStreamMsg - send stream msg
+func (mgr *jarvisMsgMgr) sendStreamMsg(msgs []*pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgStreamServer,
+	chanEnd chan int, funcOnResult FuncOnProcMsgResult) {
+
+	task := &jarvisMsgTask{
+		taskinfo: JarvisTask{
+			Stream: &StreamTaskInfo{
+				Msgs:     msgs,
+				Stream:   stream,
+				OnResult: funcOnResult,
+			},
+		},
+		mgr:     mgr,
+		chanEnd: chanEnd,
 	}
 
 	mgr.pool.SendTask(task)

@@ -79,3 +79,14 @@ func (s *jarvisServer2) ProcMsg(in *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcM
 
 	return nil
 }
+
+// ProcMsgStream implements jarviscorepb.JarvisCoreServ
+func (s *jarvisServer2) ProcMsgStream(stream pb.JarvisCoreServ_ProcMsgStreamServer) error {
+	chanEnd := make(chan int)
+
+	s.node.PostMsg(nil, stream, chanEnd, nil)
+
+	<-chanEnd
+
+	return nil
+}
