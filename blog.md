@@ -1,4 +1,4 @@
-# AnkaDB Development Log
+# JarvisCore Development Log
 
 ### 2019-03-18
 
