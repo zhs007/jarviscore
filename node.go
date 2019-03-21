@@ -793,9 +793,11 @@ func (n *jarvisNode) SendFile2(ctx context.Context, addr string, fd *pb.FileData
 	funcOnResult FuncOnProcMsgResult) error {
 
 	var msgs []*pb.JarvisMsg
-	err := ProcFileDataWithBuff(fd.File, func(fd *pb.FileData, isend bool) error {
+	err := ProcFileDataWithBuff(fd.File, func(curfd *pb.FileData, isend bool) error {
 
-		sendmsg, err := BuildTransferFile2(n, n.myinfo.Addr, addr, fd)
+		curfd.Filename = fd.Filename
+
+		sendmsg, err := BuildTransferFile2(n, n.myinfo.Addr, addr, curfd)
 		if err != nil {
 			jarvisbase.Warn("jarvisNode.SendFile2:BuildTransferFile2", zap.Error(err))
 
@@ -803,8 +805,8 @@ func (n *jarvisNode) SendFile2(ctx context.Context, addr string, fd *pb.FileData
 		}
 
 		jarvisbase.Info("jarvisNode.SendFile2:ProcFileDataWithBuff",
-			zap.Int64("buflen", fd.Length),
-			zap.Int64("filelen", fd.TotalLength))
+			zap.Int64("buflen", curfd.Length),
+			zap.Int64("filelen", curfd.TotalLength))
 
 		msgs = append(msgs, sendmsg)
 
