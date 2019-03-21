@@ -281,6 +281,7 @@ func ProcFileDataWithBuff(buf []byte, onfunc FuncOnFileData) error {
 			Length:        int64(fl),
 			TotalLength:   int64(fl),
 			FileMD5String: md5str,
+			Md5String:     md5str,
 		}, true)
 
 	} else {
@@ -297,6 +298,7 @@ func ProcFileDataWithBuff(buf []byte, onfunc FuncOnFileData) error {
 					Length:        int64(int64(fl) - curstart),
 					TotalLength:   int64(fl),
 					FileMD5String: GetMD5String(buf),
+					Md5String:     GetMD5String(buf[curstart:fl]),
 				}, true)
 
 				return nil
@@ -309,6 +311,7 @@ func ProcFileDataWithBuff(buf []byte, onfunc FuncOnFileData) error {
 				Start:       curstart,
 				Length:      int64(curlength),
 				TotalLength: int64(fl),
+				Md5String:   GetMD5String(buf[curstart:(curstart + curlength)]),
 			}, false)
 
 			curstart = curstart + curlength

@@ -62,7 +62,7 @@ func (s *jarvisServer2) ProcMsg(in *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcM
 		jarvisbase.Warn("jarvisServer2.ProcMsg:isme",
 			JSONMsg2Zap("msg", in))
 
-		err := s.node.replyStream2(in, stream, pb.REPLYTYPE_ISME, "")
+		err := s.node.replyStream2(in, NewJarvisMsgReplyStream(stream, nil), pb.REPLYTYPE_ISME, "")
 		if err != nil {
 			jarvisbase.Warn("jarvisServer2.ProcMsg:isme:err", zap.Error(err))
 
@@ -75,8 +75,10 @@ func (s *jarvisServer2) ProcMsg(in *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcM
 	chanEnd := make(chan int)
 
 	s.node.PostMsg(&NormalTaskInfo{
-		Msg:    in,
-		Stream: stream,
+		Msg: in,
+		ReplyStream: &JarvisMsgReplyStream{
+			procMsg: stream,
+		},
 	}, chanEnd)
 
 	<-chanEnd
@@ -96,6 +98,15 @@ func (s *jarvisServer2) ProcMsgStream(stream pb.JarvisCoreServ_ProcMsgStreamServ
 		}
 
 		if err != nil {
+			jarvisbase.Warn("jarvisServer2.ProcMsgStream:stream.Recv",
+				zap.Error(err))
+
+			err := s.node.replyStream2(in, NewJarvisMsgReplyStream(nil, stream), pb.REPLYTYPE_ERROR, err.Error())
+			if err != nil {
+				jarvisbase.Warn("jarvisServer2.ProcMsg:replyStream2:err",
+					zap.Error(err))
+			}
+
 			lstmsgs = append(lstmsgs, JarvisMsgInfo{
 				Err: err,
 			})
@@ -111,8 +122,10 @@ func (s *jarvisServer2) ProcMsgStream(stream pb.JarvisCoreServ_ProcMsgStreamServ
 	chanEnd := make(chan int)
 
 	s.node.PostStreamMsg(&StreamTaskInfo{
-		Msgs:   lstmsgs,
-		Stream: stream,
+		Msgs: lstmsgs,
+		ReplyStream: &JarvisMsgReplyStream{
+			procMsgStream: stream,
+		},
 	}, chanEnd)
 
 	<-chanEnd

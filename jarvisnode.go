@@ -26,6 +26,9 @@ type JarvisNode interface {
 	// SendFile - send filedata to jarvisnode with addr
 	SendFile(ctx context.Context, addr string, fd *pb.FileData,
 		funcOnResult FuncOnProcMsgResult) error
+	// SendFile2 - send filedata to jarvisnode with addr
+	SendFile2(ctx context.Context, addr string, fd *pb.FileData,
+		funcOnResult FuncOnProcMsgResult) error
 	// RequestFile - request node send filedata to me
 	RequestFile(ctx context.Context, addr string, rf *pb.RequestFile,
 		funcOnResult FuncOnProcMsgResult) error
@@ -42,7 +45,7 @@ type JarvisNode interface {
 	AddNodeBaseInfo(nbi *pb.NodeBaseInfo) error
 
 	// OnMsg - proc JarvisMsg
-	OnMsg(ctx context.Context, task JarvisTask) error
+	OnMsg(ctx context.Context, task *JarvisTask) error
 
 	// GetMyInfo - get my nodeinfo
 	GetMyInfo() *BaseInfo

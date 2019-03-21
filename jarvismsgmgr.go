@@ -9,7 +9,7 @@ import (
 type jarvisMsgTask struct {
 	mgr      *jarvisMsgMgr
 	chanEnd  chan int
-	taskinfo JarvisTask
+	taskinfo *JarvisTask
 }
 
 func (task *jarvisMsgTask) Run(ctx context.Context) error {
@@ -42,7 +42,7 @@ func newJarvisMsgMgr(node JarvisNode) *jarvisMsgMgr {
 func (mgr *jarvisMsgMgr) sendMsg(normal *NormalTaskInfo, chanEnd chan int) {
 
 	task := &jarvisMsgTask{
-		taskinfo: JarvisTask{
+		taskinfo: &JarvisTask{
 			Normal: normal,
 		},
 		mgr:     mgr,
@@ -56,7 +56,7 @@ func (mgr *jarvisMsgMgr) sendMsg(normal *NormalTaskInfo, chanEnd chan int) {
 func (mgr *jarvisMsgMgr) sendStreamMsg(stream *StreamTaskInfo, chanEnd chan int) {
 
 	task := &jarvisMsgTask{
-		taskinfo: JarvisTask{
+		taskinfo: &JarvisTask{
 			Stream: stream,
 		},
 		mgr:     mgr,
