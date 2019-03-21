@@ -107,6 +107,26 @@ func StoreLocalFile(file *pb.FileData) error {
 	return nil
 }
 
+// StoreLocalFileEx - store filedata array to local file systems
+func StoreLocalFileEx(files []*pb.FileData) error {
+	f, err := os.Create(files[0].Filename)
+	if err != nil {
+		jarvisbase.Warn("StoreLocalFileEx:os.Create err", zap.Error(err))
+
+		return err
+	}
+
+	defer f.Close()
+
+	for i := 0; i < len(files); i++ {
+		f.Write(files[i].File)
+	}
+
+	f.Close()
+
+	return nil
+}
+
 // GetNodeBaseInfo - get nodebaseinfo from nodeinfo
 func GetNodeBaseInfo(node *coredbpb.NodeInfo) *pb.NodeBaseInfo {
 	return &pb.NodeBaseInfo{
