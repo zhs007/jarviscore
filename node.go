@@ -316,6 +316,8 @@ func (n *jarvisNode) onMsgConnectNode(ctx context.Context, msg *pb.JarvisMsg, jm
 		return ErrStreamNil
 	}
 
+	defer n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_END, "")
+
 	ci := msg.GetConnInfo()
 
 	mni := &pb.NodeBaseInfo{
@@ -542,6 +544,14 @@ func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 	jarvisbase.Info("jarvisNode.onMsgRequestCtrl:recvmsg",
 		JSONMsg2Zap("msg", msg))
 
+	if jmsgrs == nil {
+		jarvisbase.Warn("jarvisNode.onMsgRequestCtrl", zap.Error(ErrStreamNil))
+
+		return ErrStreamNil
+	}
+
+	defer n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_WAITPUSH, "")
+
 	n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_ISME, "")
 
 	n.mgrEvent.onMsgEvent(ctx, EventOnCtrl, msg)
@@ -606,6 +616,14 @@ func (n *jarvisNode) onMsgUpdateNode(ctx context.Context, msg *pb.JarvisMsg, jms
 
 	jarvisbase.Info("jarvisNode.onMsgUpdateNode",
 		JSONMsg2Zap("msg", msg))
+
+	if jmsgrs == nil {
+		jarvisbase.Warn("jarvisNode.onMsgUpdateNode", zap.Error(ErrStreamNil))
+
+		return ErrStreamNil
+	}
+
+	defer n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_END, "")
 
 	if n.cfg.AutoUpdate {
 		n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_ISME, "")
@@ -905,6 +923,8 @@ func (n *jarvisNode) onMsgRequestNodes(ctx context.Context, msg *pb.JarvisMsg, j
 		return ErrStreamNil
 	}
 
+	defer n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_END, "")
+
 	n.coredb.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
 		//!!! don't broadcast the localhost and deprecated node
 		if IsLocalHostAddr(v.ServAddr) && v.Deprecated {
@@ -1005,6 +1025,8 @@ func (n *jarvisNode) onMsgTransferFile(ctx context.Context, msg *pb.JarvisMsg,
 		return ErrStreamNil
 	}
 
+	defer n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_END, "")
+
 	n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_IGOTIT, "")
 
 	fd := msg.GetFile()
@@ -1044,6 +1066,8 @@ func (n *jarvisNode) onMsgTransferFile2(ctx context.Context, msgs []*pb.JarvisMs
 
 		return ErrStreamNil
 	}
+
+	defer n.replyStream2(msgs[0].SrcAddr, msgs[0].MsgID, jmsgrs, pb.REPLYTYPE_END, "")
 
 	n.replyStream2(msgs[0].SrcAddr, msgs[0].MsgID, jmsgrs, pb.REPLYTYPE_IGOTIT, "")
 
@@ -1239,6 +1263,8 @@ func (n *jarvisNode) onMsgRequestFile(ctx context.Context, msg *pb.JarvisMsg,
 
 		return ErrStreamNil
 	}
+
+	defer n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_END, "")
 
 	n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_IGOTIT, "")
 
