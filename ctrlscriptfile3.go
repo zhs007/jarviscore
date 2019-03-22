@@ -1,0 +1,55 @@
+package jarviscore
+
+import (
+	"os/exec"
+
+	"github.com/golang/protobuf/ptypes"
+	pb "github.com/zhs007/jarviscore/proto"
+)
+
+const (
+	// CtrlTypeScriptFile3 - scriptfile3 ctrltype
+	CtrlTypeScriptFile3 = "scriptfile3"
+)
+
+// CtrlScriptFile3 -
+type CtrlScriptFile3 struct {
+}
+
+// Run -
+func (ctrl *CtrlScriptFile3) Run(ci *pb.CtrlInfo) ([]byte, error) {
+	var csd3 pb.CtrlScript3Data
+	err := ptypes.UnmarshalAny(ci.Dat, &csd3)
+	if err != nil {
+		return nil, err
+	}
+
+	out, err := exec.Command("sh", "-c", string(csd3.ScriptFile.File)).CombinedOutput()
+	if err != nil {
+		return out, err
+	}
+
+	return out, nil
+}
+
+// BuildCtrlInfoForScriptFile3 - build ctrlinfo for scriptfile
+func BuildCtrlInfoForScriptFile3(ctrlid int64, scriptfile *pb.FileData, endFiles []string) (*pb.CtrlInfo, error) {
+
+	csd3 := &pb.CtrlScript3Data{
+		ScriptFile: scriptfile,
+		EndFiles:   endFiles,
+	}
+
+	dat, err := ptypes.MarshalAny(csd3)
+	if err != nil {
+		return nil, err
+	}
+
+	ci := &pb.CtrlInfo{
+		CtrlID:   ctrlid,
+		CtrlType: CtrlTypeScriptFile3,
+		Dat:      dat,
+	}
+
+	return ci, nil
+}

@@ -24,7 +24,6 @@ type jarvisNode struct {
 	mgrEvent     *eventMgr
 	cfg          *Config
 	mgrCtrl      *ctrlMgr
-	// mgrRequest   *requestMgr
 }
 
 const (
@@ -65,9 +64,9 @@ func NewNode(cfg *Config) (JarvisNode, error) {
 		// mgrRequest: &requestMgr{},
 	}
 
-	node.mgrCtrl.Reg(CtrlTypeShell, &CtrlShell{})
 	node.mgrCtrl.Reg(CtrlTypeScriptFile, &CtrlScriptFile{})
 	node.mgrCtrl.Reg(CtrlTypeScriptFile2, &CtrlScriptFile2{})
+	node.mgrCtrl.Reg(CtrlTypeScriptFile3, &CtrlScriptFile3{})
 
 	// event
 	node.mgrEvent = newEventMgr(node)

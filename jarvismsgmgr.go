@@ -2,6 +2,9 @@ package jarviscore
 
 import (
 	"context"
+	"sync"
+
+	"github.com/zhs007/jarviscore/proto"
 
 	"github.com/zhs007/jarviscore/base"
 )
@@ -24,8 +27,9 @@ func (task *jarvisMsgTask) Run(ctx context.Context) error {
 
 // jarvisMsgMgr - jarvis msg mgr
 type jarvisMsgMgr struct {
-	pool jarvisbase.RoutinePool
-	node JarvisNode
+	pool        jarvisbase.RoutinePool
+	node        JarvisNode
+	mapWaitPush sync.Map
 }
 
 // newJarvisMsgMgr - new jarvisMsgMgr
@@ -69,4 +73,16 @@ func (mgr *jarvisMsgMgr) sendStreamMsg(stream *StreamTaskInfo, chanEnd chan int)
 // start - start goroutine to proc ctrl msg
 func (mgr *jarvisMsgMgr) start(ctx context.Context) error {
 	return mgr.pool.Start(ctx, 1)
+}
+
+// onProcMsg
+func (mgr *jarvisMsgMgr) onProcMsg(ctx context.Context, taskinfo *JarvisTask) error {
+	if taskinfo.Normal != nil {
+		if taskinfo.Normal.Msg.MsgType == jarviscorepb.MSGTYPE_REPLY2 &&
+			taskinfo.Normal.Msg.ReplyType == jarviscorepb.REPLYTYPE_WAITPUSH {
+
+		}
+	}
+
+	return nil
 }

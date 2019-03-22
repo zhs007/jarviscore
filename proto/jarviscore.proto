@@ -167,6 +167,13 @@ message CtrlScript2Data {
     repeated FileData srcFiles = 2;
 }
 
+// CtrlScript3Data - used in CtrlInfo.dat
+//                 - scriptfile3
+message CtrlScript3Data {
+    FileData scriptFile = 1;
+    repeated string endFiles = 2;
+}
+
 // CtrlInfo - 
 message CtrlInfo {
     int64 ctrlID = 1;
