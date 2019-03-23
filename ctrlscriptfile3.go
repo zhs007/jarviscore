@@ -3,10 +3,7 @@ package jarviscore
 import (
 	"os/exec"
 
-	"go.uber.org/zap"
-
 	"github.com/golang/protobuf/ptypes"
-	"github.com/zhs007/jarviscore/base"
 	pb "github.com/zhs007/jarviscore/proto"
 )
 
@@ -35,24 +32,30 @@ func (ctrl *CtrlScriptFile3) runScript(ci *pb.CtrlInfo) (*pb.CtrlScript3Data, []
 // Run -
 func (ctrl *CtrlScriptFile3) Run(jarvisnode JarvisNode, srcAddr string, msgid int64, ci *pb.CtrlInfo) []*pb.JarvisMsg {
 
+	var msgs []*pb.JarvisMsg
+
 	csd3, out, err := ctrl.runScript(ci)
 	if err != nil {
-		return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, AppendString(string(out), err.Error()))
+		return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, AppendString(string(out), err.Error()), msgs)
 	}
 
-	msgs := BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, string(out))
+	msgs = BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, string(out), msgs)
 
 	for i := 0; i < len(csd3.EndFiles); i++ {
-		ProcFileData(csd3.EndFiles[i], func(fd *pb.FileData, isend bool) error {
-			sendmsg, err := BuildReplyRequestFile(jarvisnode, jarvisnode.GetMyInfo().Addr, srcAddr, fd, msgid)
-			if err != nil {
-				jarvisbase.Warn("CtrlScriptFile3.Run", zap.Error(err))
-			}
+		err := ProcFileData(csd3.EndFiles[i], func(fd *pb.FileData, isend bool) error {
+			msgs = BuildReplyRequestFileForCtrl(jarvisnode, srcAddr, msgid, fd, msgs)
+			// sendmsg, err := BuildReplyRequestFile(jarvisnode, jarvisnode.GetMyInfo().Addr, srcAddr, fd, msgid)
+			// if err != nil {
+			// 	jarvisbase.Warn("CtrlScriptFile3.Run", zap.Error(err))
+			// }
 
-			msgs = append(msgs, sendmsg)
+			// msgs = append(msgs, sendmsg)
 
 			return nil
 		})
+		if err != nil {
+			msgs = BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, err.Error(), msgs)
+		}
 	}
 
 	return msgs

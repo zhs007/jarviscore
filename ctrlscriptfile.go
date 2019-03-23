@@ -30,12 +30,14 @@ func (ctrl *CtrlScriptFile) runScript(ci *pb.CtrlInfo) ([]byte, error) {
 // Run -
 func (ctrl *CtrlScriptFile) Run(jarvisnode JarvisNode, srcAddr string, msgid int64, ci *pb.CtrlInfo) []*pb.JarvisMsg {
 
+	var msgs []*pb.JarvisMsg
+
 	out, err := ctrl.runScript(ci)
 	if err != nil {
-		return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, AppendString(string(out), err.Error()))
+		return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, AppendString(string(out), err.Error()), msgs)
 	}
 
-	return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, string(out))
+	return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, string(out), msgs)
 }
 
 // BuildCtrlInfoForScriptFile - build ctrlinfo for scriptfile

@@ -116,6 +116,7 @@ type objRCS3 struct {
 	requestctrlnode1   bool
 	requestctrlnode1ok bool
 	err                error
+	getfilenums        int
 }
 
 func newObjRCS3() *objRCS3 {
@@ -128,7 +129,7 @@ func newObjRCS3() *objRCS3 {
 }
 
 func (obj *objRCS3) isDone() bool {
-	if obj.rootni.numsConnMe != 2 || obj.rootni.numsIConn != 2 {
+	if obj.rootni.numsConnMe != 2 || obj.rootni.numsIConn != 2 || obj.getfilenums != 2 {
 		return false
 	}
 
@@ -169,8 +170,8 @@ func (obj *objRCS3) oncheck(ctx context.Context, funcCancel context.CancelFunc) 
 		}
 
 		ci, err := BuildCtrlInfoForScriptFile3(sf, []string{
-			"./test/test5090_requestscript3root",
-			"./test/test5080_requestscript2root",
+			"./test/test5090_requestscript3root.yaml",
+			"./test/test5080_requestscript2root.yaml",
 		})
 		if err != nil {
 			obj.err = err
@@ -190,6 +191,10 @@ func (obj *objRCS3) oncheck(ctx context.Context, funcCancel context.CancelFunc) 
 				} else if lastjmi.Msg != nil {
 					jarvisbase.Info("objRCS3.oncheck:obj.node1.RequestCtrl",
 						JSONMsg2Zap("msg", lastjmi.Msg))
+
+					if lastjmi.Msg.MsgType == pb.MSGTYPE_REPLY_REQUEST_FILE {
+						obj.getfilenums++
+					}
 				} else {
 					obj.requestctrlnode1ok = true
 
@@ -219,13 +224,14 @@ func (obj *objRCS3) onConnMe(ctx context.Context, funcCancel context.CancelFunc)
 }
 
 func (obj *objRCS3) makeString() string {
-	return fmt.Sprintf("root(%v %v) node1(%v %v), node2(%v %v) requestnodes %v requestctrlnode1 %v requestctrlnode1ok %v root %v node1 %v node2 %v",
+	return fmt.Sprintf("root(%v %v) node1(%v %v), node2(%v %v) requestnodes %v requestctrlnode1 %v requestctrlnode1ok %v getfilenums %v root %v node1 %v node2 %v",
 		obj.rootni.numsIConn, obj.rootni.numsConnMe,
 		obj.node1ni.numsIConn, obj.node1ni.numsConnMe,
 		obj.node2ni.numsIConn, obj.node2ni.numsConnMe,
 		obj.requestnodes,
 		obj.requestctrlnode1,
 		obj.requestctrlnode1ok,
+		obj.getfilenums,
 		obj.root.BuildStatus(),
 		obj.node1.BuildStatus(),
 		obj.node2.BuildStatus())
