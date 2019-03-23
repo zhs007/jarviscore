@@ -16,14 +16,15 @@ import (
 
 // jarvisNode -
 type jarvisNode struct {
-	myinfo       BaseInfo
-	coredb       *coredb.CoreDB
-	mgrJasvisMsg *jarvisMsgMgr
-	mgrClient2   *jarvisClient2
-	serv2        *jarvisServer2
-	mgrEvent     *eventMgr
-	cfg          *Config
-	mgrCtrl      *ctrlMgr
+	myinfo           BaseInfo
+	coredb           *coredb.CoreDB
+	mgrJasvisMsg     *jarvisMsgMgr
+	mgrClient2       *jarvisClient2
+	serv2            *jarvisServer2
+	mgrEvent         *eventMgr
+	cfg              *Config
+	mgrCtrl          *ctrlMgr
+	mgrProcMsgResult *procMsgResultMgr
 }
 
 const (
@@ -95,6 +96,9 @@ func NewNode(cfg *Config) (JarvisNode, error) {
 
 	// mgrJasvisMsg
 	node.mgrJasvisMsg = newJarvisMsgMgr(node)
+
+	// mgrProcMsgResult
+	node.mgrProcMsgResult = newProcMsgResultMgr(node)
 
 	// mgrClient2
 	node.mgrClient2 = newClient2(node)
@@ -292,11 +296,19 @@ func (n *jarvisNode) onStreamMsg(ctx context.Context, stream *StreamTaskInfo, jm
 func (n *jarvisNode) OnMsg(ctx context.Context, task *JarvisTask) error {
 
 	if task.Normal != nil {
-		return n.onNormalMsg(ctx, task.Normal, task.Normal.ReplyStream)
+		err := n.onNormalMsg(ctx, task.Normal, task.Normal.ReplyStream)
+
+		n.mgrProcMsgResult.onProcMsg(ctx, task)
+
+		return err
 	}
 
 	if task.Stream != nil {
-		return n.onStreamMsg(ctx, task.Stream, task.Stream.ReplyStream)
+		err := n.onStreamMsg(ctx, task.Stream, task.Stream.ReplyStream)
+
+		n.mgrProcMsgResult.onProcMsg(ctx, task)
+
+		return err
 	}
 
 	return nil
@@ -1390,7 +1402,19 @@ func (n *jarvisNode) checkMsgID(ctx context.Context, msg *pb.JarvisMsg) error {
 		return ErrUnknowNode
 	}
 
-	if msg.MsgID <= cn.LastRecvMsgID {
+	if msg.StreamMsgID > 0 {
+		if msg.StreamMsgID <= cn.LastRecvMsgID {
+			jarvisbase.Warn("jarvisNode.checkMsgID",
+				zap.String("destaddr", msg.DestAddr),
+				zap.String("srcaddr", msg.SrcAddr),
+				zap.Int64("msgid", msg.MsgID),
+				zap.Int64("streammsgid", msg.StreamMsgID),
+				zap.Int64("lasrrevmsgid", cn.LastRecvMsgID),
+				JSONMsg2Zap("msg", msg))
+
+			return ErrInvalidMsgID
+		}
+	} else if msg.MsgID <= cn.LastRecvMsgID {
 		jarvisbase.Warn("jarvisNode.checkMsgID",
 			zap.String("destaddr", msg.DestAddr),
 			zap.String("srcaddr", msg.SrcAddr),
@@ -1518,4 +1542,17 @@ func (n *jarvisNode) BuildStatus() *pb.JarvisNodeStatus {
 	n.mgrClient2.BuildNodeStatus(ns)
 
 	return ns
+}
+
+// OnClientProcMsg - on Client.ProcMsg
+func (n *jarvisNode) OnClientProcMsg(addr string, msgid int64, onProcMsgResult FuncOnProcMsgResult) error {
+	return n.mgrProcMsgResult.startProcMsgResultData(addr, msgid, onProcMsgResult)
+}
+
+// OnReplyProcMsg - on reply
+func (n *jarvisNode) OnReplyProcMsg(ctx context.Context, addr string, replymsgid int64, msg *pb.JarvisMsg, err error) error {
+	return n.mgrProcMsgResult.onPorcMsgResult(ctx, addr, replymsgid, n, &JarvisMsgInfo{
+		Msg: msg,
+		Err: err,
+	})
 }

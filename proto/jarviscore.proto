@@ -241,6 +241,7 @@ message JarvisMsg {
     string err = 11;
     int64 lastMsgID = 12;
     int64 replyMsgID = 13;
+    int64 streamMsgID = 14;
 
     oneof data {
         NodeBaseInfo nodeInfo = 100;
