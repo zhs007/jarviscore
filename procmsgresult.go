@@ -32,7 +32,7 @@ func (mgr *procMsgResultMgr) onProcMsg(ctx context.Context, taskinfo *JarvisTask
 		if taskinfo.Normal.Msg.MsgType == jarviscorepb.MSGTYPE_REPLY2 &&
 			taskinfo.Normal.Msg.ReplyType == jarviscorepb.REPLYTYPE_END {
 
-			mgr.endProcMsgResultData(taskinfo.Normal.Msg.SrcAddr,
+			mgr.onEndMsg(taskinfo.Normal.Msg.SrcAddr,
 				taskinfo.Normal.Msg.ReplyMsgID)
 		}
 	} else if taskinfo.Stream != nil {
@@ -40,7 +40,7 @@ func (mgr *procMsgResultMgr) onProcMsg(ctx context.Context, taskinfo *JarvisTask
 			if taskinfo.Stream.Msgs[i].Msg.MsgType == jarviscorepb.MSGTYPE_REPLY2 &&
 				taskinfo.Stream.Msgs[i].Msg.ReplyType == jarviscorepb.REPLYTYPE_END {
 
-				mgr.endProcMsgResultData(taskinfo.Stream.Msgs[i].Msg.SrcAddr,
+				mgr.onEndMsg(taskinfo.Stream.Msgs[i].Msg.SrcAddr,
 					taskinfo.Stream.Msgs[i].Msg.ReplyMsgID)
 			}
 		}
@@ -80,9 +80,19 @@ func (mgr *procMsgResultMgr) getProcMsgResultData(addr string, msgid int64) (*Pr
 	return nil, ErrNoProcMsgResultData
 }
 
-// endProcMsgResultData
-func (mgr *procMsgResultMgr) endProcMsgResultData(addr string, msgid int64) {
-	mgr.mapWaitPush.Delete(AppendString(addr, ":", strconv.FormatInt(msgid, 10)))
+// onEndMsg
+func (mgr *procMsgResultMgr) onEndMsg(addr string, replymsgid int64) {
+	d, err := mgr.getProcMsgResultData(addr, replymsgid)
+	if err != nil {
+		jarvisbase.Warn("procMsgResultMgr.onEndMsg:getProcMsgResultData",
+			zap.Error(err))
+	}
+
+	if d != nil {
+		if d.OnMsgEnd() {
+			mgr.mapWaitPush.Delete(AppendString(addr, ":", strconv.FormatInt(replymsgid, 10)))
+		}
+	}
 }
 
 func (mgr *procMsgResultMgr) onPorcMsgResult(ctx context.Context, addr string, replymsgid int64,
@@ -95,7 +105,15 @@ func (mgr *procMsgResultMgr) onPorcMsgResult(ctx context.Context, addr string, r
 	}
 
 	if d != nil {
-		return d.OnPorcMsgResult(ctx, jarvisnode, result)
+		err := d.OnPorcMsgResult(ctx, jarvisnode, result)
+
+		if result.Err == nil && result.Msg == nil {
+			if d.OnRecvEnd() {
+				mgr.mapWaitPush.Delete(AppendString(addr, ":", strconv.FormatInt(replymsgid, 10)))
+			}
+		}
+
+		return err
 	}
 
 	return nil

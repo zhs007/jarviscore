@@ -17,6 +17,8 @@ func IsClientProcMsgResultEnd(lstResult []*JarvisMsgInfo) bool {
 type ProcMsgResultData struct {
 	onProcMsgResult FuncOnProcMsgResult
 	lstResult       []*JarvisMsgInfo
+	endOnMsg        bool
+	endRecv         bool
 }
 
 // NewProcMsgResultData - new ProcMsgResultData
@@ -24,6 +26,20 @@ func NewProcMsgResultData(onProcMsgResult FuncOnProcMsgResult) *ProcMsgResultDat
 	return &ProcMsgResultData{
 		onProcMsgResult: onProcMsgResult,
 	}
+}
+
+// OnRecvEnd - on RecvEnd
+func (pmrd *ProcMsgResultData) OnRecvEnd() bool {
+	pmrd.endRecv = true
+
+	return pmrd.endOnMsg && pmrd.endRecv
+}
+
+// OnMsgEnd - on MsgEnd
+func (pmrd *ProcMsgResultData) OnMsgEnd() bool {
+	pmrd.endOnMsg = true
+
+	return pmrd.endOnMsg && pmrd.endRecv
 }
 
 // OnPorcMsgResult - on PorcMsgResult

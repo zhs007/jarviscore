@@ -458,7 +458,9 @@ func AppendString(strs ...string) string {
 	var buffer bytes.Buffer
 
 	for _, str := range strs {
-		buffer.WriteString(str)
+		if len(str) > 0 {
+			buffer.WriteString(str)
+		}
 	}
 
 	return buffer.String()
