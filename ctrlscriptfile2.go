@@ -46,6 +46,7 @@ func (ctrl *CtrlScriptFile2) Run(jarvisnode JarvisNode, srcAddr string, msgid in
 }
 
 // BuildCtrlInfoForScriptFile2 - build ctrlinfo for scriptfile
+// Deprecated: you can use BuildCtrlInfoForScriptFile3
 func BuildCtrlInfoForScriptFile2(scriptfile *pb.FileData, files []*pb.FileData) (*pb.CtrlInfo, error) {
 
 	csd2 := &pb.CtrlScript2Data{

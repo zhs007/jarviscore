@@ -39,7 +39,7 @@ func (ctrl *CtrlScriptFile) Run(jarvisnode JarvisNode, srcAddr string, msgid int
 }
 
 // BuildCtrlInfoForScriptFile - build ctrlinfo for scriptfile
-// Deprecated: you can use BuildCtrlInfoForScriptFile2
+// Deprecated: you can use BuildCtrlInfoForScriptFile3
 func BuildCtrlInfoForScriptFile(filename string, filedata []byte,
 	destpath string) (*pb.CtrlInfo, error) {
 

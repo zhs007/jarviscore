@@ -30,7 +30,8 @@ func newProcMsgResultMgr(node JarvisNode) *procMsgResultMgr {
 func (mgr *procMsgResultMgr) onProcMsg(ctx context.Context, taskinfo *JarvisTask) error {
 	if taskinfo.Normal != nil {
 		if taskinfo.Normal.Msg.MsgType == jarviscorepb.MSGTYPE_REPLY2 &&
-			taskinfo.Normal.Msg.ReplyType == jarviscorepb.REPLYTYPE_END {
+			taskinfo.Normal.Msg.ReplyType == jarviscorepb.REPLYTYPE_END &&
+			taskinfo.Normal.Msg.ReplyMsgID > 0 {
 
 			mgr.onEndMsg(taskinfo.Normal.Msg.SrcAddr,
 				taskinfo.Normal.Msg.ReplyMsgID)
@@ -38,7 +39,8 @@ func (mgr *procMsgResultMgr) onProcMsg(ctx context.Context, taskinfo *JarvisTask
 	} else if taskinfo.Stream != nil {
 		for i := 0; i < len(taskinfo.Stream.Msgs); i++ {
 			if taskinfo.Stream.Msgs[i].Msg.MsgType == jarviscorepb.MSGTYPE_REPLY2 &&
-				taskinfo.Stream.Msgs[i].Msg.ReplyType == jarviscorepb.REPLYTYPE_END {
+				taskinfo.Stream.Msgs[i].Msg.ReplyType == jarviscorepb.REPLYTYPE_END &&
+				taskinfo.Stream.Msgs[i].Msg.ReplyMsgID > 0 {
 
 				mgr.onEndMsg(taskinfo.Stream.Msgs[i].Msg.SrcAddr,
 					taskinfo.Stream.Msgs[i].Msg.ReplyMsgID)
