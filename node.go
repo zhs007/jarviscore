@@ -496,7 +496,7 @@ func (n *jarvisNode) replyCtrlResult(ctx context.Context, msg *pb.JarvisMsg, inf
 		return ErrNoCtrlInfo
 	}
 
-	sendmsg2, err := BuildCtrlResult(n, n.myinfo.Addr, msg.SrcAddr, ci.CtrlID, msg.MsgID, info)
+	sendmsg2, err := BuildCtrlResult(n, n.myinfo.Addr, msg.SrcAddr, msg.MsgID, info)
 
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.replyCtrlResult:BuildCtrlResult", zap.Error(err))
@@ -535,18 +535,19 @@ func (n *jarvisNode) runRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 	jmsgrs *JarvisMsgReplyStream, funcOnResult FuncOnProcMsgResult) {
 
 	ci := msg.GetCtrlInfo()
-	ret, err := n.mgrCtrl.Run(ci)
-	if err != nil {
-		if ret != nil {
-			n.replyCtrlResult(ctx, msg, string(ret))
-		}
+	msgs := n.mgrCtrl.Run(n, msg.SrcAddr, msg.MsgID, ci)
+	if msgs != nil {
+		msgs = PushReply22Msgs(msgs, n, msg.SrcAddr, msg.MsgID, pb.REPLYTYPE_END, "")
 
-		n.replyCtrlResult(ctx, msg, err.Error())
+		n.mgrClient2.addSendMsgStreamTask(msgs, msg.SrcAddr, funcOnResult)
 
 		return
 	}
 
-	n.replyCtrlResult(ctx, msg, string(ret))
+	msgs = PushReply22Msgs(msgs, n, msg.SrcAddr, msg.MsgID, pb.REPLYTYPE_ERROR, ErrUnknownCtrlError.Error())
+	msgs = PushReply22Msgs(msgs, n, msg.SrcAddr, msg.MsgID, pb.REPLYTYPE_END, "")
+
+	n.mgrClient2.addSendMsgStreamTask(msgs, msg.SrcAddr, funcOnResult)
 }
 
 // onMsgRequestCtrl

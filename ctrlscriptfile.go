@@ -17,19 +17,19 @@ type CtrlScriptFile struct {
 }
 
 // Run -
-func (ctrl *CtrlScriptFile) Run(ci *pb.CtrlInfo) ([]byte, error) {
+func (ctrl *CtrlScriptFile) Run(jarvisnode JarvisNode, srcAddr string, msgid int64, ci *pb.CtrlInfo) []*pb.JarvisMsg {
 	var csd pb.CtrlScriptData
 	err := ptypes.UnmarshalAny(ci.Dat, &csd)
 	if err != nil {
-		return nil, err
+		return BuildReply2ForCtrl(jarvisnode, srcAddr, msgid, pb.REPLYTYPE_ERROR, err.Error())
 	}
 
 	out, err := exec.Command("sh", "-c", string(csd.File)).CombinedOutput()
 	if err != nil {
-		return out, err
+		return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, AppendString(string(out), err.Error()))
 	}
 
-	return out, nil
+	return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, string(out))
 }
 
 // BuildCtrlInfoForScriptFile - build ctrlinfo for scriptfile

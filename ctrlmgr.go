@@ -3,6 +3,9 @@ package jarviscore
 import (
 	"sync"
 
+	"go.uber.org/zap"
+
+	"github.com/zhs007/jarviscore/base"
 	pb "github.com/zhs007/jarviscore/proto"
 )
 
@@ -27,11 +30,24 @@ func (mgr *ctrlMgr) getCtrl(ctrltype string) Ctrl {
 	return nil
 }
 
-func (mgr *ctrlMgr) Run(ci *pb.CtrlInfo) ([]byte, error) {
+func (mgr *ctrlMgr) Run(jarvisnode JarvisNode, srcAddr string, msgid int64, ci *pb.CtrlInfo) []*pb.JarvisMsg {
 	c := mgr.getCtrl(ci.CtrlType)
 	if c != nil {
-		return c.Run(ci)
+		return c.Run(jarvisnode, srcAddr, msgid, ci)
 	}
 
-	return nil, ErrNoCtrlCmd
+	msg, err := BuildReply2(jarvisnode,
+		jarvisnode.GetMyInfo().Addr,
+		srcAddr,
+		pb.REPLYTYPE_ERROR,
+		ErrNoCtrl.Error(),
+		msgid)
+
+	if err != nil {
+		jarvisbase.Warn("ctrlMgr.Run:BuildReply2", zap.Error(err))
+
+		return nil
+	}
+
+	return []*pb.JarvisMsg{msg}
 }

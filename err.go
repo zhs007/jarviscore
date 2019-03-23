@@ -91,4 +91,8 @@ var (
 	ErrInvalidProcMsgResultData = errors.New("invalid ProcMsgResultData")
 	// ErrDuplicateProcMsgResultData - duplicate ProcMsgResultData
 	ErrDuplicateProcMsgResultData = errors.New("duplicate ProcMsgResultData")
+	// ErrNoCtrl - no ctrl
+	ErrNoCtrl = errors.New("no ctrl")
+	// ErrUnknownCtrlError - unknown ctrl error
+	ErrUnknownCtrlError = errors.New("unknown ctrl error")
 )

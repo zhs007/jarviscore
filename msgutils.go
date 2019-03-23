@@ -262,7 +262,7 @@ func BuildReply2(jarvisnode JarvisNode, srcAddr string,
 
 // BuildCtrlResult - build jarvismsg with REPLY_CTRL_RESULT
 func BuildCtrlResult(jarvisnode JarvisNode, srcAddr string,
-	destAddr string, ctrlid int64, msgid int64, result string) (*pb.JarvisMsg, error) {
+	destAddr string, msgid int64, result string) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
 		CurTime:  time.Now().Unix(),
@@ -274,7 +274,6 @@ func BuildCtrlResult(jarvisnode JarvisNode, srcAddr string,
 		ReplyMsgID: msgid,
 		Data: &pb.JarvisMsg_CtrlResult{
 			CtrlResult: &pb.CtrlResult{
-				CtrlID:     ctrlid,
 				CtrlResult: result,
 			},
 		},
@@ -474,4 +473,24 @@ func JSONMsg2Zap(key string, src *pb.JarvisMsg) zap.Field {
 	}
 
 	return jarvisbase.JSON(key, msg)
+}
+
+// PushReply22Msgs - push Reply2 to msgs
+func PushReply22Msgs(msgs []*pb.JarvisMsg, jarvisnode JarvisNode, srcAddr string, msgid int64,
+	replytype pb.REPLYTYPE, info string) []*pb.JarvisMsg {
+
+	msg, err1 := BuildReply2(jarvisnode,
+		jarvisnode.GetMyInfo().Addr,
+		srcAddr,
+		replytype,
+		info,
+		msgid)
+
+	if err1 != nil {
+		jarvisbase.Warn("PushReply22Msgs", zap.Error(err1))
+
+		return msgs
+	}
+
+	return append(msgs, msg)
 }

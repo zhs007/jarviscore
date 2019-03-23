@@ -176,7 +176,7 @@ message CtrlScript3Data {
 
 // CtrlInfo - 
 message CtrlInfo {
-    int64 ctrlID = 1;
+    int64 ctrlID = 1 [deprecated = true];
     string ctrlType = 2;
     string command = 3;
     repeated string params = 4;
