@@ -1,7 +1,7 @@
 #jarvis node config
 
 # rootservaddr - jarvis root node address
-rootservaddr: '127.0.0.1:7889'
+rootservaddr: '127.0.0.1:5070'
 # lsttrustnode - trust node list
 lsttrustnode: ['1JJaKpZGhYPuVHc1EKiiHZEswPAB5SybW5']
 
@@ -16,7 +16,7 @@ maxmsglength: 4194304
 # ankadb - ankadb config
 ankadb:
   # dbpath - dbpath
-  dbpath: './test/dat3'
+  dbpath: './test/test5070_requestscriptroot'
   # httpserv - http service address, it can be empty
   httpserv: ''
   # ankadb engine
@@ -25,7 +25,7 @@ ankadb:
 # log - log config
 log:
   # logpath - log path
-  logpath: './test/logs1'
+  logpath: './test/test5070_requestscriptroot'
   # loglevel - log level, it can be debug, info, warn, error
   loglevel: 'info'
   # logconsole - it can be output to console
@@ -34,8 +34,8 @@ log:
 # basenodeinfo - my node base config  
 basenodeinfo:
   # nodename - my node name
-  nodename: 'node001'
+  nodename: 'test5070_requestscriptroot'
   # bindaddr - my bind address
-  bindaddr: ':7888'
+  bindaddr: ':5070'
   # servaddr - other node connct me
-  servaddr: '127.0.0.1:7888'
+  servaddr: '127.0.0.1:5070'

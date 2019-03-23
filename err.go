@@ -95,4 +95,6 @@ var (
 	ErrNoCtrl = errors.New("no ctrl")
 	// ErrUnknownCtrlError - unknown ctrl error
 	ErrUnknownCtrlError = errors.New("unknown ctrl error")
+	// ErrProcMsgStreamNil - ProcMsgStream return nil
+	ErrProcMsgStreamNil = errors.New("ProcMsgStream return nil")
 )

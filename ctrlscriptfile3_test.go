@@ -25,7 +25,7 @@ func TestCtrlScriptFile3(t *testing.T) {
 		t.Fatalf("TestCtrlScriptFile3 BuildCtrlInfoForScriptFile3 %v", err)
 	}
 
-	ret, err := ctrl.runScript(ci)
+	_, ret, err := ctrl.runScript(ci)
 	if err != nil {
 		t.Fatalf("TestCtrlScriptFile3 Error Run %v", err)
 	}

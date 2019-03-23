@@ -734,6 +734,26 @@ func (c *jarvisClient2) _sendMsgStream(ctx context.Context, destAddr string, sms
 
 	chanEnd := make(chan int)
 	stream, err := ci2.client.ProcMsgStream(ctx)
+	if err != nil {
+		jarvisbase.Warn("jarvisClient2._sendMsgStream:ProcMsgStream", zap.Error(err))
+
+		if funcOnResult != nil {
+			c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, nil, err)
+		}
+
+		return err
+	}
+
+	if stream == nil {
+		jarvisbase.Warn("jarvisClient2._sendMsgStream:ProcMsgStream", zap.Error(ErrProcMsgStreamNil))
+
+		if funcOnResult != nil {
+			c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, nil, ErrProcMsgStreamNil)
+		}
+
+		return err
+	}
+
 	go c._procRecvMsgStream(ctx, stream, funcOnResult, chanEnd, destaddr, newsendmsgid)
 
 	for i := 0; i < len(smsgs); i++ {
