@@ -1,22 +1,27 @@
 package jarviscore
 
-// func TestCtrlScriptFile(t *testing.T) {
-// 	ctrl := &CtrlScriptFile{}
+import (
+	"io/ioutil"
+	"testing"
+)
 
-// 	dat, err := ioutil.ReadFile("./test/test.sh")
-// 	if err != nil {
-// 		t.Fatalf("load script file %v", err)
-// 	}
+func TestCtrlScriptFile(t *testing.T) {
+	ctrl := &CtrlScriptFile{}
 
-// 	ci, err := BuildCtrlInfoForScriptFile(1, "test.sh", dat, "")
-// 	if err != nil {
-// 		t.Fatalf("BuildCtrlInfoForScriptFile %v", err)
-// 	}
+	dat, err := ioutil.ReadFile("./test/test.sh")
+	if err != nil {
+		t.Fatalf("TestCtrlScriptFile load script file %v", err)
+	}
 
-// 	ret, err := ctrl.Run(ci)
-// 	if err != nil {
-// 		t.Fatalf("Run %v", err)
-// 	}
+	ci, err := BuildCtrlInfoForScriptFile("test.sh", dat, "")
+	if err != nil {
+		t.Fatalf("TestCtrlScriptFile BuildCtrlInfoForScriptFile %v", err)
+	}
 
-// 	t.Logf("result is %v", string(ret))
-// }
+	ret, err := ctrl.runScript(ci)
+	if err != nil {
+		t.Fatalf("TestCtrlScriptFile Run %v", err)
+	}
+
+	t.Logf("TestCtrlScriptFile result is %v", string(ret))
+}

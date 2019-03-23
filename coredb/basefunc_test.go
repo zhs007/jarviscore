@@ -142,12 +142,12 @@ func TestBaseFunc(t *testing.T) {
 	test001PriKey := jarviscrypto.GenerateKey()
 
 	cni1 := &coredbpb.NodeInfo{
-		ServAddr:        "127.0.0.1",
-		Addr:            test001PriKey.ToAddress(),
-		Name:            "test001",
-		ConnectNums:     0,
-		ConnectedNums:   0,
-		CtrlID:          0,
+		ServAddr:      "127.0.0.1",
+		Addr:          test001PriKey.ToAddress(),
+		Name:          "test001",
+		ConnectNums:   0,
+		ConnectedNums: 0,
+		// CtrlID:          0,
 		LstClientAddr:   nil,
 		AddTime:         time.Now().Unix(),
 		ConnectMe:       false,
@@ -195,11 +195,11 @@ func TestBaseFunc(t *testing.T) {
 		return
 	}
 
-	if cni1.CtrlID != cn1.CtrlID {
-		t.Fatalf("TestBaseFunc updNodeInfo return CtrlID fail! (%v - %v)", cni1.CtrlID, cn1.CtrlID)
+	// if cni1.CtrlID != cn1.CtrlID {
+	// 	t.Fatalf("TestBaseFunc updNodeInfo return CtrlID fail! (%v - %v)", cni1.CtrlID, cn1.CtrlID)
 
-		return
-	}
+	// 	return
+	// }
 
 	if cni1.ConnectedNums != cn1.ConnectedNums {
 		t.Fatalf("TestBaseFunc updNodeInfo return ConnectedNums fail! (%v - %v)", cni1.ConnectedNums, cn1.ConnectedNums)
@@ -255,12 +255,12 @@ func TestBaseFunc(t *testing.T) {
 	test002PriKey := jarviscrypto.GenerateKey()
 
 	cni2 := &coredbpb.NodeInfo{
-		ServAddr:        "127.0.0.1",
-		Addr:            test002PriKey.ToAddress(),
-		Name:            "test002",
-		ConnectNums:     0,
-		ConnectedNums:   0,
-		CtrlID:          0,
+		ServAddr:      "127.0.0.1",
+		Addr:          test002PriKey.ToAddress(),
+		Name:          "test002",
+		ConnectNums:   0,
+		ConnectedNums: 0,
+		// CtrlID:          0,
 		LstClientAddr:   nil,
 		AddTime:         time.Now().Unix(),
 		ConnectMe:       false,
@@ -308,11 +308,11 @@ func TestBaseFunc(t *testing.T) {
 		return
 	}
 
-	if cni2.CtrlID != cn2.CtrlID {
-		t.Fatalf("TestBaseFunc updNodeInfo return CtrlID fail! (%v - %v)", cni2.CtrlID, cn2.CtrlID)
+	// if cni2.CtrlID != cn2.CtrlID {
+	// 	t.Fatalf("TestBaseFunc updNodeInfo return CtrlID fail! (%v - %v)", cni2.CtrlID, cn2.CtrlID)
 
-		return
-	}
+	// 	return
+	// }
 
 	if cni2.ConnectedNums != cn2.ConnectedNums {
 		t.Fatalf("TestBaseFunc updNodeInfo return ConnectedNums fail! (%v - %v)", cni2.ConnectedNums, cn2.ConnectedNums)
@@ -424,11 +424,11 @@ func TestBaseFunc(t *testing.T) {
 		return
 	}
 
-	if cni1.CtrlID != cn1.CtrlID {
-		t.Fatalf("TestBaseFunc getNodeInfo return CtrlID fail! (%v - %v)", cni1.CtrlID, cn1.CtrlID)
+	// if cni1.CtrlID != cn1.CtrlID {
+	// 	t.Fatalf("TestBaseFunc getNodeInfo return CtrlID fail! (%v - %v)", cni1.CtrlID, cn1.CtrlID)
 
-		return
-	}
+	// 	return
+	// }
 
 	if cni1.ConnectedNums != cn1.ConnectedNums {
 		t.Fatalf("TestBaseFunc getNodeInfo return ConnectedNums fail! (%v - %v)", cni1.ConnectedNums, cn1.ConnectedNums)
@@ -518,11 +518,11 @@ func TestBaseFunc(t *testing.T) {
 		return
 	}
 
-	if cni2.CtrlID != cn2.CtrlID {
-		t.Fatalf("TestBaseFunc getNodeInfo return CtrlID fail! (%v - %v)", cni2.CtrlID, cn2.CtrlID)
+	// if cni2.CtrlID != cn2.CtrlID {
+	// 	t.Fatalf("TestBaseFunc getNodeInfo return CtrlID fail! (%v - %v)", cni2.CtrlID, cn2.CtrlID)
 
-		return
-	}
+	// 	return
+	// }
 
 	if cni2.ConnectedNums != cn2.ConnectedNums {
 		t.Fatalf("TestBaseFunc getNodeInfo return ConnectedNums fail! (%v - %v)", cni2.ConnectedNums, cn2.ConnectedNums)
@@ -616,11 +616,11 @@ func TestBaseFunc(t *testing.T) {
 				return
 			}
 
-			if cni1.CtrlID != cn1.CtrlID {
-				t.Fatalf("TestBaseFunc getNodeInfos return CtrlID fail! (%v - %v)", cni1.CtrlID, cn1.CtrlID)
+			// if cni1.CtrlID != cn1.CtrlID {
+			// 	t.Fatalf("TestBaseFunc getNodeInfos return CtrlID fail! (%v - %v)", cni1.CtrlID, cn1.CtrlID)
 
-				return
-			}
+			// 	return
+			// }
 
 			if cni1.ConnectedNums != cn1.ConnectedNums {
 				t.Fatalf("TestBaseFunc getNodeInfos return ConnectedNums fail! (%v - %v)", cni1.ConnectedNums, cn1.ConnectedNums)
@@ -702,11 +702,11 @@ func TestBaseFunc(t *testing.T) {
 				return
 			}
 
-			if cni2.CtrlID != cn2.CtrlID {
-				t.Fatalf("TestBaseFunc getNodeInfos return CtrlID fail! (%v - %v)", cni2.CtrlID, cn2.CtrlID)
+			// if cni2.CtrlID != cn2.CtrlID {
+			// 	t.Fatalf("TestBaseFunc getNodeInfos return CtrlID fail! (%v - %v)", cni2.CtrlID, cn2.CtrlID)
 
-				return
-			}
+			// 	return
+			// }
 
 			if cni2.ConnectedNums != cn2.ConnectedNums {
 				t.Fatalf("TestBaseFunc getNodeInfos return ConnectedNums fail! (%v - %v)", cni2.ConnectedNums, cn2.ConnectedNums)

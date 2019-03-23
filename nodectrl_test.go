@@ -16,7 +16,7 @@ func sendCtrl(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInf
 		return err
 	}
 
-	ci, err := BuildCtrlInfoForScriptFile(1, "test.sh", dat, "")
+	ci, err := BuildCtrlInfoForScriptFile("test.sh", dat, "")
 	if err != nil {
 		return err
 	}

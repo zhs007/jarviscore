@@ -33,7 +33,7 @@ message NodeInfo {
     string name = 3;
     int32 connectNums = 4;
     int32 connectedNums = 5;
-    int64 ctrlID = 6;
+    int64 ctrlID = 6 [deprecated = true];
     repeated string lstClientAddr = 7;
     int64 addTime = 8;
     bool connectMe = 9;

@@ -16,15 +16,21 @@ const (
 type CtrlScriptFile struct {
 }
 
-// Run -
-func (ctrl *CtrlScriptFile) Run(jarvisnode JarvisNode, srcAddr string, msgid int64, ci *pb.CtrlInfo) []*pb.JarvisMsg {
+// runScript
+func (ctrl *CtrlScriptFile) runScript(ci *pb.CtrlInfo) ([]byte, error) {
 	var csd pb.CtrlScriptData
 	err := ptypes.UnmarshalAny(ci.Dat, &csd)
 	if err != nil {
-		return BuildReply2ForCtrl(jarvisnode, srcAddr, msgid, pb.REPLYTYPE_ERROR, err.Error())
+		return nil, err
 	}
 
-	out, err := exec.Command("sh", "-c", string(csd.File)).CombinedOutput()
+	return exec.Command("sh", "-c", string(csd.File)).CombinedOutput()
+}
+
+// Run -
+func (ctrl *CtrlScriptFile) Run(jarvisnode JarvisNode, srcAddr string, msgid int64, ci *pb.CtrlInfo) []*pb.JarvisMsg {
+
+	out, err := ctrl.runScript(ci)
 	if err != nil {
 		return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, AppendString(string(out), err.Error()))
 	}
@@ -33,7 +39,7 @@ func (ctrl *CtrlScriptFile) Run(jarvisnode JarvisNode, srcAddr string, msgid int
 }
 
 // BuildCtrlInfoForScriptFile - build ctrlinfo for scriptfile
-func BuildCtrlInfoForScriptFile(ctrlid int64, filename string, filedata []byte,
+func BuildCtrlInfoForScriptFile(filename string, filedata []byte,
 	destpath string) (*pb.CtrlInfo, error) {
 
 	csd := &pb.CtrlScriptData{
@@ -48,7 +54,6 @@ func BuildCtrlInfoForScriptFile(ctrlid int64, filename string, filedata []byte,
 	}
 
 	ci := &pb.CtrlInfo{
-		CtrlID:   ctrlid,
 		CtrlType: CtrlTypeScriptFile,
 		Dat:      dat,
 	}
