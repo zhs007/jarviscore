@@ -85,4 +85,16 @@ var (
 	ErrCannotFindNodeWithAddr = errors.New("can not find node with addr")
 	// ErrNoFuncOnFileData - no FuncOnFileData
 	ErrNoFuncOnFileData = errors.New("no FuncOnFileData")
+	// ErrNoProcMsgResultData - no ProcMsgResultData
+	ErrNoProcMsgResultData = errors.New("no ProcMsgResultData")
+	// ErrInvalidProcMsgResultData - invalid ProcMsgResultData
+	ErrInvalidProcMsgResultData = errors.New("invalid ProcMsgResultData")
+	// ErrDuplicateProcMsgResultData - duplicate ProcMsgResultData
+	ErrDuplicateProcMsgResultData = errors.New("duplicate ProcMsgResultData")
+	// ErrNoCtrl - no ctrl
+	ErrNoCtrl = errors.New("no ctrl")
+	// ErrUnknownCtrlError - unknown ctrl error
+	ErrUnknownCtrlError = errors.New("unknown ctrl error")
+	// ErrProcMsgStreamNil - ProcMsgStream return nil
+	ErrProcMsgStreamNil = errors.New("ProcMsgStream return nil")
 )

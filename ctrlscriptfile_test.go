@@ -10,18 +10,18 @@ func TestCtrlScriptFile(t *testing.T) {
 
 	dat, err := ioutil.ReadFile("./test/test.sh")
 	if err != nil {
-		t.Fatalf("load script file %v", err)
+		t.Fatalf("TestCtrlScriptFile load script file %v", err)
 	}
 
-	ci, err := BuildCtrlInfoForScriptFile(1, "test.sh", dat, "")
+	ci, err := BuildCtrlInfoForScriptFile("test.sh", dat, "")
 	if err != nil {
-		t.Fatalf("BuildCtrlInfoForScriptFile %v", err)
+		t.Fatalf("TestCtrlScriptFile BuildCtrlInfoForScriptFile %v", err)
 	}
 
-	ret, err := ctrl.Run(ci)
+	ret, err := ctrl.runScript(ci)
 	if err != nil {
-		t.Fatalf("Run %v", err)
+		t.Fatalf("TestCtrlScriptFile Run %v", err)
 	}
 
-	t.Logf("result is %v", string(ret))
+	t.Logf("TestCtrlScriptFile result is %v", string(ret))
 }

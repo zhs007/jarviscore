@@ -1,6 +1,7 @@
 package jarviscore
 
 import (
+	"bytes"
 	"context"
 	"crypto/md5"
 	"fmt"
@@ -450,4 +451,17 @@ func ProcFileData(fn string, onfunc FuncOnFileData) error {
 // IsValidNodeAddr - is valid nodeaddr
 func IsValidNodeAddr(addr string) bool {
 	return len(addr) == 34
+}
+
+// AppendString - append string
+func AppendString(strs ...string) string {
+	var buffer bytes.Buffer
+
+	for _, str := range strs {
+		if len(str) > 0 {
+			buffer.WriteString(str)
+		}
+	}
+
+	return buffer.String()
 }

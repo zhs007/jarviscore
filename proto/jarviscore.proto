@@ -167,9 +167,16 @@ message CtrlScript2Data {
     repeated FileData srcFiles = 2;
 }
 
+// CtrlScript3Data - used in CtrlInfo.dat
+//                 - scriptfile3
+message CtrlScript3Data {
+    FileData scriptFile = 1;
+    repeated string endFiles = 2;
+}
+
 // CtrlInfo - 
 message CtrlInfo {
-    int64 ctrlID = 1;
+    int64 ctrlID = 1 [deprecated = true];
     string ctrlType = 2;
     string command = 3;
     repeated string params = 4;
@@ -234,6 +241,7 @@ message JarvisMsg {
     string err = 11;
     int64 lastMsgID = 12;
     int64 replyMsgID = 13;
+    int64 streamMsgID = 14;
 
     oneof data {
         NodeBaseInfo nodeInfo = 100;

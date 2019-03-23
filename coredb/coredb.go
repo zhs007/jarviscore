@@ -329,12 +329,12 @@ func (db *CoreDB) UpdNodeBaseInfo(ni *jarviscorepb.NodeBaseInfo) error {
 	cni := db.GetNode(ni.Addr)
 	if cni == nil {
 		cni = &coredbpb.NodeInfo{
-			ServAddr:        ni.ServAddr,
-			Addr:            ni.Addr,
-			Name:            ni.Name,
-			ConnectNums:     0,
-			ConnectedNums:   0,
-			CtrlID:          0,
+			ServAddr:      ni.ServAddr,
+			Addr:          ni.Addr,
+			Name:          ni.Name,
+			ConnectNums:   0,
+			ConnectedNums: 0,
+			// CtrlID:          0,
 			LstClientAddr:   nil,
 			AddTime:         time.Now().Unix(),
 			ConnectMe:       false,

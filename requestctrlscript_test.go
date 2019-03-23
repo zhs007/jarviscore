@@ -3,6 +3,7 @@ package jarviscore
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"sync"
 	"testing"
 	"time"
@@ -13,7 +14,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func outputErrUN(t *testing.T, err error, msg string, info string) {
+func outputErrRCS(t *testing.T, err error, msg string, info string) {
 	if err == nil && info == "" {
 		jarvisbase.Error(msg)
 		t.Fatalf(msg)
@@ -30,31 +31,31 @@ func outputErrUN(t *testing.T, err error, msg string, info string) {
 	t.Fatalf(msg+" err %v", err)
 }
 
-func outputUN(t *testing.T, msg string) {
+func outputRCS(t *testing.T, msg string) {
 	jarvisbase.Info(msg)
 	t.Logf(msg)
 }
 
-// funconcallUN
-type funconcallUN func(ctx context.Context, err error, obj *objUN) error
+// funconcallRCS
+type funconcallRCS func(ctx context.Context, err error, obj *objRCS) error
 
-type mapnodeinfoUN struct {
+type mapnodeinfoRCS struct {
 	iconn  bool
 	connme bool
 }
 
-type nodeinfoUN struct {
+type nodeinfoRCS struct {
 	mapAddr    sync.Map
 	numsIConn  int
 	numsConnMe int
 }
 
-func (ni *nodeinfoUN) onIConnectNode(node *coredbpb.NodeInfo) error {
+func (ni *nodeinfoRCS) onIConnectNode(node *coredbpb.NodeInfo) error {
 	d, ok := ni.mapAddr.Load(node.Addr)
 	if ok {
-		mni, ok := d.(*mapnodeinfoUN)
+		mni, ok := d.(*mapnodeinfoRCS)
 		if !ok {
-			return fmt.Errorf("nodeinfoUN.onIConnectNode:mapAddr2mapnodeinfo err")
+			return fmt.Errorf("nodeinfoRCS.onIConnectNode:mapAddr2mapnodeinfo err")
 		}
 
 		if !mni.iconn {
@@ -66,7 +67,7 @@ func (ni *nodeinfoUN) onIConnectNode(node *coredbpb.NodeInfo) error {
 		return nil
 	}
 
-	mni := &mapnodeinfoUN{
+	mni := &mapnodeinfoRCS{
 		iconn: true,
 	}
 
@@ -76,12 +77,12 @@ func (ni *nodeinfoUN) onIConnectNode(node *coredbpb.NodeInfo) error {
 	return nil
 }
 
-func (ni *nodeinfoUN) onNodeConnected(node *coredbpb.NodeInfo) error {
+func (ni *nodeinfoRCS) onNodeConnected(node *coredbpb.NodeInfo) error {
 	d, ok := ni.mapAddr.Load(node.Addr)
 	if ok {
-		mni, ok := d.(*mapnodeinfoUN)
+		mni, ok := d.(*mapnodeinfoRCS)
 		if !ok {
-			return fmt.Errorf("nodeinfoUN.onNodeConnected:mapAddr2mapnodeinfo err")
+			return fmt.Errorf("nodeinfoRCS.onNodeConnected:mapAddr2mapnodeinfo err")
 		}
 
 		if !mni.connme {
@@ -93,7 +94,7 @@ func (ni *nodeinfoUN) onNodeConnected(node *coredbpb.NodeInfo) error {
 		return nil
 	}
 
-	mni := &mapnodeinfoUN{
+	mni := &mapnodeinfoRCS{
 		connme: true,
 	}
 
@@ -103,36 +104,37 @@ func (ni *nodeinfoUN) onNodeConnected(node *coredbpb.NodeInfo) error {
 	return nil
 }
 
-type objUN struct {
-	root             JarvisNode
-	node1            JarvisNode
-	node2            JarvisNode
-	rootni           nodeinfoUN
-	node1ni          nodeinfoUN
-	node2ni          nodeinfoUN
-	requestnodes     bool
-	updnodefromnode1 bool
-	endupdnodes      bool
+type objRCS struct {
+	root               JarvisNode
+	node1              JarvisNode
+	node2              JarvisNode
+	rootni             nodeinfoRCS
+	node1ni            nodeinfoRCS
+	node2ni            nodeinfoRCS
+	requestnodes       bool
+	requestctrlnode1   bool
+	requestctrlnode1ok bool
+	err                error
 }
 
-func newObjUN() *objUN {
-	return &objUN{
-		rootni:       nodeinfoUN{},
-		node1ni:      nodeinfoUN{},
-		node2ni:      nodeinfoUN{},
+func newObjRCS() *objRCS {
+	return &objRCS{
+		rootni:       nodeinfoRCS{},
+		node1ni:      nodeinfoRCS{},
+		node2ni:      nodeinfoRCS{},
 		requestnodes: false,
 	}
 }
 
-func (obj *objUN) isDone() bool {
+func (obj *objRCS) isDone() bool {
 	if obj.rootni.numsConnMe != 2 || obj.rootni.numsIConn != 2 {
 		return false
 	}
 
-	return obj.endupdnodes
+	return obj.requestnodes && obj.requestctrlnode1 && obj.requestctrlnode1ok
 }
 
-func (obj *objUN) oncheck(ctx context.Context, funcCancel context.CancelFunc) error {
+func (obj *objRCS) oncheck(ctx context.Context, funcCancel context.CancelFunc) error {
 	if obj.rootni.numsConnMe == 2 &&
 		obj.node1ni.numsConnMe >= 1 && obj.node1ni.numsIConn >= 1 &&
 		obj.node2ni.numsConnMe >= 1 && obj.node2ni.numsIConn >= 1 &&
@@ -151,26 +153,39 @@ func (obj *objUN) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 	}
 
 	if obj.node1ni.numsConnMe == 2 && obj.node2ni.numsConnMe == 2 &&
-		obj.node1ni.numsIConn == 2 && obj.node2ni.numsIConn == 2 && !obj.updnodefromnode1 {
-		err := obj.node1.UpdateAllNodes(ctx, "testupdnode", "0.7.25",
-			func(ctx context.Context, jarvisnode JarvisNode, numsNode int, lstResult []*ClientGroupProcMsgResults) error {
+		obj.node1ni.numsIConn == 2 && obj.node2ni.numsIConn == 2 && !obj.requestctrlnode1 {
 
-				jarvisbase.Info("objUN.onIConn:node1.UpdateAllNodes",
-					zap.Int("numsNode", numsNode),
-					jarvisbase.JSON("lstResult", lstResult))
+		dat, err := ioutil.ReadFile("./test/test.sh")
+		if err != nil {
+			obj.err = err
 
-				if numsNode == 2 && len(lstResult) == 2 && len(lstResult[0].Results) > 0 && len(lstResult[1].Results) > 0 &&
-					lstResult[0].Results[len(lstResult[0].Results)-1].Msg == nil &&
-					lstResult[1].Results[len(lstResult[1].Results)-1].Msg == nil {
+			funcCancel()
+		}
 
-					if (len(lstResult[0].Results) == 3 && len(lstResult[1].Results) == 5) ||
-						(len(lstResult[1].Results) == 3 && len(lstResult[0].Results) == 5) {
+		ci, err := BuildCtrlInfoForScriptFile("test.sh", dat, "")
+		if err != nil {
+			obj.err = err
 
-						obj.endupdnodes = true
+			funcCancel()
+		}
 
+		err = obj.node1.RequestCtrl(ctx, obj.node2.GetMyInfo().Addr, ci,
+			func(ctx context.Context, jarvisnode JarvisNode,
+				lstResult []*JarvisMsgInfo) error {
+
+				lastjmi := lstResult[len(lstResult)-1]
+				if lastjmi.Err != nil {
+					obj.err = lastjmi.Err
+
+					funcCancel()
+				} else if lastjmi.Msg != nil {
+					jarvisbase.Info("objRCS.oncheck:obj.node1.RequestCtrl",
+						JSONMsg2Zap("msg", lastjmi.Msg))
+				} else {
+					obj.requestctrlnode1ok = true
+
+					if obj.isDone() {
 						funcCancel()
-
-						return nil
 					}
 				}
 
@@ -180,34 +195,36 @@ func (obj *objUN) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 			return err
 		}
 
-		obj.updnodefromnode1 = true
+		obj.requestctrlnode1 = true
 	}
 
 	return nil
 }
 
-func (obj *objUN) onIConn(ctx context.Context, funcCancel context.CancelFunc) error {
+func (obj *objRCS) onIConn(ctx context.Context, funcCancel context.CancelFunc) error {
 	return obj.oncheck(ctx, funcCancel)
 }
 
-func (obj *objUN) onConnMe(ctx context.Context, funcCancel context.CancelFunc) error {
+func (obj *objRCS) onConnMe(ctx context.Context, funcCancel context.CancelFunc) error {
 	return obj.oncheck(ctx, funcCancel)
 }
 
-func (obj *objUN) makeString() string {
-	return fmt.Sprintf("root(%v %v) node1(%v %v), node2(%v %v) requestnodes %v updnodefromnode1 %v endupdnodes %v root %v node1 %v node2 %v",
+func (obj *objRCS) makeString() string {
+	return fmt.Sprintf("root(%v %v) node1(%v %v), node2(%v %v) requestnodes %v requestctrlnode1 %v requestctrlnode1ok %v root %v node1 %v node2 %v",
 		obj.rootni.numsIConn, obj.rootni.numsConnMe,
 		obj.node1ni.numsIConn, obj.node1ni.numsConnMe,
 		obj.node2ni.numsIConn, obj.node2ni.numsConnMe,
 		obj.requestnodes,
-		obj.updnodefromnode1,
-		obj.endupdnodes,
+		obj.requestctrlnode1,
+		obj.requestctrlnode1ok,
 		obj.root.BuildStatus(),
 		obj.node1.BuildStatus(),
 		obj.node2.BuildStatus())
 }
 
-func startTestNodeUN(ctx context.Context, cfgfilename string, ni *nodeinfoUN, obj *objUN, oniconn funconcallUN, onconnme funconcallUN) (JarvisNode, error) {
+func startTestNodeRCS(ctx context.Context, cfgfilename string, ni *nodeinfoRCS, obj *objRCS,
+	oniconn funconcallRCS, onconnme funconcallRCS) (JarvisNode, error) {
+
 	cfg, err := LoadConfig(cfgfilename)
 	if err != nil {
 		return nil, fmt.Errorf("startTestNode load config %v err is %v", cfgfilename, err)
@@ -241,10 +258,10 @@ func startTestNodeUN(ctx context.Context, cfgfilename string, ni *nodeinfoUN, ob
 	return curnode, nil
 }
 
-func TestUpdNode(t *testing.T) {
-	rootcfg, err := LoadConfig("./test/test5000_updnoderoot.yaml")
+func TestRequestCtrlScript(t *testing.T) {
+	rootcfg, err := LoadConfig("./test/test5070_requestscriptroot.yaml")
 	if err != nil {
-		t.Fatalf("TestUpdNode load config %v err is %v", "./test/test5000_updnoderoot.yaml", err)
+		t.Fatalf("TestRequestCtrlScript load config %v err is %v", "./test/test5070_requestscriptroot.yaml", err)
 
 		return
 	}
@@ -252,14 +269,14 @@ func TestUpdNode(t *testing.T) {
 	InitJarvisCore(rootcfg)
 	defer ReleaseJarvisCore()
 
-	obj := newObjUN()
+	obj := newObjRCS()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
 	var errobj error
 
-	oniconn := func(ctx context.Context, err error, obj *objUN) error {
+	oniconn := func(ctx context.Context, err error, obj *objRCS) error {
 		if err != nil {
 			errobj = err
 
@@ -286,7 +303,7 @@ func TestUpdNode(t *testing.T) {
 		return nil
 	}
 
-	onconnme := func(ctx context.Context, err error, obj *objUN) error {
+	onconnme := func(ctx context.Context, err error, obj *objRCS) error {
 		if err != nil {
 			errobj = err
 
@@ -313,26 +330,26 @@ func TestUpdNode(t *testing.T) {
 		return nil
 	}
 
-	obj.root, err = startTestNodeUN(ctx, "./test/test5000_updnoderoot.yaml", &obj.rootni, obj,
+	obj.root, err = startTestNodeRCS(ctx, "./test/test5070_requestscriptroot.yaml", &obj.rootni, obj,
 		oniconn, onconnme)
 	if err != nil {
-		outputErrUN(t, err, "TestUpdNode startTestNodeUN root", "")
+		outputErrRCS(t, err, "TestRequestCtrlScript startTestNodeRCS root", "")
 
 		return
 	}
 
-	obj.node1, err = startTestNodeUN(ctx, "./test/test5001_updnode1.yaml", &obj.node1ni, obj,
+	obj.node1, err = startTestNodeRCS(ctx, "./test/test5071_requestscript1.yaml", &obj.node1ni, obj,
 		oniconn, onconnme)
 	if err != nil {
-		outputErrUN(t, err, "TestUpdNode startTestNodeUN node1", "")
+		outputErrRCS(t, err, "TestRequestCtrlScript startTestNodeRCS node1", "")
 
 		return
 	}
 
-	obj.node2, err = startTestNodeUN(ctx, "./test/test5002_updnode2.yaml", &obj.node2ni, obj,
+	obj.node2, err = startTestNodeRCS(ctx, "./test/test5072_requestscript2.yaml", &obj.node2ni, obj,
 		oniconn, onconnme)
 	if err != nil {
-		outputErrUN(t, err, "TestUpdNode startTestNodeUN node2", "")
+		outputErrRCS(t, err, "TestRequestCtrlScript startTestNodeRCS node2", "")
 
 		return
 	}
@@ -345,16 +362,16 @@ func TestUpdNode(t *testing.T) {
 	<-ctx.Done()
 
 	if errobj != nil {
-		outputErrUN(t, errobj, "TestUpdNode", "")
+		outputErrRCS(t, errobj, "TestRequestCtrlScript", "")
 
 		return
 	}
 
 	if !obj.isDone() {
-		outputErrUN(t, nil, "TestUpdNode no done", obj.makeString())
+		outputErrRCS(t, nil, "TestRequestCtrlScript no done", obj.makeString())
 
 		return
 	}
 
-	outputUN(t, "TestUpdNode OK")
+	outputRCS(t, "TestRequestCtrlScript OK")
 }

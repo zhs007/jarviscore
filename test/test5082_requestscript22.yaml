@@ -1,0 +1,50 @@
+#jarvis node config
+
+# rootservaddr - jarvis root node address
+rootservaddr: '127.0.0.1:5080'
+# lsttrustnode - trust node list
+lsttrustnode: ['1JJaKpZGhYPuVHc1EKiiHZEswPAB5SybW5']
+
+# timerequestchild - requestchild time
+#                  - default 180
+timerequestchild: 180
+
+# maxmsglength - max msg length
+#                  - default 4mb
+maxmsglength: 4194304
+
+# ankadb - ankadb config
+ankadb:
+  # dbpath - dbpath
+  dbpath: './test/test5082_requestscript22'
+  # httpserv - http service address, it can be empty
+  httpserv: ''
+  # ankadb engine
+  engine: 'leveldb'
+
+# log - log config
+log:
+  # logpath - log path
+  logpath: './test/test5082_requestscript22'
+  # loglevel - log level, it can be debug, info, warn, error
+  loglevel: 'info'
+  # logconsole - it can be output to console
+  logconsole: true
+
+# basenodeinfo - my node base config  
+basenodeinfo:
+  # nodename - my node name
+  nodename: 'test5082_requestscript22'
+  # bindaddr - my bind address
+  bindaddr: ':5082'
+  # servaddr - other node connct me
+  servaddr: '127.0.0.1:5082'
+
+# autoupdate - enable automatic update  
+autoupdate: true
+# updatescript - If automatic updates are enabled, the script will run when the update was starting.  
+#     There are some variables that can be used in this script.
+#       - NewVersion: new version
+updatescript: |
+  echo {{.NewVersion}}
+  

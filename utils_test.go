@@ -109,3 +109,27 @@ func TestIsLocalHostAddr(t *testing.T) {
 
 	t.Logf("TestIsLocalHostAddr OK")
 }
+
+func TestAppendString(t *testing.T) {
+	type data struct {
+		params []string
+		ret    string
+	}
+
+	lst := []data{
+		data{[]string{"192.168.0.1", ":", "7788"}, "192.168.0.1:7788"},
+		data{[]string{"192.168.0.1"}, "192.168.0.1"},
+		data{[]string{"", "", "192.168.0.1"}, "192.168.0.1"},
+		data{[]string{"", "", "192.168.0.1", "", ""}, "192.168.0.1"},
+		data{[]string{"192.168.0.1", "", ""}, "192.168.0.1"},
+	}
+
+	for i := 0; i < len(lst); i++ {
+		cr := AppendString(lst[i].params...)
+		if cr != lst[i].ret {
+			t.Fatalf("TestAppendString(%v) fail %v", lst[i], cr)
+		}
+	}
+
+	t.Logf("TestAppendString OK")
+}

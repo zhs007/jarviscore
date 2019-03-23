@@ -78,4 +78,9 @@ type JarvisNode interface {
 	ConnectNode(node *coredbpb.NodeInfo, funcOnResult FuncOnProcMsgResult) error
 	// ConnectNodeWithServAddr - connect node
 	ConnectNodeWithServAddr(servaddr string, funcOnResult FuncOnProcMsgResult) error
+
+	// OnClientProcMsg - on Client.ProcMsg
+	OnClientProcMsg(addr string, msgid int64, onProcMsgResult FuncOnProcMsgResult) error
+	// OnReplyProcMsg - on reply
+	OnReplyProcMsg(ctx context.Context, addr string, replymsgid int64, msg *pb.JarvisMsg, err error) error
 }
