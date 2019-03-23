@@ -168,7 +168,12 @@ func (obj *objRCS2) oncheck(ctx context.Context, funcCancel context.CancelFunc) 
 			File:     dat,
 		}
 
-		ci, err := BuildCtrlInfoForScriptFile2(sf, nil)
+		file001 := &pb.FileData{
+			Filename: "./test/file001.test",
+			File:     dat,
+		}
+
+		ci, err := BuildCtrlInfoForScriptFile2(sf, []*pb.FileData{file001})
 		if err != nil {
 			obj.err = err
 
