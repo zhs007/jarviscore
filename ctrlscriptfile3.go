@@ -4,7 +4,9 @@ import (
 	"os/exec"
 
 	"github.com/golang/protobuf/ptypes"
+	"github.com/zhs007/jarviscore/base"
 	pb "github.com/zhs007/jarviscore/proto"
+	"go.uber.org/zap"
 )
 
 const (
@@ -43,13 +45,13 @@ func (ctrl *CtrlScriptFile3) Run(jarvisnode JarvisNode, srcAddr string, msgid in
 
 	for i := 0; i < len(csd3.EndFiles); i++ {
 		err := ProcFileData(csd3.EndFiles[i], func(fd *pb.FileData, isend bool) error {
-			msgs = BuildReplyRequestFileForCtrl(jarvisnode, srcAddr, msgid, fd, msgs)
-			// sendmsg, err := BuildReplyRequestFile(jarvisnode, jarvisnode.GetMyInfo().Addr, srcAddr, fd, msgid)
-			// if err != nil {
-			// 	jarvisbase.Warn("CtrlScriptFile3.Run", zap.Error(err))
-			// }
 
-			// msgs = append(msgs, sendmsg)
+			jarvisbase.Info("CtrlScriptFile3.Run",
+				zap.String("filename", csd3.EndFiles[i]),
+				zap.Int("buflen", len(fd.File)),
+				zap.Int64("filelen", fd.TotalLength))
+
+			msgs = BuildReplyRequestFileForCtrl(jarvisnode, srcAddr, msgid, fd, msgs)
 
 			return nil
 		})
