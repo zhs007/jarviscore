@@ -433,12 +433,12 @@ func ProcFileData(fn string, onfunc FuncOnFileData) error {
 			}
 
 			onfunc(&pb.FileData{
-				File:        buf,
+				File:        buf[0:rn],
 				Ft:          pb.FileType_FT_BINARY,
 				Start:       curstart,
 				Length:      int64(rn),
 				TotalLength: fl,
-				Md5String:   GetMD5String(buf),
+				Md5String:   GetMD5String(buf[0:rn]),
 			}, false)
 
 			curstart = curstart + curlength
