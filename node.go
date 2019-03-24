@@ -1303,19 +1303,28 @@ func (n *jarvisNode) onMsgReplyRequestFile(ctx context.Context, msg *pb.JarvisMs
 
 	fd := msg.GetFile()
 	if fd == nil {
-		jarvisbase.Warn("jarvisNode.onMsgReplyRequestFile", zap.Error(ErrNoFileData))
+		jarvisbase.Warn("jarvisNode.onMsgReplyRequestFile",
+			zap.Error(ErrNoFileData))
 
 		return ErrNoFileData
 	}
 
 	if fd.Md5String == "" {
-		jarvisbase.Warn("jarvisNode.onMsgReplyRequestFile", zap.Error(ErrFileDataNoMD5String))
+		jarvisbase.Warn("jarvisNode.onMsgReplyRequestFile",
+			zap.Error(ErrFileDataNoMD5String),
+			zap.Int64("start", fd.Start),
+			zap.Int64("length", fd.Length),
+			zap.Int64("totallength", fd.TotalLength))
 
 		return ErrFileDataNoMD5String
 	}
 
 	if fd.Md5String != GetMD5String(fd.File) {
-		jarvisbase.Warn("jarvisNode.onMsgReplyRequestFile", zap.Error(ErrInvalidFileDataMD5String))
+		jarvisbase.Warn("jarvisNode.onMsgReplyRequestFile",
+			zap.Error(ErrInvalidFileDataMD5String),
+			zap.Int64("start", fd.Start),
+			zap.Int64("length", fd.Length),
+			zap.Int64("totallength", fd.TotalLength))
 
 		return ErrInvalidFileDataMD5String
 	}
