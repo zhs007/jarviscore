@@ -49,7 +49,10 @@ func (ctrl *CtrlScriptFile3) Run(jarvisnode JarvisNode, srcAddr string, msgid in
 			jarvisbase.Info("CtrlScriptFile3.Run",
 				zap.String("filename", csd3.EndFiles[i]),
 				zap.Int("buflen", len(fd.File)),
-				zap.Int64("filelen", fd.TotalLength))
+				zap.Int64("length", fd.Length),
+				zap.Int64("filelen", fd.TotalLength),
+				zap.String("md5", fd.Md5String),
+				zap.String("totalmd5", fd.FileMD5String))
 
 			msgs = BuildReplyRequestFileForCtrl(jarvisnode, srcAddr, msgid, fd, msgs)
 
