@@ -390,10 +390,12 @@ func ProcFileData(fn string, onfunc FuncOnFileData) error {
 	} else {
 		curstart := int64(0)
 		curlength := int64(basedef.BigFileLength)
-		buf := make([]byte, curlength)
+		// buf := make([]byte, curlength)
 
 		for curstart < int64(fl) {
 			if curstart+curlength >= int64(fl) {
+
+				buf := make([]byte, int64(fl)-curstart)
 
 				rn, err := fdata.Read(buf)
 				if err != nil {
@@ -423,6 +425,8 @@ func ProcFileData(fn string, onfunc FuncOnFileData) error {
 
 			}
 
+			buf := make([]byte, curlength)
+
 			rn, err := fdata.Read(buf)
 			if err != nil {
 				return err
@@ -433,12 +437,12 @@ func ProcFileData(fn string, onfunc FuncOnFileData) error {
 			}
 
 			onfunc(&pb.FileData{
-				File:        buf,
+				File:        buf[0:rn],
 				Ft:          pb.FileType_FT_BINARY,
 				Start:       curstart,
 				Length:      int64(rn),
 				TotalLength: fl,
-				Md5String:   GetMD5String(buf),
+				Md5String:   GetMD5String(buf[0:rn]),
 			}, false)
 
 			curstart = curstart + curlength

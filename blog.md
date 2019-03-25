@@ -1,5 +1,9 @@
 # JarvisCore Development Log
 
+### 2019-03-25
+
+今天终于把昨天折腾一天的bug给找到了，最后发现是我为了省内存，在ProcFileData里循环内部有个buf复用，如果这个数据没有及时被复制出去，其实就会变化的！
+
 ### 2019-03-23
 
 今天把前几天blog里提到的END和WAITPUSH这些处理了。  
