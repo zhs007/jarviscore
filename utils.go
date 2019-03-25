@@ -390,10 +390,12 @@ func ProcFileData(fn string, onfunc FuncOnFileData) error {
 	} else {
 		curstart := int64(0)
 		curlength := int64(basedef.BigFileLength)
-		buf := make([]byte, curlength)
+		// buf := make([]byte, curlength)
 
 		for curstart < int64(fl) {
 			if curstart+curlength >= int64(fl) {
+
+				buf := make([]byte, int64(fl)-curstart)
 
 				rn, err := fdata.Read(buf)
 				if err != nil {
@@ -422,6 +424,8 @@ func ProcFileData(fn string, onfunc FuncOnFileData) error {
 				return nil
 
 			}
+
+			buf := make([]byte, curlength)
 
 			rn, err := fdata.Read(buf)
 			if err != nil {
