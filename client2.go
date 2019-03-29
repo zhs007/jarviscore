@@ -236,7 +236,7 @@ func (c *jarvisClient2) _getValidClientConn(addr string) (*clientInfo2, error) {
 	nci := &clientInfo2{
 		conn:     conn,
 		client:   pb.NewJarvisCoreServClient(conn),
-		servAddr: cn.servAddr,
+		servAddr: cn.ServAddr,
 	}
 
 	c.mapClient.Store(addr, nci)
