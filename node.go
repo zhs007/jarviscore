@@ -45,7 +45,7 @@ func NewNode(cfg *Config) (JarvisNode, error) {
 		return nil, ErrInvalidNodeName
 	}
 
-	db, err := coredb.NewCoreDB(cfg.AnkaDB.DBPath, cfg.AnkaDB.HTTPServ, cfg.AnkaDB.Engine)
+	db, err := coredb.NewCoreDB(cfg.AnkaDB.DBPath, cfg.AnkaDB.HTTPServ, cfg.AnkaDB.Engine, cfg.LstTrustNode)
 	if err != nil {
 		// jarvisbase.Error("NewNode:newCoreDB", zap.Error(err))
 
@@ -212,6 +212,20 @@ func (n *jarvisNode) onNormalMsg(ctx context.Context, normal *NormalTaskInfo, jm
 			n.replyStream2(normal.Msg.SrcAddr, normal.Msg.MsgID, jmsgrs, pb.REPLYTYPE_ERROR, err.Error())
 
 			return nil
+		}
+
+		if normal.Msg.MsgType == pb.MSGTYPE_REQUEST_CTRL ||
+			normal.Msg.MsgType == pb.MSGTYPE_TRANSFER_FILE ||
+			normal.Msg.MsgType == pb.MSGTYPE_REQUEST_FILE ||
+			normal.Msg.MsgType == pb.MSGTYPE_UPDATENODE {
+
+			if !n.coredb.IsTrustNode(normal.Msg.SrcAddr) {
+				jarvisbase.Warn("jarvisNode.onNormalMsg:IsTrustNode", zap.Error(ErrIDontTrustYou))
+
+				n.replyStream2(normal.Msg.SrcAddr, normal.Msg.MsgID, jmsgrs, pb.REPLYTYPE_ERROR, ErrIDontTrustYou.Error())
+
+				return nil
+			}
 		}
 
 		if jmsgrs != nil && jmsgrs.IsValid() {

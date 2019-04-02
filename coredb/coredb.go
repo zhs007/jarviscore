@@ -75,10 +75,11 @@ type CoreDB struct {
 	privKey      *jarviscrypto.PrivateKey
 	lstTrustNode []string
 	mapNodes     sync.Map
+	cfgTrustNode []string
 }
 
 // NewCoreDB -
-func NewCoreDB(dbpath string, httpAddr string, engine string) (*CoreDB, error) {
+func NewCoreDB(dbpath string, httpAddr string, engine string, lstTrust []string) (*CoreDB, error) {
 	cfg := ankadb.NewConfig()
 
 	cfg.AddrHTTP = httpAddr
@@ -110,7 +111,8 @@ func NewCoreDB(dbpath string, httpAddr string, engine string) (*CoreDB, error) {
 		zap.String("httpAddr", httpAddr), zap.String("engine", engine))
 
 	return &CoreDB{
-		ankaDB: ankaDB,
+		ankaDB:       ankaDB,
+		cfgTrustNode: lstTrust,
 	}, nil
 }
 
@@ -156,11 +158,22 @@ func (db *CoreDB) savePrivateKey() error {
 func (db *CoreDB) Init() error {
 	err := db.loadPrivateKey()
 	if err != nil {
+		jarvisbase.Error("CoreDB.Init:loadPrivateKey", zap.Error(err))
+
+		return err
+	}
+
+	err = db.TrustNodes(db.cfgTrustNode)
+	if err != nil {
+		jarvisbase.Error("CoreDB.Init:TrustNodes", zap.Error(err))
+
 		return err
 	}
 
 	err = db.loadAllNodes()
 	if err != nil {
+		jarvisbase.Error("CoreDB.Init:loadAllNodes", zap.Error(err))
+
 		return err
 	}
 
@@ -423,6 +436,10 @@ func (db *CoreDB) UpdNodeInfo(addr string) error {
 
 // TrustNode - trust node with addr
 func (db *CoreDB) TrustNode(addr string) error {
+	if db.IsTrustNode(addr) {
+		return nil
+	}
+
 	params := make(map[string]interface{})
 	params["addr"] = addr
 
@@ -680,4 +697,16 @@ func (db *CoreDB) CountNodeNums() int {
 	})
 
 	return nums
+}
+
+// TrustNodes - trust some nodes
+func (db *CoreDB) TrustNodes(lstNode []string) error {
+	for _, v := range lstNode {
+		err := db.TrustNode(v)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

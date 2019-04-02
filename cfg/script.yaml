@@ -1,0 +1,36 @@
+# jarvis script
+
+author: zhs007
+author-email: zerrozhao@gmail.com
+
+name: script001
+description: This script is ...
+keywords:
+  - test
+
+version: 0.0.1
+
+# There are some variables that can be used in this script.
+#   - ScriptPath: In which directory this script will run
+#   - JarvisScriptPath: Jarvis script path
+#   - JarvisNodeType: Jarvis node type
+#   - JarvisNodeVersion: Jarvis node version
+#   - JarvisCoreVersion: Jarvis core version
+#   - ScriptVersion: This script version
+
+startfiles:
+  - config.yaml
+
+# script - script
+script: |
+  cd ..
+  rm -rf jarvissh.tar.gz
+  wget https://github.com/zhs007/jarvissh/releases/download/0.2.46/jarvissh.tar.gz
+  tar zxvf jarvissh.tar.gz
+  cd jarvissh
+  ./jarvissh stop
+  ./jarvissh start -d
+
+# endfiles - When the script is completed, you can get some files.
+endfiles: 
+  - jarvissh.tar.gz
