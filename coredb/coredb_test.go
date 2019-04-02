@@ -17,7 +17,7 @@ func TestCoreDB(t *testing.T) {
 	//------------------------------------------------------------------------
 	// initial CoreDB
 
-	cdb, err := NewCoreDB("../test/testcoredb", "", "leveldb")
+	cdb, err := NewCoreDB("../test/testcoredb", "", "leveldb", nil)
 	if err != nil {
 		t.Fatalf("TestCoreDB NewCoreDB err! %v", err)
 

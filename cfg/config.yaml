@@ -46,6 +46,7 @@ autoupdate: true
 #     There are some variables that can be used in this script.
 #       - NewVersion: new version
 updatescript: |
+  cd ..
   rm -rf jarvissh.tar.gz
   wget https://github.com/zhs007/jarvissh/releases/download/{{.NewVersion}}/jarvissh.tar.gz
   tar zxvf jarvissh.tar.gz

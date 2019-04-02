@@ -14,7 +14,7 @@ func TestBackup06(t *testing.T) {
 	//------------------------------------------------------------------------
 	// initial CoreDB
 
-	cdb, err := NewCoreDB("../test/backup-v0.6", "", "leveldb")
+	cdb, err := NewCoreDB("../test/backup-v0.6", "", "leveldb", nil)
 	if err != nil {
 		t.Fatalf("TestBackup06 NewCoreDB err! %v", err)
 

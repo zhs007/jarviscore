@@ -139,7 +139,24 @@ func (obj *objRCS) oncheck(ctx context.Context, funcCancel context.CancelFunc) e
 		obj.node1ni.numsConnMe >= 1 && obj.node1ni.numsIConn >= 1 &&
 		obj.node2ni.numsConnMe >= 1 && obj.node2ni.numsIConn >= 1 &&
 		!obj.requestnodes {
-		err := obj.node1.RequestNodes(ctx, nil)
+
+		err := obj.node1.GetCoreDB().TrustNode(obj.node2.GetMyInfo().Addr)
+		if err != nil {
+			jarvisbase.Warn("objUN.oncheck:node1.TrustNode",
+				zap.Error(err))
+
+			return err
+		}
+
+		err = obj.node2.GetCoreDB().TrustNode(obj.node1.GetMyInfo().Addr)
+		if err != nil {
+			jarvisbase.Warn("objUN.oncheck:node2.TrustNode",
+				zap.Error(err))
+
+			return err
+		}
+
+		err = obj.node1.RequestNodes(ctx, nil)
 		if err != nil {
 			return err
 		}

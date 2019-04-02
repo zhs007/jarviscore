@@ -97,4 +97,6 @@ var (
 	ErrUnknownCtrlError = errors.New("unknown ctrl error")
 	// ErrProcMsgStreamNil - ProcMsgStream return nil
 	ErrProcMsgStreamNil = errors.New("ProcMsgStream return nil")
+	// ErrIDontTrustYou - I don't trust you
+	ErrIDontTrustYou = errors.New("I don't trust you")
 )
