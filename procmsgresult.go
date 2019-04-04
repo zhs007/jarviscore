@@ -109,7 +109,8 @@ func (mgr *procMsgResultMgr) onPorcMsgResult(ctx context.Context, addr string, r
 	if d != nil {
 		err := d.OnPorcMsgResult(ctx, jarvisnode, result)
 
-		if result.Err == nil && result.Msg == nil {
+		if result.JarvisResultType == JarvisResultTypeReplyStreamEnd {
+			// if result.Err == nil && result.Msg == nil {
 			if d.OnRecvEnd() {
 				mgr.mapWaitPush.Delete(AppendString(addr, ":", strconv.FormatInt(replymsgid, 10)))
 			}

@@ -118,18 +118,20 @@ func (s *jarvisServer2) ProcMsgStream(stream pb.JarvisCoreServ_ProcMsgStreamServ
 			}
 
 			lstmsgs = append(lstmsgs, JarvisMsgInfo{
-				Err: err,
+				JarvisResultType: JarvisResultTypeLocalError,
+				Err:              err,
 			})
 
 			break
 		}
 
 		lstmsgs = append(lstmsgs, JarvisMsgInfo{
-			Msg: in,
+			JarvisResultType: JarvisResultTypeReply,
+			Msg:              in,
 		})
 
 		if in.ReplyMsgID > 0 {
-			s.node.OnReplyProcMsg(stream.Context(), in.SrcAddr, in.ReplyMsgID, in, nil)
+			s.node.OnReplyProcMsg(stream.Context(), in.SrcAddr, in.ReplyMsgID, JarvisResultTypeReply, in, nil)
 		}
 	}
 

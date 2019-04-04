@@ -273,7 +273,8 @@ func (obj *objTF2) oncheck(ctx context.Context, funcCancel context.CancelFunc) e
 							}
 						}
 
-						if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
+						if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
+							// if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
 							if obj.isDone() {
 								funcCancel()
 							}
@@ -331,7 +332,8 @@ func (obj *objTF2) oncheck(ctx context.Context, funcCancel context.CancelFunc) e
 							}
 						}
 
-						if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
+						if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
+							// if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
 							if obj.isDone() {
 								funcCancel()
 							}

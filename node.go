@@ -1585,9 +1585,10 @@ func (n *jarvisNode) OnClientProcMsg(addr string, msgid int64, onProcMsgResult F
 }
 
 // OnReplyProcMsg - on reply
-func (n *jarvisNode) OnReplyProcMsg(ctx context.Context, addr string, replymsgid int64, msg *pb.JarvisMsg, err error) error {
+func (n *jarvisNode) OnReplyProcMsg(ctx context.Context, addr string, replymsgid int64, jrt int, msg *pb.JarvisMsg, err error) error {
 	return n.mgrProcMsgResult.onPorcMsgResult(ctx, addr, replymsgid, n, &JarvisMsgInfo{
-		Msg: msg,
-		Err: err,
+		JarvisResultType: jrt,
+		Msg:              msg,
+		Err:              err,
 	})
 }

@@ -180,8 +180,8 @@ func (obj *objUN) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 					lstResult[0].Results[len(lstResult[0].Results)-1].Msg == nil &&
 					lstResult[1].Results[len(lstResult[1].Results)-1].Msg == nil {
 
-					if (len(lstResult[0].Results) == 3 && len(lstResult[1].Results) == 5) ||
-						(len(lstResult[1].Results) == 3 && len(lstResult[0].Results) == 5) {
+					if (len(lstResult[0].Results) == 4 && len(lstResult[1].Results) == 6) ||
+						(len(lstResult[1].Results) == 4 && len(lstResult[0].Results) == 6) {
 
 						obj.endupdnodes = true
 

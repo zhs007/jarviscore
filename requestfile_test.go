@@ -247,7 +247,8 @@ func (obj *objRF) oncheckrequestfile2(ctx context.Context, funcCancel context.Ca
 							}
 						}
 
-						if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
+						if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
+							// if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
 
 							var lst []*jarviscorepb.FileData
 							totalmd5 := ""
@@ -409,7 +410,8 @@ func (obj *objRF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 							}
 						}
 
-						if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
+						if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
+							// if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
 							obj.requestfile1ok = true
 
 							obj.oncheckrequestfile2(ctx, funcCancel)

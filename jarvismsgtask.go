@@ -8,6 +8,17 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	// JarvisResultTypeSend - send
+	JarvisResultTypeSend = 1
+	// JarvisResultTypeReply - reply
+	JarvisResultTypeReply = 2
+	// JarvisResultTypeLocalError - error
+	JarvisResultTypeLocalError = 3
+	// JarvisResultTypeReplyStreamEnd - reply stream end
+	JarvisResultTypeReplyStreamEnd = 4
+)
+
 // NormalTaskInfo - normal task info
 type NormalTaskInfo struct {
 	Msg         *pb.JarvisMsg
@@ -17,8 +28,9 @@ type NormalTaskInfo struct {
 
 // JarvisMsgInfo - JarvisMsg information
 type JarvisMsgInfo struct {
-	Msg *pb.JarvisMsg `json:"msg"`
-	Err error         `json:"err"`
+	JarvisResultType int           `json:"jarvisresulttype"`
+	Msg              *pb.JarvisMsg `json:"msg"`
+	Err              error         `json:"err"`
 }
 
 // StreamTaskInfo - stream task info
