@@ -412,7 +412,7 @@ func (n *jarvisNode) onMsgReplyConnect(ctx context.Context, msg *pb.JarvisMsg) e
 		n.coredb.UpdNodeBaseInfo(ni)
 	}
 
-	if msg.LastMsgID > 0 {
+	if msg.LastMsgID > 0 && msg.LastMsgID > cn.LastSendMsgID {
 		cn.LastSendMsgID = msg.LastMsgID
 	}
 
