@@ -657,9 +657,11 @@ func (db *CoreDB) GetCurRecvMsgID(addr string) int64 {
 func (db *CoreDB) UpdSendMsgID(addr string, msgid int64) {
 	curnode := db.GetNode(addr)
 	if curnode != nil {
-		curnode.LastSendMsgID = msgid
+		if curnode.LastSendMsgID < msgid {
+			curnode.LastSendMsgID = msgid
 
-		db.UpdNodeInfo(addr)
+			db.UpdNodeInfo(addr)
+		}
 	}
 }
 
