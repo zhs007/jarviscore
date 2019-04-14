@@ -124,16 +124,16 @@ func LoadConfig(filename string) (*Config, error) {
 	}
 
 	defer fi.Close()
-	fd, err1 := ioutil.ReadAll(fi)
-	if err1 != nil {
-		return nil, err1
+	fd, err := ioutil.ReadAll(fi)
+	if err != nil {
+		return nil, err
 	}
 
 	cfg := &Config{}
 
-	err2 := yaml.Unmarshal(fd, cfg)
-	if err2 != nil {
-		return nil, err2
+	err = yaml.Unmarshal(fd, cfg)
+	if err != nil {
+		return nil, err
 	}
 
 	err = checkConfig(cfg)
