@@ -17,11 +17,11 @@ func InitPprof(cfg *Config) error {
 			w.Write([]byte(num))
 		})
 
-		http.ListenAndServe(cfg.Pprof.GoRoutineURL, mux)
+		go http.ListenAndServe(cfg.Pprof.GoRoutineURL, mux)
 	}
 
 	if cfg.Pprof.BaseURL != "" {
-		http.ListenAndServe(cfg.Pprof.BaseURL, nil)
+		go http.ListenAndServe(cfg.Pprof.BaseURL, nil)
 	}
 
 	return nil
