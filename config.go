@@ -31,8 +31,8 @@ type Config struct {
 	// pprof configuration
 
 	Pprof struct {
-		BaseURL      string
-		GoRoutineURL string
+		BaseURL string
+		// GoRoutineURL string
 	}
 
 	//------------------------------------------------------------------
