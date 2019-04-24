@@ -13,6 +13,11 @@ timerequestchild: 180
 #                  - default 4mb
 maxmsglength: 4194304
 
+# pprof - pprof
+pprof:
+  baseurl: ':6061'
+  goroutineurl: ':6060'
+
 # ankadb - ankadb config
 ankadb:
   # dbpath - dbpath

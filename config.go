@@ -28,6 +28,14 @@ type Config struct {
 	MaxMsgLength int32
 
 	//------------------------------------------------------------------
+	// pprof configuration
+
+	Pprof struct {
+		BaseURL      string
+		GoRoutineURL string
+	}
+
+	//------------------------------------------------------------------
 	// ankadb configuration
 
 	AnkaDB struct {
