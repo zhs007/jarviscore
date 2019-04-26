@@ -10,7 +10,7 @@ type FuncOnProcMsgResult func(ctx context.Context, jarvisnode JarvisNode,
 
 // IsClientProcMsgResultEnd - is end
 func IsClientProcMsgResultEnd(lstResult []*JarvisMsgInfo) bool {
-	return len(lstResult) > 0 && lstResult[len(lstResult)-1].Msg == nil && lstResult[len(lstResult)-1].Err == nil
+	return len(lstResult) > 0 && lstResult[len(lstResult)-1].JarvisResultType == JarvisResultTypeReplyStreamEnd
 }
 
 // ProcMsgResultData -

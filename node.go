@@ -412,7 +412,7 @@ func (n *jarvisNode) onMsgReplyConnect(ctx context.Context, msg *pb.JarvisMsg) e
 		n.coredb.UpdNodeBaseInfo(ni)
 	}
 
-	if msg.LastMsgID > 0 {
+	if msg.LastMsgID > 0 && msg.LastMsgID > cn.LastSendMsgID {
 		cn.LastSendMsgID = msg.LastMsgID
 	}
 
@@ -599,7 +599,7 @@ func (n *jarvisNode) onMsgReply2(ctx context.Context, msg *pb.JarvisMsg) error {
 
 	if msg.LastMsgID > 0 {
 		cn := n.coredb.GetNode(msg.SrcAddr)
-		if cn != nil && cn.LastSendMsgID != msg.LastMsgID {
+		if cn != nil && cn.LastSendMsgID < msg.LastMsgID {
 			cn.LastSendMsgID = msg.LastMsgID
 
 			n.coredb.UpdNodeInfo(msg.SrcAddr)
@@ -1585,9 +1585,10 @@ func (n *jarvisNode) OnClientProcMsg(addr string, msgid int64, onProcMsgResult F
 }
 
 // OnReplyProcMsg - on reply
-func (n *jarvisNode) OnReplyProcMsg(ctx context.Context, addr string, replymsgid int64, msg *pb.JarvisMsg, err error) error {
+func (n *jarvisNode) OnReplyProcMsg(ctx context.Context, addr string, replymsgid int64, jrt int, msg *pb.JarvisMsg, err error) error {
 	return n.mgrProcMsgResult.onPorcMsgResult(ctx, addr, replymsgid, n, &JarvisMsgInfo{
-		Msg: msg,
-		Err: err,
+		JarvisResultType: jrt,
+		Msg:              msg,
+		Err:              err,
 	})
 }

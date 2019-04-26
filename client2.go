@@ -258,6 +258,8 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 				JSONMsg2Zap("msg", smsg),
 				zap.Int64("newsendmsgid", newsendmsgid))
 		}
+
+		c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeSend, nil, nil)
 	}
 
 	_, ok := c.mapClient.Load(smsg.DestAddr)
@@ -267,7 +269,7 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 			JSONMsg2Zap("msg", smsg))
 
 		if funcOnResult != nil {
-			c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, nil, ErrNotConnectedNode)
+			c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeLocalError, nil, ErrNotConnectedNode)
 		}
 
 		// return ErrNotConnectedNode
@@ -282,7 +284,7 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 		jarvisbase.Warn("jarvisClient2._sendMsg:getValidClientConn", zap.Error(err))
 
 		if funcOnResult != nil {
-			c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, nil, err)
+			c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeLocalError, nil, err)
 		}
 
 		return err
@@ -293,7 +295,7 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 		jarvisbase.Warn("jarvisClient2._sendMsg:_signJarvisMsg", zap.Error(err))
 
 		if funcOnResult != nil {
-			c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, nil, err)
+			c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeLocalError, nil, err)
 		}
 
 		return err
@@ -304,7 +306,7 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 		jarvisbase.Warn("jarvisClient2._sendMsg:ProcMsg", zap.Error(err))
 
 		if funcOnResult != nil {
-			c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, nil, err)
+			c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeLocalError, nil, err)
 		}
 
 		return err
@@ -316,7 +318,7 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 			jarvisbase.Debug("jarvisClient2._sendMsg:stream eof")
 
 			if funcOnResult != nil {
-				c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, nil, nil)
+				c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeReplyStreamEnd, nil, nil)
 			}
 
 			break
@@ -326,7 +328,7 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 			jarvisbase.Warn("jarvisClient2._sendMsg:stream", zap.Error(err))
 
 			if funcOnResult != nil {
-				c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, nil, err)
+				c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeLocalError, nil, err)
 			}
 
 			break
@@ -339,7 +341,7 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 			}, nil)
 
 			if funcOnResult != nil {
-				c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, getmsg, nil)
+				c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeReply, getmsg, nil)
 			}
 		}
 	}
@@ -401,7 +403,8 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 
 			if funcOnResult != nil {
 				lstResult = append(lstResult, &JarvisMsgInfo{
-					Err: ErrServAddrIsMe,
+					JarvisResultType: JarvisResultTypeLocalError,
+					Err:              ErrServAddrIsMe,
 				})
 
 				funcOnResult(ctx, c.node, lstResult)
@@ -419,7 +422,8 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 
 			if funcOnResult != nil {
 				lstResult = append(lstResult, &JarvisMsgInfo{
-					Err: ErrDeprecatedNode,
+					JarvisResultType: JarvisResultTypeLocalError,
+					Err:              ErrDeprecatedNode,
 				})
 
 				funcOnResult(ctx, c.node, lstResult)
@@ -437,7 +441,8 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 
 		if funcOnResult != nil {
 			lstResult = append(lstResult, &JarvisMsgInfo{
-				Err: ErrInvalidServAddr,
+				JarvisResultType: JarvisResultTypeLocalError,
+				Err:              ErrInvalidServAddr,
 			})
 
 			funcOnResult(ctx, c.node, lstResult)
@@ -455,7 +460,8 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 
 		if funcOnResult != nil {
 			lstResult = append(lstResult, &JarvisMsgInfo{
-				Err: ErrServAddrIsMe,
+				JarvisResultType: JarvisResultTypeLocalError,
+				Err:              ErrServAddrIsMe,
 			})
 
 			funcOnResult(ctx, c.node, lstResult)
@@ -470,7 +476,8 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 
 		if funcOnResult != nil {
 			lstResult = append(lstResult, &JarvisMsgInfo{
-				Err: err,
+				JarvisResultType: JarvisResultTypeLocalError,
+				Err:              err,
 			})
 
 			funcOnResult(ctx, c.node, lstResult)
@@ -507,7 +514,8 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 
 		if funcOnResult != nil {
 			lstResult = append(lstResult, &JarvisMsgInfo{
-				Err: err,
+				JarvisResultType: JarvisResultTypeLocalError,
+				Err:              err,
 			})
 
 			funcOnResult(ctx, c.node, lstResult)
@@ -522,7 +530,8 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 
 		if funcOnResult != nil {
 			lstResult = append(lstResult, &JarvisMsgInfo{
-				Err: err,
+				JarvisResultType: JarvisResultTypeLocalError,
+				Err:              err,
 			})
 
 			funcOnResult(ctx, c.node, lstResult)
@@ -537,7 +546,8 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 
 		if funcOnResult != nil {
 			lstResult = append(lstResult, &JarvisMsgInfo{
-				Err: err1,
+				JarvisResultType: JarvisResultTypeLocalError,
+				Err:              err1,
 			})
 
 			funcOnResult(ctx, c.node, lstResult)
@@ -561,7 +571,9 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 			jarvisbase.Debug("jarvisClient2._connectNode:stream eof")
 
 			if funcOnResult != nil {
-				lstResult = append(lstResult, &JarvisMsgInfo{})
+				lstResult = append(lstResult, &JarvisMsgInfo{
+					JarvisResultType: JarvisResultTypeReplyStreamEnd,
+				})
 
 				funcOnResult(ctx, c.node, lstResult)
 			}
@@ -576,7 +588,8 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 
 				if funcOnResult != nil {
 					lstResult = append(lstResult, &JarvisMsgInfo{
-						Err: err,
+						JarvisResultType: JarvisResultTypeLocalError,
+						Err:              err,
 					})
 
 					funcOnResult(ctx, c.node, lstResult)
@@ -600,7 +613,8 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 
 			if funcOnResult != nil {
 				lstResult = append(lstResult, &JarvisMsgInfo{
-					Err: err,
+					JarvisResultType: JarvisResultTypeLocalError,
+					Err:              err,
 				})
 
 				funcOnResult(ctx, c.node, lstResult)
@@ -624,7 +638,8 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 
 		if funcOnResult != nil {
 			lstResult = append(lstResult, &JarvisMsgInfo{
-				Msg: msg,
+				JarvisResultType: JarvisResultTypeReply,
+				Msg:              msg,
 			})
 
 			funcOnResult(ctx, c.node, lstResult)
@@ -662,7 +677,7 @@ func (c *jarvisClient2) _procRecvMsgStream(ctx context.Context,
 			jarvisbase.Debug("jarvisClient2._sendMsg:stream eof")
 
 			if funcOnResult != nil {
-				c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, nil, nil)
+				c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeReplyStreamEnd, nil, nil)
 			}
 
 			break
@@ -672,7 +687,7 @@ func (c *jarvisClient2) _procRecvMsgStream(ctx context.Context,
 			jarvisbase.Warn("jarvisClient2._sendMsg:stream", zap.Error(err))
 
 			if funcOnResult != nil {
-				c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, nil, err)
+				c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeLocalError, nil, err)
 			}
 
 			break
@@ -685,7 +700,7 @@ func (c *jarvisClient2) _procRecvMsgStream(ctx context.Context,
 			}, nil)
 
 			if funcOnResult != nil {
-				c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, getmsg, nil)
+				c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeReply, getmsg, nil)
 			}
 
 		}
@@ -717,7 +732,7 @@ func (c *jarvisClient2) _sendMsgStream(ctx context.Context, destAddr string, sms
 			zap.Error(ErrNotConnectedNode))
 
 		if funcOnResult != nil {
-			c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, nil, ErrNotConnectedNode)
+			c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeLocalError, nil, ErrNotConnectedNode)
 		}
 	}
 
@@ -726,7 +741,7 @@ func (c *jarvisClient2) _sendMsgStream(ctx context.Context, destAddr string, sms
 		jarvisbase.Warn("jarvisClient2._sendMsgStream:getValidClientConn", zap.Error(err))
 
 		if funcOnResult != nil {
-			c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, nil, err)
+			c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeLocalError, nil, err)
 		}
 
 		return err
@@ -738,7 +753,7 @@ func (c *jarvisClient2) _sendMsgStream(ctx context.Context, destAddr string, sms
 		jarvisbase.Warn("jarvisClient2._sendMsgStream:ProcMsgStream", zap.Error(err))
 
 		if funcOnResult != nil {
-			c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, nil, err)
+			c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeLocalError, nil, err)
 		}
 
 		return err
@@ -748,7 +763,7 @@ func (c *jarvisClient2) _sendMsgStream(ctx context.Context, destAddr string, sms
 		jarvisbase.Warn("jarvisClient2._sendMsgStream:ProcMsgStream", zap.Error(ErrProcMsgStreamNil))
 
 		if funcOnResult != nil {
-			c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, nil, ErrProcMsgStreamNil)
+			c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeLocalError, nil, ErrProcMsgStreamNil)
 		}
 
 		return err
@@ -762,7 +777,7 @@ func (c *jarvisClient2) _sendMsgStream(ctx context.Context, destAddr string, sms
 			jarvisbase.Warn("jarvisClient2._sendMsgStream:_signJarvisMsg", zap.Error(err))
 
 			if funcOnResult != nil {
-				c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, nil, err)
+				c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeLocalError, nil, err)
 			}
 
 			return err
@@ -773,7 +788,7 @@ func (c *jarvisClient2) _sendMsgStream(ctx context.Context, destAddr string, sms
 			jarvisbase.Warn("jarvisClient2._sendMsgStream:ProcMsg", zap.Error(err))
 
 			if funcOnResult != nil {
-				c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, nil, err)
+				c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeLocalError, nil, err)
 			}
 
 			return err
@@ -785,7 +800,7 @@ func (c *jarvisClient2) _sendMsgStream(ctx context.Context, destAddr string, sms
 		jarvisbase.Warn("jarvisClient2._sendMsgStream:CloseSend", zap.Error(err))
 
 		if funcOnResult != nil {
-			c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, nil, err)
+			c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeLocalError, nil, err)
 		}
 
 		return err

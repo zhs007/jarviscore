@@ -82,5 +82,5 @@ type JarvisNode interface {
 	// OnClientProcMsg - on Client.ProcMsg
 	OnClientProcMsg(addr string, msgid int64, onProcMsgResult FuncOnProcMsgResult) error
 	// OnReplyProcMsg - on reply
-	OnReplyProcMsg(ctx context.Context, addr string, replymsgid int64, msg *pb.JarvisMsg, err error) error
+	OnReplyProcMsg(ctx context.Context, addr string, replymsgid int64, jrt int, msg *pb.JarvisMsg, err error) error
 }

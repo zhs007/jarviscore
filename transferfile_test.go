@@ -294,7 +294,8 @@ func (obj *objTF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 							}
 						}
 
-						if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
+						if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
+							// if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
 							obj.transferfile1ok = true
 
 							if obj.isDone() {
@@ -375,7 +376,8 @@ func (obj *objTF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 							}
 						}
 
-						if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
+						if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
+							// if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
 							obj.transferfile2ok = true
 
 							if obj.isDone() {
