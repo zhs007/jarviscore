@@ -5,11 +5,11 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/zhs007/jarviscore/base"
-
 	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/ptypes"
 	"go.uber.org/zap"
 
+	"github.com/zhs007/jarviscore/base"
 	"github.com/zhs007/jarviscore/crypto"
 	pb "github.com/zhs007/jarviscore/proto"
 )
@@ -507,4 +507,29 @@ func NewErrorMsg(jarvisnode JarvisNode, nodeAddr string, strErr string, replyMsg
 		Err:        strErr,
 		ReplyMsgID: replyMsgID,
 	}
+}
+
+// NewCtrlResult - new jarvismsg with REPLY_CTRL_RESULT
+func NewCtrlResult(jarvisnode JarvisNode, nodeAddr string, msgid int64, dat proto.Message) (*pb.JarvisMsg, error) {
+
+	anydat, err := ptypes.MarshalAny(dat)
+	if err != nil {
+		return nil, err
+	}
+
+	msg := &pb.JarvisMsg{
+		CurTime:    time.Now().Unix(),
+		SrcAddr:    jarvisnode.GetMyInfo().Addr,
+		MyAddr:     jarvisnode.GetMyInfo().Addr,
+		DestAddr:   nodeAddr,
+		MsgType:    pb.MSGTYPE_REPLY_CTRL_RESULT,
+		ReplyMsgID: msgid,
+		Data: &pb.JarvisMsg_CtrlResult{
+			CtrlResult: &pb.CtrlResult{
+				Dat: anydat,
+			},
+		},
+	}
+
+	return msg, nil
 }
