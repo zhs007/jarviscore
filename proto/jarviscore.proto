@@ -178,9 +178,9 @@ message CtrlScript3Data {
 message CtrlInfo {
     int64 ctrlID = 1 [deprecated = true];
     string ctrlType = 2;
-    string command = 3;
-    repeated string params = 4;
-    string description = 5;
+    string command = 3 [deprecated = true];
+    repeated string params = 4 [deprecated = true];
+    string description = 5 [deprecated = true];
 
     google.protobuf.Any dat = 1000;
 }
