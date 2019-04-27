@@ -1,7 +1,7 @@
 package basedef
 
 // VERSION - jarviscore version
-const VERSION = "0.7.132"
+const VERSION = "0.7.135"
 
 // TimeFailedServAddr - if the servaddr is failed, we won't try to connect it within this time
 const TimeFailedServAddr = 60

@@ -549,7 +549,7 @@ func (n *jarvisNode) runRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 	jmsgrs *JarvisMsgReplyStream, funcOnResult FuncOnProcMsgResult) {
 
 	ci := msg.GetCtrlInfo()
-	msgs := n.mgrCtrl.Run(n, msg.SrcAddr, msg.MsgID, ci)
+	msgs := n.mgrCtrl.Run(ctx, n, msg.SrcAddr, msg.MsgID, ci)
 	if msgs != nil {
 		msgs = PushReply22Msgs(msgs, n, msg.SrcAddr, msg.MsgID, pb.REPLYTYPE_END, "")
 

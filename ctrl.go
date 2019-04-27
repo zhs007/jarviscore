@@ -1,6 +1,8 @@
 package jarviscore
 
 import (
+	"context"
+
 	"github.com/zhs007/jarviscore/base"
 	pb "github.com/zhs007/jarviscore/proto"
 	"go.uber.org/zap"
@@ -8,7 +10,7 @@ import (
 
 // Ctrl -
 type Ctrl interface {
-	Run(jarvisnode JarvisNode, srcAddr string, msgid int64, ci *pb.CtrlInfo) []*pb.JarvisMsg
+	Run(ctx context.Context, jarvisnode JarvisNode, srcAddr string, msgid int64, ci *pb.CtrlInfo) []*pb.JarvisMsg
 }
 
 // BuildReply2ForCtrl - build Reply2 for Ctrl

@@ -496,12 +496,12 @@ func PushReply22Msgs(msgs []*pb.JarvisMsg, jarvisnode JarvisNode, srcAddr string
 }
 
 // NewErrorMsg - new a error JarvisMsg
-func NewErrorMsg(jarvisnode JarvisNode, srcAddr string, destAddr string, strErr string, replyMsgID int64) *pb.JarvisMsg {
+func NewErrorMsg(jarvisnode JarvisNode, nodeAddr string, strErr string, replyMsgID int64) *pb.JarvisMsg {
 	return &pb.JarvisMsg{
 		CurTime:    time.Now().Unix(),
-		SrcAddr:    srcAddr,
-		MyAddr:     srcAddr,
-		DestAddr:   destAddr,
+		SrcAddr:    jarvisnode.GetMyInfo().Addr,
+		MyAddr:     jarvisnode.GetMyInfo().Addr,
+		DestAddr:   nodeAddr,
 		MsgType:    pb.MSGTYPE_REPLY2,
 		ReplyType:  pb.REPLYTYPE_ERROR,
 		Err:        strErr,

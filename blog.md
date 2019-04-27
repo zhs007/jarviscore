@@ -1,5 +1,24 @@
 # JarvisCore Development Log
 
+### 2019-04-27
+
+这几天一直在关注pprof，goroutine数量其实基本上维持在90多，内存的问题，开了2天才有点头绪，看起来应该是grpc接收stream数据时，某些情况下服务端goroutine没结束造成的。  
+
+```
+#	0x848870	github.com/zhs007/jarvissh/vendor/github.com/zhs007/jarviscore/proto.(*jarvisCoreServProcMsgClient).Recv+0x30	/go/src/github.com/zhs007/jarvissh/vendor/github.com/zhs007/jarviscore/proto/jarviscore.pb.go:1926
+#	0x96ae0f	github.com/zhs007/jarvissh/vendor/github.com/zhs007/jarviscore.(*jarvisClient2)._sendMsg+0xa6f			/go/src/github.com/zhs007/jarvissh/vendor/github.com/zhs007/jarviscore/client2.go:316
+#	0x9693af	github.com/zhs007/jarvissh/vendor/github.com/zhs007/jarviscore.(*clientTask).Run+0x8df				/go/src/github.com/zhs007/jarvissh/vendor/github.com/zhs007/jarviscore/client2.go:42
+#	0x84bf76	github.com/zhs007/jarvissh/vendor/github.com/zhs007/jarviscore/base.(*l2routine).start+0x406			/go/src/github.com/zhs007/jarvissh/vendor/github.com/zhs007/jarviscore/base/l2routinepool.go:99
+#	0x84dd70	github.com/zhs007/jarvissh/vendor/github.com/zhs007/jarviscore/base.(*l2routinePool).startRountine+0x90		/go/src/github.com/zhs007/jarvissh/vendor/github.com/zhs007/jarviscore/base/l2routinepool.go:344
+```
+
+感觉和chanEnd有关，这块本来实现就有点纠结，估计要找个时间再理一遍才好。  
+
+然后，切换到了go module，没有用dep了，有个小问题，就是目前没有发现go module能用非tag的方式精确定位版本，以前dep可以定位branch的，所以接下来可能一段时间tag会多一点。
+
+再就是新开了一个特殊功能节点的项目，最初没打算加到jarvisnode节点里来的，本来是打算类似crawler server那样的方式，直接grpc服务，简单很多，后来考虑到权限各种配置，就干脆加进来好了，试试看这条路是否能走通。  
+所以，会有些更新是专门为这种节点缺的接口准备的。
+
 ### 2019-04-24
 
 前几天发现了内存泄露问题，今天加了pprof。
