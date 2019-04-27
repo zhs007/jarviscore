@@ -13,8 +13,11 @@ import (
 
 var logger *zap.Logger
 var onceLogger sync.Once
+var logPath string
 
 func initLogger(level zapcore.Level, isConsole bool, logpath string) (*zap.Logger, error) {
+	logPath = logpath
+
 	loglevel := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 		return lvl >= level
 	})
