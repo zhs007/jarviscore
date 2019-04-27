@@ -1,6 +1,7 @@
 package jarviscore
 
 import (
+	"context"
 	"sync"
 
 	"go.uber.org/zap"
@@ -30,10 +31,10 @@ func (mgr *ctrlMgr) getCtrl(ctrltype string) Ctrl {
 	return nil
 }
 
-func (mgr *ctrlMgr) Run(jarvisnode JarvisNode, srcAddr string, msgid int64, ci *pb.CtrlInfo) []*pb.JarvisMsg {
+func (mgr *ctrlMgr) Run(ctx context.Context, jarvisnode JarvisNode, srcAddr string, msgid int64, ci *pb.CtrlInfo) []*pb.JarvisMsg {
 	c := mgr.getCtrl(ci.CtrlType)
 	if c != nil {
-		return c.Run(jarvisnode, srcAddr, msgid, ci)
+		return c.Run(ctx, jarvisnode, srcAddr, msgid, ci)
 	}
 
 	msg, err := BuildReply2(jarvisnode,

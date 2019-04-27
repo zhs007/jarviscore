@@ -1,6 +1,7 @@
 package jarviscore
 
 import (
+	"context"
 	"os/exec"
 
 	"github.com/golang/protobuf/ptypes"
@@ -35,7 +36,7 @@ func (ctrl *CtrlScriptFile2) runScript(ci *pb.CtrlInfo) ([]byte, error) {
 }
 
 // Run -
-func (ctrl *CtrlScriptFile2) Run(jarvisnode JarvisNode, srcAddr string, msgid int64, ci *pb.CtrlInfo) []*pb.JarvisMsg {
+func (ctrl *CtrlScriptFile2) Run(ctx context.Context, jarvisnode JarvisNode, srcAddr string, msgid int64, ci *pb.CtrlInfo) []*pb.JarvisMsg {
 
 	var msgs []*pb.JarvisMsg
 
