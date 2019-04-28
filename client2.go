@@ -328,8 +328,8 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 			jarvisbase.Warn("jarvisClient2._sendMsg:stream", zap.Error(err))
 
 			if funcOnResult != nil {
-				c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeReplyStreamEnd, nil, err)
-				// c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeLocalError, nil, err)
+				c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeLocalError, nil, err)
+				c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeReplyStreamEnd, nil, nil)
 			}
 
 			break
