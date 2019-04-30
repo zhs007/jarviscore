@@ -92,6 +92,9 @@ func (mgr *procMsgResultMgr) onEndMsg(addr string, replymsgid int64) {
 
 	if d != nil {
 		if d.OnMsgEnd() {
+			jarvisbase.Info("procMsgResultMgr.onEndMsg:Delete",
+				zap.String("key", AppendString(addr, ":", strconv.FormatInt(replymsgid, 10))))
+
 			mgr.mapWaitPush.Delete(AppendString(addr, ":", strconv.FormatInt(replymsgid, 10)))
 		}
 	}
@@ -112,6 +115,9 @@ func (mgr *procMsgResultMgr) onPorcMsgResult(ctx context.Context, addr string, r
 		if result.JarvisResultType == JarvisResultTypeReplyStreamEnd {
 			// if result.Err == nil && result.Msg == nil {
 			if d.OnRecvEnd() {
+				jarvisbase.Info("procMsgResultMgr.onPorcMsgResult:Delete",
+					zap.String("key", AppendString(addr, ":", strconv.FormatInt(replymsgid, 10))))
+
 				mgr.mapWaitPush.Delete(AppendString(addr, ":", strconv.FormatInt(replymsgid, 10)))
 			}
 		}
