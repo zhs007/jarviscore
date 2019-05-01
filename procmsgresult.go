@@ -93,7 +93,8 @@ func (mgr *procMsgResultMgr) onEndMsg(addr string, replymsgid int64) {
 	if d != nil {
 		if d.OnMsgEnd() {
 			jarvisbase.Info("procMsgResultMgr.onEndMsg:Delete",
-				zap.String("key", AppendString(addr, ":", strconv.FormatInt(replymsgid, 10))))
+				zap.String("key", AppendString(addr, ":", strconv.FormatInt(replymsgid, 10))),
+				zap.Int("nums", mgr.countNums()))
 
 			mgr.mapWaitPush.Delete(AppendString(addr, ":", strconv.FormatInt(replymsgid, 10)))
 		}
@@ -116,7 +117,8 @@ func (mgr *procMsgResultMgr) onPorcMsgResult(ctx context.Context, addr string, r
 			// if result.Err == nil && result.Msg == nil {
 			if d.OnRecvEnd() {
 				jarvisbase.Info("procMsgResultMgr.onPorcMsgResult:Delete",
-					zap.String("key", AppendString(addr, ":", strconv.FormatInt(replymsgid, 10))))
+					zap.String("key", AppendString(addr, ":", strconv.FormatInt(replymsgid, 10))),
+					zap.Int("nums", mgr.countNums()))
 
 				mgr.mapWaitPush.Delete(AppendString(addr, ":", strconv.FormatInt(replymsgid, 10)))
 			}
@@ -126,4 +128,16 @@ func (mgr *procMsgResultMgr) onPorcMsgResult(ctx context.Context, addr string, r
 	}
 
 	return nil
+}
+
+func (mgr *procMsgResultMgr) countNums() int {
+	nums := 0
+
+	mgr.mapWaitPush.Range(func(key interface{}, value interface{}) bool {
+		nums++
+
+		return true
+	})
+
+	return nums
 }
