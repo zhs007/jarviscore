@@ -251,6 +251,10 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 	destaddr := smsg.DestAddr
 
 	if funcOnResult != nil {
+		jarvisbase.Info("jarvisClient2._sendMsg:OnClientProcMsg",
+			JSONMsg2Zap("msg", smsg),
+			zap.Int64("newsendmsgid", newsendmsgid))
+
 		err := c.node.OnClientProcMsg(destaddr, newsendmsgid, funcOnResult)
 		if err != nil {
 			jarvisbase.Warn("jarvisClient2._sendMsg:OnClientProcMsg",
@@ -719,6 +723,10 @@ func (c *jarvisClient2) _sendMsgStream(ctx context.Context, destAddr string, sms
 	destaddr := smsgs[0].DestAddr
 
 	if funcOnResult != nil {
+		jarvisbase.Info("jarvisClient2._sendMsgStream:OnClientProcMsg",
+			zap.String("destaddr", destaddr),
+			zap.Int64("newsendmsgid", newsendmsgid))
+
 		err := c.node.OnClientProcMsg(destaddr, newsendmsgid, funcOnResult)
 		if err != nil {
 			jarvisbase.Warn("jarvisClient2._sendMsgStream:OnClientProcMsg",
