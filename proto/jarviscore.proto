@@ -192,10 +192,13 @@ message CtrlResult {
     google.protobuf.Any dat = 1000;
 }
 
+// MultiMsgData - for MULTI_MSG
 message MultiMsgData {
     int64 totalMsgLength = 1;
     int32 curMsgIndex = 2;
     bytes buf = 3;
+    string curMD5 = 4;
+    string totalMD5 = 5;
 }
 
 // UpdateNode - for UPDATENODE
@@ -262,6 +265,7 @@ message JarvisMsg {
     }
 }
 
+// JarvisCoreServ -
 service JarvisCoreServ {
     rpc procMsg(JarvisMsg) returns (stream JarvisMsg) {}
     rpc procMsgStream(stream JarvisMsg) returns (stream JarvisMsg) {}

@@ -56,7 +56,8 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 			return append(str[:], buf[:]...), nil
 		}
 	} else if msg.MsgType == pb.MSGTYPE_REPLY {
-		str := []byte(fmt.Sprintf("%v%v%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr, msg.ReplyType, msg.Err))
+		str := []byte(fmt.Sprintf("%v%v%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr,
+			msg.ReplyType, msg.Err))
 
 		return str, nil
 	} else if msg.MsgType == pb.MSGTYPE_REPLY_CTRL_RESULT {
@@ -121,6 +122,18 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 		if rf != nil {
 			str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
 			buf, err := proto.Marshal(rf)
+			if err != nil {
+				return nil, err
+			}
+
+			return append(str[:], buf[:]...), nil
+		}
+	} else if msg.MsgType == pb.MSGTYPE_MULTI_MSG {
+		mmd := msg.GetMultiMsgData()
+		if mmd != nil {
+			str := []byte(fmt.Sprintf("%v%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr,
+				msg.ReplyMsgID))
+			buf, err := proto.Marshal(mmd)
 			if err != nil {
 				return nil, err
 			}
@@ -528,6 +541,25 @@ func NewCtrlResult(jarvisnode JarvisNode, nodeAddr string, msgid int64, dat prot
 			CtrlResult: &pb.CtrlResult{
 				Dat: anydat,
 			},
+		},
+	}
+
+	return msg, nil
+}
+
+// BuildMultiMsgData - build jarvismsg with MULTI_MSG
+func BuildMultiMsgData(srcAddr string, destAddr string, replyMsgID int64,
+	multimsg *pb.MultiMsgData) (*pb.JarvisMsg, error) {
+
+	msg := &pb.JarvisMsg{
+		CurTime:    time.Now().Unix(),
+		SrcAddr:    srcAddr,
+		MyAddr:     srcAddr,
+		DestAddr:   destAddr,
+		MsgType:    pb.MSGTYPE_MULTI_MSG,
+		ReplyMsgID: replyMsgID,
+		Data: &pb.JarvisMsg_MultiMsgData{
+			MultiMsgData: multimsg,
 		},
 	}
 

@@ -1,7 +1,7 @@
 package basedef
 
 // VERSION - jarviscore version
-const VERSION = "0.7.146"
+const VERSION = "0.7.147"
 
 // TimeFailedServAddr - if the servaddr is failed, we won't try to connect it within this time
 const TimeFailedServAddr = 60
@@ -17,3 +17,6 @@ const BigFileLength = 4*1024*1024 - 1024
 
 // TimeReconnect - If the LastConnectTime time is within 30s, we will not repeat the connection.
 const TimeReconnect = 30
+
+// BigMsgLength -if jarvismsg length >= BigMsgLength, the message is big message
+const BigMsgLength = 4*1024*1024 - 1024
