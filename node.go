@@ -154,6 +154,12 @@ func (n *jarvisNode) Start(ctx context.Context) (err error) {
 		return true
 	})
 
+	StartTimer(ctx, basedef.TimeMsgState, func(ctx context.Context, timer *Timer) bool {
+		// n.onTimerMsgState(ctx)
+
+		return true
+	})
+
 	// tickerRequestChild := time.NewTicker(time.Duration(n.cfg.TimeRequestChild) * time.Second)
 
 	for {
@@ -891,7 +897,7 @@ func (n *jarvisNode) SendFile2(ctx context.Context, addr string, fd *pb.FileData
 
 // onTimerRequestNodes
 func (n *jarvisNode) onTimerRequestNodes(ctx context.Context) error {
-	jarvisbase.Debug("jarvisNode.onTimerRequestNodes")
+	// jarvisbase.Debug("jarvisNode.onTimerRequestNodes")
 
 	return n.RequestNodes(ctx, nil)
 }
@@ -1676,6 +1682,30 @@ func (n *jarvisNode) onMsgReplyMsgState(ctx context.Context, msg *pb.JarvisMsg) 
 	if rms.State < 0 {
 		n.mgrProcMsgResult.delete(msg.SrcAddr, rms.MsgID)
 	}
+
+	return nil
+}
+
+// onTimerMsgState
+func (n *jarvisNode) onTimerMsgState(ctx context.Context) error {
+	n.mgrProcMsgResult.forEach(func(prmd *ProcMsgResultData) {
+		n.requestMsgState(ctx, prmd.addr, prmd.msgid)
+	})
+
+	return nil
+}
+
+// requestMsgState
+func (n *jarvisNode) requestMsgState(ctx context.Context, addr string, msgid int64) error {
+	sendmsg, err := BuildRequestMsgState(n, addr, msgid)
+	if err != nil {
+		jarvisbase.Warn("jarvisNode.requestMsgState:BuildRequestMsgState",
+			zap.Error(err))
+
+		return err
+	}
+
+	n.mgrClient2.addSendMsgTask(sendmsg, addr, nil)
 
 	return nil
 }

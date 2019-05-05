@@ -15,6 +15,8 @@ func IsClientProcMsgResultEnd(lstResult []*JarvisMsgInfo) bool {
 
 // ProcMsgResultData -
 type ProcMsgResultData struct {
+	addr            string
+	msgid           int64
 	onProcMsgResult FuncOnProcMsgResult
 	lstResult       []*JarvisMsgInfo
 	endOnMsg        bool
@@ -22,8 +24,10 @@ type ProcMsgResultData struct {
 }
 
 // NewProcMsgResultData - new ProcMsgResultData
-func NewProcMsgResultData(onProcMsgResult FuncOnProcMsgResult) *ProcMsgResultData {
+func NewProcMsgResultData(addr string, msgid int64, onProcMsgResult FuncOnProcMsgResult) *ProcMsgResultData {
 	return &ProcMsgResultData{
+		addr:            addr,
+		msgid:           msgid,
 		onProcMsgResult: onProcMsgResult,
 	}
 }

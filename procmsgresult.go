@@ -11,6 +11,9 @@ import (
 	"github.com/zhs007/jarviscore/proto"
 )
 
+// FuncOnRangeProcMsgResult - onRangeProcMsgResult
+type FuncOnRangeProcMsgResult func(prmd *ProcMsgResultData)
+
 // procMsgResultMgr - procMsg result manager
 type procMsgResultMgr struct {
 	node        JarvisNode
@@ -59,7 +62,7 @@ func (mgr *procMsgResultMgr) startProcMsgResultData(addr string, msgid int64, on
 		return ErrDuplicateProcMsgResultData
 	}
 
-	pmrd := NewProcMsgResultData(onProcMsgResult)
+	pmrd := NewProcMsgResultData(addr, msgid, onProcMsgResult)
 
 	mgr.mapWaitPush.Store(AppendString(addr, ":", strconv.FormatInt(msgid, 10)), pmrd)
 
@@ -148,4 +151,31 @@ func (mgr *procMsgResultMgr) delete(addr string, replymsgid int64) {
 		zap.Int("nums", mgr.countNums()))
 
 	mgr.mapWaitPush.Delete(AppendString(addr, ":", strconv.FormatInt(replymsgid, 10)))
+}
+
+func (mgr *procMsgResultMgr) forEach(onRange FuncOnRangeProcMsgResult) {
+	mgr.mapWaitPush.Range(func(key interface{}, value interface{}) bool {
+		k, iskeyok := key.(string)
+		if !iskeyok {
+			jarvisbase.Info("procMsgResultMgr.delete:validKey",
+				zap.Int("nums", mgr.countNums()))
+
+			mgr.mapWaitPush.Delete(key)
+
+			return true
+		}
+
+		prmd, isok := value.(*ProcMsgResultData)
+		if isok {
+			onRange(prmd)
+		} else {
+			jarvisbase.Info("procMsgResultMgr.delete",
+				zap.String("key", string(k)),
+				zap.Int("nums", mgr.countNums()))
+
+			mgr.mapWaitPush.Delete(key)
+		}
+
+		return true
+	})
 }
