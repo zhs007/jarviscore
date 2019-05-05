@@ -103,4 +103,8 @@ var (
 	ErrInvalidTimer = errors.New("Invalid timer")
 	// ErrInvalidTimerFunc - Invalid timer func
 	ErrInvalidTimerFunc = errors.New("Invalid timer func")
+	// ErrInvalidWait4MyReplyMsgID - Invalid wait for my reply msgid
+	ErrInvalidWait4MyReplyMsgID = errors.New("Invalid wait for my reply msgid")
+	// ErrInvalidWait4MyReplyAddr - Invalid wait for my reply addr
+	ErrInvalidWait4MyReplyAddr = errors.New("Invalid wait for my reply addr")
 )

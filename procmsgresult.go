@@ -141,3 +141,11 @@ func (mgr *procMsgResultMgr) countNums() int {
 
 	return nums
 }
+
+func (mgr *procMsgResultMgr) delete(addr string, replymsgid int64) {
+	jarvisbase.Info("procMsgResultMgr.delete",
+		zap.String("key", AppendString(addr, ":", strconv.FormatInt(replymsgid, 10))),
+		zap.Int("nums", mgr.countNums()))
+
+	mgr.mapWaitPush.Delete(AppendString(addr, ":", strconv.FormatInt(replymsgid, 10)))
+}

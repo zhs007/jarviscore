@@ -25,6 +25,7 @@ type jarvisNode struct {
 	cfg              *Config
 	mgrCtrl          *ctrlMgr
 	mgrProcMsgResult *procMsgResultMgr
+	mgrWait4MyReply  *wait4MyReplyMgr
 }
 
 const (
@@ -59,9 +60,10 @@ func NewNode(cfg *Config) (JarvisNode, error) {
 			ServAddr:    cfg.BaseNodeInfo.ServAddr,
 			CoreVersion: basedef.VERSION,
 		},
-		coredb:  db,
-		cfg:     cfg,
-		mgrCtrl: &ctrlMgr{},
+		coredb:          db,
+		cfg:             cfg,
+		mgrCtrl:         &ctrlMgr{},
+		mgrWait4MyReply: newWait4MyReplyMgr(),
 		// mgrRequest: &requestMgr{},
 	}
 
@@ -271,6 +273,10 @@ func (n *jarvisNode) onNormalMsg(ctx context.Context, normal *NormalTaskInfo, jm
 			return n.onMsgReply2(ctx, normal.Msg)
 		} else if normal.Msg.MsgType == pb.MSGTYPE_UPDATENODE {
 			return n.onMsgUpdateNode(ctx, normal.Msg, jmsgrs)
+		} else if normal.Msg.MsgType == pb.MSGTYPE_REQUEST_MSG_STATE {
+			return n.onMsgRequestMsgState(ctx, normal.Msg, jmsgrs)
+		} else if normal.Msg.MsgType == pb.MSGTYPE_REPLY_MSG_STATE {
+			return n.onMsgReplyMsgState(ctx, normal.Msg)
 		}
 
 	}
@@ -307,6 +313,7 @@ func (n *jarvisNode) onStreamMsg(ctx context.Context, stream *StreamTaskInfo, jm
 		}
 	}
 
+	// 注意：如果后面有stream的请求，这里end就是不对的
 	n.replyStream2(firstmsg.SrcAddr, firstmsg.MsgID, jmsgrs, pb.REPLYTYPE_END, "")
 
 	return nil
@@ -561,6 +568,8 @@ func (n *jarvisNode) runRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 
 		n.mgrClient2.addSendMsgStreamTask(msgs, msg.SrcAddr, funcOnResult)
 
+		n.onEndWait4MyReply(msg.SrcAddr, msg.MsgID)
+
 		return
 	}
 
@@ -568,6 +577,8 @@ func (n *jarvisNode) runRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 	msgs = PushReply22Msgs(msgs, n, msg.SrcAddr, msg.MsgID, pb.REPLYTYPE_END, "")
 
 	n.mgrClient2.addSendMsgStreamTask(msgs, msg.SrcAddr, funcOnResult)
+
+	n.onEndWait4MyReply(msg.SrcAddr, msg.MsgID)
 }
 
 // onMsgRequestCtrl
@@ -586,6 +597,8 @@ func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 	defer n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_WAITPUSH, "")
 
 	n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_ISME, "")
+
+	n.onStartWait4MyReply(msg.SrcAddr, msg.MsgID)
 
 	n.mgrEvent.onMsgEvent(ctx, EventOnCtrl, msg)
 
@@ -660,6 +673,9 @@ func (n *jarvisNode) onMsgUpdateNode(ctx context.Context, msg *pb.JarvisMsg, jms
 
 	if n.cfg.AutoUpdate {
 		n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_ISME, "")
+
+		n.onStartWait4MyReply(msg.SrcAddr, msg.MsgID)
+		defer n.onEndWait4MyReply(msg.SrcAddr, msg.MsgID)
 
 		n.mgrEvent.onMsgEvent(ctx, EventOnUpdateNode, msg)
 
@@ -958,6 +974,9 @@ func (n *jarvisNode) onMsgRequestNodes(ctx context.Context, msg *pb.JarvisMsg, j
 
 	defer n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_END, "")
 
+	n.onStartWait4MyReply(msg.SrcAddr, msg.MsgID)
+	defer n.onEndWait4MyReply(msg.SrcAddr, msg.MsgID)
+
 	n.coredb.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
 		//!!! don't broadcast the localhost and deprecated node
 		if IsLocalHostAddr(v.ServAddr) && v.Deprecated {
@@ -1060,6 +1079,9 @@ func (n *jarvisNode) onMsgTransferFile(ctx context.Context, msg *pb.JarvisMsg,
 
 	defer n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_END, "")
 
+	n.onStartWait4MyReply(msg.SrcAddr, msg.MsgID)
+	defer n.onEndWait4MyReply(msg.SrcAddr, msg.MsgID)
+
 	n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_IGOTIT, "")
 
 	fd := msg.GetFile()
@@ -1101,6 +1123,9 @@ func (n *jarvisNode) onMsgTransferFile2(ctx context.Context, msgs []*pb.JarvisMs
 	}
 
 	defer n.replyStream2(msgs[0].SrcAddr, msgs[0].MsgID, jmsgrs, pb.REPLYTYPE_END, "")
+
+	n.onStartWait4MyReply(msgs[0].SrcAddr, msgs[0].MsgID)
+	defer n.onEndWait4MyReply(msgs[0].SrcAddr, msgs[0].MsgID)
 
 	n.replyStream2(msgs[0].SrcAddr, msgs[0].MsgID, jmsgrs, pb.REPLYTYPE_IGOTIT, "")
 
@@ -1306,6 +1331,9 @@ func (n *jarvisNode) onMsgRequestFile(ctx context.Context, msg *pb.JarvisMsg,
 	}
 
 	defer n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_END, "")
+
+	n.onStartWait4MyReply(msg.SrcAddr, msg.MsgID)
+	defer n.onEndWait4MyReply(msg.SrcAddr, msg.MsgID)
 
 	n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_IGOTIT, "")
 
@@ -1597,4 +1625,57 @@ func (n *jarvisNode) OnReplyProcMsg(ctx context.Context, addr string, replymsgid
 		Msg:              msg,
 		Err:              err,
 	})
+}
+
+// onStartWait4MyReply - on start wait for my reply
+func (n *jarvisNode) onStartWait4MyReply(addr string, msgid int64) error {
+	return n.mgrWait4MyReply.addMsgInfo(addr, msgid, nil)
+}
+
+// onEndWait4MyReply - on end wait for my reply
+func (n *jarvisNode) onEndWait4MyReply(addr string, msgid int64) {
+	n.mgrWait4MyReply.delete(addr, msgid)
+}
+
+// onMsgRequestMsgState
+func (n *jarvisNode) onMsgRequestMsgState(ctx context.Context, msg *pb.JarvisMsg,
+	jmsgrs *JarvisMsgReplyStream) error {
+
+	if jmsgrs == nil {
+		jarvisbase.Warn("jarvisNode.onMsgRequestMsgState", zap.Error(ErrStreamNil))
+
+		return ErrStreamNil
+	}
+
+	defer n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_END, "")
+
+	rms := msg.GetRequestMsgState()
+	s := n.mgrWait4MyReply.getMsgState(msg.SrcAddr, rms.MsgID)
+
+	sendmsg, err := BuildReplyMsgState(n, msg.SrcAddr, msg.MsgID, rms.MsgID, s)
+	if err != nil {
+		jarvisbase.Warn("jarvisNode.onMsgRequestMsgState:BuildReplyMsgState", zap.Error(err))
+
+		return err
+	}
+
+	n.sendMsg2ClientStream(jmsgrs, sendmsg)
+	if err != nil {
+		jarvisbase.Warn("jarvisNode.onMsgRequestMsgState:sendMsg2ClientStream", zap.Error(err))
+
+		return err
+	}
+
+	return nil
+}
+
+// onMsgReplyMsgState
+func (n *jarvisNode) onMsgReplyMsgState(ctx context.Context, msg *pb.JarvisMsg) error {
+
+	rms := msg.GetReplyMsgState()
+	if rms.State < 0 {
+		n.mgrProcMsgResult.delete(msg.SrcAddr, rms.MsgID)
+	}
+
+	return nil
 }
