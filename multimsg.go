@@ -6,7 +6,7 @@ import (
 	pb "github.com/zhs007/jarviscore/proto"
 )
 
-func makeMultiMsg(msg *pb.JarvisMsg) ([]*pb.JarvisMsg, error) {
+func makeMultiMsg(jarvisnode JarvisNode, msg *pb.JarvisMsg) ([]*pb.JarvisMsg, error) {
 	buf, err := proto.Marshal(msg)
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func makeMultiMsg(msg *pb.JarvisMsg) ([]*pb.JarvisMsg, error) {
 					TotalMD5:       GetMD5String(buf),
 				}
 
-				curjm, err := BuildMultiMsgData(msg.SrcAddr, msg.DestAddr, msg.ReplyMsgID, cm)
+				curjm, err := BuildMultiMsgData(jarvisnode, msg.DestAddr, msg.ReplyMsgID, cm)
 				if err != nil {
 					return nil, err
 				}
@@ -47,7 +47,7 @@ func makeMultiMsg(msg *pb.JarvisMsg) ([]*pb.JarvisMsg, error) {
 				CurMD5:         GetMD5String(buf[curstart:(curstart + curlength)]),
 			}
 
-			curjm, err := BuildMultiMsgData(msg.SrcAddr, msg.DestAddr, msg.ReplyMsgID, cm)
+			curjm, err := BuildMultiMsgData(jarvisnode, msg.DestAddr, msg.ReplyMsgID, cm)
 			if err != nil {
 				return nil, err
 			}

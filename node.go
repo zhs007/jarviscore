@@ -146,12 +146,18 @@ func (n *jarvisNode) Start(ctx context.Context) (err error) {
 	n.connectAllNodes()
 	jarvisbase.Info("StartServer:connectAllNodes")
 
-	tickerRequestChild := time.NewTicker(time.Duration(n.cfg.TimeRequestChild) * time.Second)
+	StartTimer(ctx, int(n.cfg.TimeRequestChild), func(ctx context.Context, timer *Timer) bool {
+		n.onTimerRequestNodes(ctx)
+
+		return true
+	})
+
+	// tickerRequestChild := time.NewTicker(time.Duration(n.cfg.TimeRequestChild) * time.Second)
 
 	for {
 		select {
-		case <-tickerRequestChild.C:
-			n.onTimerRequestNodes(ctx)
+		// case <-tickerRequestChild.C:
+		// 	n.onTimerRequestNodes(ctx)
 		case <-ctx.Done():
 			n.Stop()
 			return nil

@@ -99,4 +99,8 @@ var (
 	ErrProcMsgStreamNil = errors.New("ProcMsgStream return nil")
 	// ErrIDontTrustYou - I don't trust you
 	ErrIDontTrustYou = errors.New("I don't trust you")
+	// ErrInvalidTimer - Invalid timer
+	ErrInvalidTimer = errors.New("Invalid timer")
+	// ErrInvalidTimerFunc - Invalid timer func
+	ErrInvalidTimerFunc = errors.New("Invalid timer func")
 )

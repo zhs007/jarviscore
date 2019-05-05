@@ -140,6 +140,29 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 
 			return append(str[:], buf[:]...), nil
 		}
+	} else if msg.MsgType == pb.MSGTYPE_REQUEST_MSG_STATE {
+		rms := msg.GetRequestMsgState()
+		if rms != nil {
+			str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
+			buf, err := proto.Marshal(rms)
+			if err != nil {
+				return nil, err
+			}
+
+			return append(str[:], buf[:]...), nil
+		}
+	} else if msg.MsgType == pb.MSGTYPE_REPLY_MSG_STATE {
+		rms := msg.GetReplyMsgState()
+		if rms != nil {
+			str := []byte(fmt.Sprintf("%v%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr,
+				msg.ReplyMsgID))
+			buf, err := proto.Marshal(rms)
+			if err != nil {
+				return nil, err
+			}
+
+			return append(str[:], buf[:]...), nil
+		}
 	}
 
 	return nil, ErrInvalidMsgType
@@ -548,18 +571,60 @@ func NewCtrlResult(jarvisnode JarvisNode, nodeAddr string, msgid int64, dat prot
 }
 
 // BuildMultiMsgData - build jarvismsg with MULTI_MSG
-func BuildMultiMsgData(srcAddr string, destAddr string, replyMsgID int64,
+func BuildMultiMsgData(jarvisnode JarvisNode, destAddr string, replyMsgID int64,
 	multimsg *pb.MultiMsgData) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
 		CurTime:    time.Now().Unix(),
-		SrcAddr:    srcAddr,
-		MyAddr:     srcAddr,
+		SrcAddr:    jarvisnode.GetMyInfo().Addr,
+		MyAddr:     jarvisnode.GetMyInfo().Addr,
 		DestAddr:   destAddr,
 		MsgType:    pb.MSGTYPE_MULTI_MSG,
 		ReplyMsgID: replyMsgID,
 		Data: &pb.JarvisMsg_MultiMsgData{
 			MultiMsgData: multimsg,
+		},
+	}
+
+	return msg, nil
+}
+
+// BuildRequestMsgState - build jarvismsg with REQUEST_MSG_STATE
+func BuildRequestMsgState(jarvisnode JarvisNode, destAddr string,
+	msgid int64) (*pb.JarvisMsg, error) {
+
+	msg := &pb.JarvisMsg{
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  jarvisnode.GetMyInfo().Addr,
+		MyAddr:   jarvisnode.GetMyInfo().Addr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_REQUEST_MSG_STATE,
+		Data: &pb.JarvisMsg_RequestMsgState{
+			RequestMsgState: &pb.RequestMsgState{
+				MsgID: msgid,
+			},
+		},
+	}
+
+	return msg, nil
+}
+
+// BuildReplyMsgState - build jarvismsg with REPLY_MSG_STATE
+func BuildReplyMsgState(jarvisnode JarvisNode, destAddr string, replyMsgID int64,
+	msgid int64, state int) (*pb.JarvisMsg, error) {
+
+	msg := &pb.JarvisMsg{
+		CurTime:    time.Now().Unix(),
+		SrcAddr:    jarvisnode.GetMyInfo().Addr,
+		MyAddr:     jarvisnode.GetMyInfo().Addr,
+		DestAddr:   destAddr,
+		MsgType:    pb.MSGTYPE_REPLY_MSG_STATE,
+		ReplyMsgID: replyMsgID,
+		Data: &pb.JarvisMsg_ReplyMsgState{
+			ReplyMsgState: &pb.ReplyMsgState{
+				MsgID: msgid,
+				State: int32(state),
+			},
 		},
 	}
 
