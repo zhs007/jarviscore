@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"sync"
 	"syscall"
 	"time"
@@ -161,4 +162,28 @@ func Fatal(message string, fields ...zap.Field) {
 // SyncLogger - sync logger
 func SyncLogger() {
 	logger.Sync()
+}
+
+// ClearLogs - clear logs
+func ClearLogs() error {
+	if logPath != "" {
+		fn := path.Join(logPath, "*.log")
+		lst, err := filepath.Glob(fn)
+		if err != nil {
+			return err
+		}
+
+		panicfile := fmt.Sprintf("panic.%v.%v.log", basedef.VERSION, curtime)
+		outputfile := fmt.Sprintf("output.%v.%v.log", basedef.VERSION, curtime)
+		errorfile := fmt.Sprintf("error.%v.%v.log", basedef.VERSION, curtime)
+
+		for _, v := range lst {
+			cfn := filepath.Base(v)
+			if cfn != panicfile && cfn != outputfile && cfn != errorfile {
+				os.Remove(v)
+			}
+		}
+	}
+
+	return nil
 }
