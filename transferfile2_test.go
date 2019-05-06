@@ -273,7 +273,9 @@ func (obj *objTF2) oncheck(ctx context.Context, funcCancel context.CancelFunc) e
 							}
 						}
 
-						if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
+						if IsClientProcMsgResultEnd(lstResult) {
+							// if lstResult[curresultnums].IsEnd() {
+							// if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
 							// if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
 							if obj.isDone() {
 								funcCancel()
@@ -332,7 +334,9 @@ func (obj *objTF2) oncheck(ctx context.Context, funcCancel context.CancelFunc) e
 							}
 						}
 
-						if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
+						if IsClientProcMsgResultEnd(lstResult) {
+							// if lstResult[curresultnums].IsEnd() {
+							// if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
 							// if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
 							if obj.isDone() {
 								funcCancel()
@@ -432,7 +436,7 @@ func TestTransferFile2(t *testing.T) {
 
 	obj := newObjTF2()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	var errobj error

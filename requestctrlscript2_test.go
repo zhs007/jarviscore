@@ -202,19 +202,20 @@ func (obj *objRCS2) oncheck(ctx context.Context, funcCancel context.CancelFunc) 
 				lstResult []*JarvisMsgInfo) error {
 
 				lastjmi := lstResult[len(lstResult)-1]
-				if lastjmi.Err != nil {
+				if IsClientProcMsgResultEnd(lstResult) {
+					// if lastjmi.IsEnd() {
+					obj.requestctrlnode1ok = true
+
+					if obj.isDone() {
+						funcCancel()
+					}
+				} else if lastjmi.Err != nil {
 					obj.err = lastjmi.Err
 
 					funcCancel()
 				} else if lastjmi.Msg != nil {
 					jarvisbase.Info("objRCS2.oncheck:obj.node1.RequestCtrl",
 						JSONMsg2Zap("msg", lastjmi.Msg))
-				} else {
-					obj.requestctrlnode1ok = true
-
-					if obj.isDone() {
-						funcCancel()
-					}
 				}
 
 				return nil

@@ -2,6 +2,7 @@ package jarviscore
 
 import (
 	"context"
+	// pb "github.com/zhs007/jarviscore/proto"
 )
 
 // FuncOnProcMsgResult - on procmsg recv the message
@@ -10,11 +11,30 @@ type FuncOnProcMsgResult func(ctx context.Context, jarvisnode JarvisNode,
 
 // IsClientProcMsgResultEnd - is end
 func IsClientProcMsgResultEnd(lstResult []*JarvisMsgInfo) bool {
-	return len(lstResult) > 0 && lstResult[len(lstResult)-1].JarvisResultType == JarvisResultTypeReplyStreamEnd
+	if len(lstResult) > 0 {
+		hasend := false
+
+		for _, v := range lstResult {
+			if v.Msg != nil && v.IsEnd() {
+				hasend = true
+
+				break
+			}
+		}
+
+		if hasend && lstResult[len(lstResult)-1].IsEndOrIGI() {
+			return true
+		}
+	}
+
+	return false
+	// return len(lstResult) > 0 && lstResult[len(lstResult)-1].JarvisResultType == JarvisResultTypeReplyStreamEnd
 }
 
 // ProcMsgResultData -
 type ProcMsgResultData struct {
+	addr            string
+	msgid           int64
 	onProcMsgResult FuncOnProcMsgResult
 	lstResult       []*JarvisMsgInfo
 	endOnMsg        bool
@@ -22,8 +42,10 @@ type ProcMsgResultData struct {
 }
 
 // NewProcMsgResultData - new ProcMsgResultData
-func NewProcMsgResultData(onProcMsgResult FuncOnProcMsgResult) *ProcMsgResultData {
+func NewProcMsgResultData(addr string, msgid int64, onProcMsgResult FuncOnProcMsgResult) *ProcMsgResultData {
 	return &ProcMsgResultData{
+		addr:            addr,
+		msgid:           msgid,
 		onProcMsgResult: onProcMsgResult,
 	}
 }

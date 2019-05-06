@@ -177,18 +177,20 @@ func (obj *objUN) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 					jarvisbase.JSON("lstResult", lstResult))
 
 				if numsNode == 2 && len(lstResult) == 2 && len(lstResult[0].Results) > 0 && len(lstResult[1].Results) > 0 &&
-					lstResult[0].Results[len(lstResult[0].Results)-1].Msg == nil &&
-					lstResult[1].Results[len(lstResult[1].Results)-1].Msg == nil {
+					IsClientProcMsgResultEnd(lstResult[0].Results) &&
+					IsClientProcMsgResultEnd(lstResult[1].Results) {
+					// lstResult[0].Results[len(lstResult[0].Results)-1].IsEnd() &&
+					// lstResult[1].Results[len(lstResult[1].Results)-1].IsEnd() {
 
-					if (len(lstResult[0].Results) == 4 && len(lstResult[1].Results) == 6) ||
-						(len(lstResult[1].Results) == 4 && len(lstResult[0].Results) == 6) {
+					// if (len(lstResult[0].Results) == 3 && len(lstResult[1].Results) == 4) ||
+					// (len(lstResult[1].Results) == 3 && len(lstResult[0].Results) == 4) {
 
-						obj.endupdnodes = true
+					obj.endupdnodes = true
 
-						funcCancel()
+					funcCancel()
 
-						return nil
-					}
+					return nil
+					// }
 				}
 
 				return nil

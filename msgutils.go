@@ -55,10 +55,6 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 
 			return append(str[:], buf[:]...), nil
 		}
-	} else if msg.MsgType == pb.MSGTYPE_REPLY {
-		str := []byte(fmt.Sprintf("%v%v%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr, msg.ReplyType, msg.Err))
-
-		return str, nil
 	} else if msg.MsgType == pb.MSGTYPE_REPLY_CTRL_RESULT {
 		cr := msg.GetCtrlResult()
 		if cr != nil {
@@ -121,6 +117,41 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 		if rf != nil {
 			str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
 			buf, err := proto.Marshal(rf)
+			if err != nil {
+				return nil, err
+			}
+
+			return append(str[:], buf[:]...), nil
+		}
+	} else if msg.MsgType == pb.MSGTYPE_MULTI_MSG {
+		mmd := msg.GetMultiMsgData()
+		if mmd != nil {
+			str := []byte(fmt.Sprintf("%v%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr,
+				msg.ReplyMsgID))
+			buf, err := proto.Marshal(mmd)
+			if err != nil {
+				return nil, err
+			}
+
+			return append(str[:], buf[:]...), nil
+		}
+	} else if msg.MsgType == pb.MSGTYPE_REQUEST_MSG_STATE {
+		rms := msg.GetRequestMsgState()
+		if rms != nil {
+			str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
+			buf, err := proto.Marshal(rms)
+			if err != nil {
+				return nil, err
+			}
+
+			return append(str[:], buf[:]...), nil
+		}
+	} else if msg.MsgType == pb.MSGTYPE_REPLY_MSG_STATE {
+		rms := msg.GetReplyMsgState()
+		if rms != nil {
+			str := []byte(fmt.Sprintf("%v%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr,
+				msg.ReplyMsgID))
+			buf, err := proto.Marshal(rms)
 			if err != nil {
 				return nil, err
 			}
@@ -262,7 +293,7 @@ func BuildReply2(jarvisnode JarvisNode, srcAddr string,
 
 // BuildCtrlResult - build jarvismsg with REPLY_CTRL_RESULT
 func BuildCtrlResult(jarvisnode JarvisNode, srcAddr string,
-	destAddr string, msgid int64, result string) (*pb.JarvisMsg, error) {
+	destAddr string, replyMsgID int64, result string) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
 		CurTime:  time.Now().Unix(),
@@ -271,7 +302,7 @@ func BuildCtrlResult(jarvisnode JarvisNode, srcAddr string,
 		DestAddr: destAddr,
 		MsgType:  pb.MSGTYPE_REPLY_CTRL_RESULT,
 		// LastMsgID:  jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
-		ReplyMsgID: msgid,
+		ReplyMsgID: replyMsgID,
 		Data: &pb.JarvisMsg_CtrlResult{
 			CtrlResult: &pb.CtrlResult{
 				CtrlResult: result,
@@ -532,4 +563,70 @@ func NewCtrlResult(jarvisnode JarvisNode, nodeAddr string, msgid int64, dat prot
 	}
 
 	return msg, nil
+}
+
+// BuildMultiMsgData - build jarvismsg with MULTI_MSG
+func BuildMultiMsgData(jarvisnode JarvisNode, destAddr string, replyMsgID int64,
+	multimsg *pb.MultiMsgData) (*pb.JarvisMsg, error) {
+
+	msg := &pb.JarvisMsg{
+		CurTime:    time.Now().Unix(),
+		SrcAddr:    jarvisnode.GetMyInfo().Addr,
+		MyAddr:     jarvisnode.GetMyInfo().Addr,
+		DestAddr:   destAddr,
+		MsgType:    pb.MSGTYPE_MULTI_MSG,
+		ReplyMsgID: replyMsgID,
+		Data: &pb.JarvisMsg_MultiMsgData{
+			MultiMsgData: multimsg,
+		},
+	}
+
+	return msg, nil
+}
+
+// BuildRequestMsgState - build jarvismsg with REQUEST_MSG_STATE
+func BuildRequestMsgState(jarvisnode JarvisNode, destAddr string,
+	msgid int64) (*pb.JarvisMsg, error) {
+
+	msg := &pb.JarvisMsg{
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  jarvisnode.GetMyInfo().Addr,
+		MyAddr:   jarvisnode.GetMyInfo().Addr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_REQUEST_MSG_STATE,
+		Data: &pb.JarvisMsg_RequestMsgState{
+			RequestMsgState: &pb.RequestMsgState{
+				MsgID: msgid,
+			},
+		},
+	}
+
+	return msg, nil
+}
+
+// BuildReplyMsgState - build jarvismsg with REPLY_MSG_STATE
+func BuildReplyMsgState(jarvisnode JarvisNode, destAddr string, replyMsgID int64,
+	msgid int64, state int) (*pb.JarvisMsg, error) {
+
+	msg := &pb.JarvisMsg{
+		CurTime:    time.Now().Unix(),
+		SrcAddr:    jarvisnode.GetMyInfo().Addr,
+		MyAddr:     jarvisnode.GetMyInfo().Addr,
+		DestAddr:   destAddr,
+		MsgType:    pb.MSGTYPE_REPLY_MSG_STATE,
+		ReplyMsgID: replyMsgID,
+		Data: &pb.JarvisMsg_ReplyMsgState{
+			ReplyMsgState: &pb.ReplyMsgState{
+				MsgID: msgid,
+				State: int32(state),
+			},
+		},
+	}
+
+	return msg, nil
+}
+
+// IsSyncMsg - Is it a sync message?
+func IsSyncMsg(msg *pb.JarvisMsg) bool {
+	return msg.MsgType == pb.MSGTYPE_CONNECT_NODE || msg.MsgType == pb.MSGTYPE_REQUEST_MSG_STATE
 }

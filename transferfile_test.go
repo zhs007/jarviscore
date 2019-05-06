@@ -245,9 +245,9 @@ func (obj *objTF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 			func(ctx context.Context, jarvisnode JarvisNode,
 				lstResult []*JarvisMsgInfo) error {
 
-				for i := 0; i < len(lstResult); i++ {
-					if lstResult[i].Msg != nil {
-						jarvisbase.Info("sendfile2node obj.node1", JSONMsg2Zap("result", lstResult[i].Msg))
+				if len(lstResult) > 0 {
+					if lstResult[len(lstResult)-1].Msg != nil {
+						jarvisbase.Info("sendfile2node obj.node1", JSONMsg2Zap("result", lstResult[len(lstResult)-1].Msg))
 					}
 				}
 
@@ -294,7 +294,9 @@ func (obj *objTF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 							}
 						}
 
-						if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
+						if IsClientProcMsgResultEnd(lstResult) {
+							// if lstResult[curresultnums].IsEnd() {
+							// if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
 							// if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
 							obj.transferfile1ok = true
 
@@ -327,9 +329,9 @@ func (obj *objTF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 			func(ctx context.Context, jarvisnode JarvisNode,
 				lstResult []*JarvisMsgInfo) error {
 
-				for i := 0; i < len(lstResult); i++ {
-					if lstResult[i].Msg != nil {
-						jarvisbase.Info("sendfile2node obj.node2", JSONMsg2Zap("result", lstResult[i].Msg))
+				if len(lstResult) > 0 {
+					if lstResult[len(lstResult)-1].Msg != nil {
+						jarvisbase.Info("sendfile2node obj.node2", JSONMsg2Zap("result", lstResult[len(lstResult)-1].Msg))
 					}
 				}
 
@@ -376,7 +378,9 @@ func (obj *objTF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 							}
 						}
 
-						if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
+						if IsClientProcMsgResultEnd(lstResult) {
+							// if lstResult[curresultnums].IsEnd() {
+							// if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
 							// if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
 							obj.transferfile2ok = true
 
@@ -478,7 +482,7 @@ func TestTransferFile(t *testing.T) {
 
 	obj := newObjTF()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	var errobj error

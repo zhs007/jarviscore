@@ -200,9 +200,9 @@ func (obj *objRF) oncheckrequestfile2(ctx context.Context, funcCancel context.Ca
 			func(ctx context.Context, jarvisnode JarvisNode,
 				lstResult []*JarvisMsgInfo) error {
 
-				for i := 0; i < len(lstResult); i++ {
-					if lstResult[i].Msg != nil {
-						jarvisbase.Info("obj.node2.RequestFile", JSONMsg2Zap("result", lstResult[i].Msg))
+				if len(lstResult) > 0 {
+					if lstResult[len(lstResult)-1].Msg != nil {
+						jarvisbase.Info("obj.node2.RequestFile", JSONMsg2Zap("result", lstResult[len(lstResult)-1].Msg))
 					}
 				}
 
@@ -247,7 +247,9 @@ func (obj *objRF) oncheckrequestfile2(ctx context.Context, funcCancel context.Ca
 							}
 						}
 
-						if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
+						if IsClientProcMsgResultEnd(lstResult) {
+							// if lstResult[curresultnums].IsEnd() {
+							// if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
 							// if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
 
 							var lst []*jarviscorepb.FileData
@@ -361,9 +363,9 @@ func (obj *objRF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 			func(ctx context.Context, jarvisnode JarvisNode,
 				lstResult []*JarvisMsgInfo) error {
 
-				for i := 0; i < len(lstResult); i++ {
-					if lstResult[i].Msg != nil {
-						jarvisbase.Info("obj.node1.RequestFile", JSONMsg2Zap("result", lstResult[i].Msg))
+				if len(lstResult) > 0 {
+					if lstResult[len(lstResult)-1].Msg != nil {
+						jarvisbase.Info("obj.node1.RequestFile", JSONMsg2Zap("result", lstResult[len(lstResult)-1].Msg))
 					}
 				}
 
@@ -410,7 +412,9 @@ func (obj *objRF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 							}
 						}
 
-						if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
+						if IsClientProcMsgResultEnd(lstResult) {
+							// if lstResult[curresultnums].IsEnd() {
+							// if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
 							// if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
 							obj.requestfile1ok = true
 
@@ -510,7 +514,7 @@ func TestRequestFile(t *testing.T) {
 
 	obj := newObjRF()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	var errobj error

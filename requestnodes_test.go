@@ -132,7 +132,8 @@ func (obj *objRN) oncheck(ctx context.Context, funcCancel cancelFunc) error {
 				zap.Int("numsNode", numsNode),
 				jarvisbase.JSON("lstResult", lstResult))
 
-			if numsNode == 1 && len(lstResult) == 1 && lstResult[0].Results[len(lstResult[0].Results)-1].Msg == nil {
+			if numsNode == 1 && len(lstResult) == 1 && IsClientProcMsgResultEnd(lstResult[0].Results) {
+				// if numsNode == 1 && len(lstResult) == 1 && lstResult[0].Results[len(lstResult[0].Results)-1].IsEnd() {
 				obj.rqnodes1 = true
 
 				if obj.isDone() {
@@ -158,7 +159,8 @@ func (obj *objRN) oncheck(ctx context.Context, funcCancel cancelFunc) error {
 				zap.Int("numsNode", numsNode),
 				jarvisbase.JSON("lstResult", lstResult))
 
-			if numsNode == 1 && len(lstResult) == 1 && lstResult[0].Results[len(lstResult[0].Results)-1].Msg == nil {
+			if numsNode == 1 && len(lstResult) == 1 && IsClientProcMsgResultEnd(lstResult[0].Results) {
+				// if numsNode == 1 && len(lstResult) == 1 && lstResult[0].Results[len(lstResult[0].Results)-1].IsEnd() {
 				obj.rqnodes2 = true
 
 				if obj.isDone() {

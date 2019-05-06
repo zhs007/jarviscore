@@ -57,7 +57,11 @@ enum MSGTYPE {
     // reply connect3
     REPLY_CONNECT3 = 25;
     // transfer file2
-    TRANSFER_FILE2 = 26;    
+    TRANSFER_FILE2 = 26;
+    // request message state
+    REQUEST_MSG_STATE = 27;
+    // reply message state
+    REPLY_MSG_STATE = 28;
 }
 
 // REPLYTYPE - reply type
@@ -192,10 +196,13 @@ message CtrlResult {
     google.protobuf.Any dat = 1000;
 }
 
+// MultiMsgData - for MULTI_MSG
 message MultiMsgData {
     int64 totalMsgLength = 1;
     int32 curMsgIndex = 2;
     bytes buf = 3;
+    string curMD5 = 4;
+    string totalMD5 = 5;
 }
 
 // UpdateNode - for UPDATENODE
@@ -227,6 +234,18 @@ message JarvisNodeStatus {
     L2PoolInfo msgPool = 3; 
 }
 
+// RequestMsgState - for REQUEST_MSG_STATE
+message RequestMsgState {
+    int64 msgID = 1;
+}
+
+// ReplyMsgState - for REPLY_MSG_STATE
+message ReplyMsgState {
+    int64 msgID = 1;
+    // state - if state < 0, then message is lost
+    int32 state = 2;
+}
+
 // JarvisMsg - jarvis base msg
 //      sign(msgID + msgType + destAddr + curTime + srcAddr + data)
 message JarvisMsg {
@@ -243,7 +262,8 @@ message JarvisMsg {
     string err = 11;
     int64 lastMsgID = 12;
     int64 replyMsgID = 13;
-    int64 streamMsgID = 14;
+    int64 streamMsgID = 14 [deprecated = true];
+    int32 streamMsgIndex = 15;
 
     oneof data {
         NodeBaseInfo nodeInfo = 100;
@@ -259,9 +279,12 @@ message JarvisMsg {
         UpdateNode updateNode = 110;
         JarvisNodeStatus nodeStatus = 111;
         FileHashData fileHashData = 112;
+        RequestMsgState requestMsgState = 113;
+        ReplyMsgState replyMsgState = 115;
     }
 }
 
+// JarvisCoreServ -
 service JarvisCoreServ {
     rpc procMsg(JarvisMsg) returns (stream JarvisMsg) {}
     rpc procMsgStream(stream JarvisMsg) returns (stream JarvisMsg) {}

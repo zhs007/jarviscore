@@ -201,7 +201,14 @@ func (obj *objRCS3) oncheck(ctx context.Context, funcCancel context.CancelFunc) 
 				lstResult []*JarvisMsgInfo) error {
 
 				lastjmi := lstResult[len(lstResult)-1]
-				if lastjmi.Err != nil {
+				if IsClientProcMsgResultEnd(lstResult) {
+					// if lastjmi.IsEnd() {
+					obj.requestctrlnode1ok = true
+
+					if obj.isDone() {
+						funcCancel()
+					}
+				} else if lastjmi.Err != nil {
 					obj.err = lastjmi.Err
 
 					funcCancel()
@@ -212,13 +219,13 @@ func (obj *objRCS3) oncheck(ctx context.Context, funcCancel context.CancelFunc) 
 					if lastjmi.Msg.MsgType == pb.MSGTYPE_REPLY_REQUEST_FILE {
 						obj.getfilenums++
 					}
-				} else {
-					obj.requestctrlnode1ok = true
+				} // else {
+				// 	obj.requestctrlnode1ok = true
 
-					if obj.isDone() {
-						funcCancel()
-					}
-				}
+				// 	if obj.isDone() {
+				// 		funcCancel()
+				// 	}
+				// }
 
 				return nil
 			})

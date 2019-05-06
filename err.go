@@ -99,4 +99,22 @@ var (
 	ErrProcMsgStreamNil = errors.New("ProcMsgStream return nil")
 	// ErrIDontTrustYou - I don't trust you
 	ErrIDontTrustYou = errors.New("I don't trust you")
+	// ErrInvalidTimer - Invalid timer
+	ErrInvalidTimer = errors.New("Invalid timer")
+	// ErrInvalidTimerFunc - Invalid timer func
+	ErrInvalidTimerFunc = errors.New("Invalid timer func")
+	// ErrInvalidWait4MyReplyMsgID - Invalid wait for my reply msgid
+	ErrInvalidWait4MyReplyMsgID = errors.New("Invalid wait for my reply msgid")
+	// ErrInvalidWait4MyReplyAddr - Invalid wait for my reply addr
+	ErrInvalidWait4MyReplyAddr = errors.New("Invalid wait for my reply addr")
+	// ErrInvalidJarvisMsgReplyStreamDestAddr - Invalid JarvisMsgReplyStream dest addr
+	ErrInvalidJarvisMsgReplyStreamDestAddr = errors.New("Invalid JarvisMsgReplyStream dest addr")
+	// ErrInvalidJarvisMsgReplyStreamSendMsg - Invalid JarvisMsgReplyStream sendmsg
+	ErrInvalidJarvisMsgReplyStreamSendMsg = errors.New("Invalid JarvisMsgReplyStream sendmsg")
+	// ErrJarvisMsgReplyStreamSent - JarvisMsgReplyStream has been sent
+	ErrJarvisMsgReplyStreamSent = errors.New("JarvisMsgReplyStream has been sent")
+	// ErrInvalidJarvisMsgReplyStreamReplyMsgID - Invalid JarvisMsgReplyStream ReplyMsgID
+	ErrInvalidJarvisMsgReplyStreamReplyMsgID = errors.New("Invalid JarvisMsgReplyStream ReplyMsgID")
+	// ErrInvalidStreamMsgTransferFile2 - Invalid StreamMsg TRANSFER_FILE2
+	ErrInvalidStreamMsgTransferFile2 = errors.New("Invalid StreamMsg TRANSFER_FILE2")
 )
