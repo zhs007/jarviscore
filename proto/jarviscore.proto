@@ -62,6 +62,8 @@ enum MSGTYPE {
     REQUEST_MSG_STATE = 27;
     // reply message state
     REPLY_MSG_STATE = 28;
+    // clear logs
+    CLEAR_LOGS = 29;
 }
 
 // REPLYTYPE - reply type

@@ -66,7 +66,9 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 
 			return append(str[:], buf[:]...), nil
 		}
-	} else if msg.MsgType == pb.MSGTYPE_REQUEST_NODES {
+	} else if msg.MsgType == pb.MSGTYPE_REQUEST_NODES ||
+		msg.MsgType == pb.MSGTYPE_CLEAR_LOGS {
+
 		str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
 
 		return str, nil
@@ -629,4 +631,19 @@ func BuildReplyMsgState(jarvisnode JarvisNode, destAddr string, replyMsgID int64
 // IsSyncMsg - Is it a sync message?
 func IsSyncMsg(msg *pb.JarvisMsg) bool {
 	return msg.MsgType == pb.MSGTYPE_CONNECT_NODE || msg.MsgType == pb.MSGTYPE_REQUEST_MSG_STATE
+}
+
+// BuildClearLogs - build jarvismsg with CLEAR_LOGS
+func BuildClearLogs(jarvisnode JarvisNode, srcAddr string,
+	destAddr string) (*pb.JarvisMsg, error) {
+
+	msg := &pb.JarvisMsg{
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_CLEAR_LOGS,
+	}
+
+	return msg, nil
 }

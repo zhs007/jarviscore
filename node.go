@@ -287,6 +287,8 @@ func (n *jarvisNode) onNormalMsg(ctx context.Context, normal *NormalTaskInfo, jm
 			return n.onMsgRequestMsgState(ctx, normal.Msg, jmsgrs)
 		} else if normal.Msg.MsgType == pb.MSGTYPE_REPLY_MSG_STATE {
 			return n.onMsgReplyMsgState(ctx, normal.Msg)
+		} else if normal.Msg.MsgType == pb.MSGTYPE_CLEAR_LOGS {
+			return n.onMsgClearLogs(ctx, normal.Msg, jmsgrs)
 		}
 
 	}
@@ -934,6 +936,25 @@ func (n *jarvisNode) onTimerRequestNodes(ctx context.Context) error {
 	return n.RequestNodes(ctx, nil)
 }
 
+// ClearLogs - clear logs
+func (n *jarvisNode) ClearLogs(ctx context.Context, addr string,
+	funcOnResult FuncOnProcMsgResult) error {
+
+	ni := n.coredb.GetNode(addr)
+	if ni != nil && !coredb.IsDeprecatedNode(ni) {
+		sendmsg, err := BuildClearLogs(n, n.myinfo.Addr, ni.Addr)
+		if err != nil {
+			jarvisbase.Warn("jarvisNode.ClearLogs:BuildClearLogs", zap.Error(err))
+
+			return nil
+		}
+
+		n.mgrClient2.addSendMsgTask(sendmsg, addr, funcOnResult)
+	}
+
+	return nil
+}
+
 // RequestNode - update node
 func (n *jarvisNode) RequestNode(ctx context.Context, addr string,
 	funcOnResult FuncOnProcMsgResult) error {
@@ -949,6 +970,53 @@ func (n *jarvisNode) RequestNode(ctx context.Context, addr string,
 
 		n.mgrClient2.addSendMsgTask(sendmsg, addr, funcOnResult)
 	}
+
+	return nil
+}
+
+// ClearAllLogs - clear logs
+func (n *jarvisNode) ClearAllLogs(ctx context.Context, funcOnResult FuncOnGroupSendMsgResult) error {
+
+	numsSend := 0
+
+	var totalResults []*ClientGroupProcMsgResults
+
+	//!! 在网络IO很快的时候，假设一共有2个节点，但第一个节点很快返回的话，可能还没全部发送完成，就产生回调
+	//!! 所以这里分2次遍历
+	n.coredb.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
+		if !coredb.IsDeprecatedNode(v) && n.mgrClient2.isConnected(v.Addr) {
+			numsSend++
+		}
+
+		return nil
+	})
+
+	n.coredb.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
+		jarvisbase.Debug(fmt.Sprintf("jarvisNode.ClearAllLogs %v", v))
+
+		if !coredb.IsDeprecatedNode(v) && n.mgrClient2.isConnected(v.Addr) {
+			curResult := &ClientGroupProcMsgResults{}
+			totalResults = append(totalResults, curResult)
+
+			err := n.ClearLogs(ctx, v.Addr,
+				func(ctx context.Context, jarvisnode JarvisNode, lstResult []*JarvisMsgInfo) error {
+					curResult.Results = lstResult
+
+					if funcOnResult != nil {
+						funcOnResult(ctx, jarvisnode, numsSend, totalResults)
+					}
+
+					return nil
+				})
+			if err != nil {
+				jarvisbase.Warn("jarvisNode.ClearAllLogs:ClearLogs", zap.Error(err))
+
+				return nil
+			}
+		}
+
+		return nil
+	})
 
 	return nil
 }
@@ -1738,4 +1806,23 @@ func (n *jarvisNode) SendStreamMsg(addr string, msgs []*pb.JarvisMsg, funcOnResu
 // SendMsg - send a message to other node
 func (n *jarvisNode) SendMsg(addr string, msg *pb.JarvisMsg, funcOnResult FuncOnProcMsgResult) {
 	n.mgrClient2.addSendMsgTask(msg, addr, funcOnResult)
+}
+
+// onMsgClearLogs
+func (n *jarvisNode) onMsgClearLogs(ctx context.Context, msg *pb.JarvisMsg, jmsgrs *JarvisMsgReplyStream) error {
+
+	if jmsgrs == nil {
+		jarvisbase.Warn("jarvisNode.onMsgClearLogs", zap.Error(ErrStreamNil))
+
+		return ErrStreamNil
+	}
+
+	defer n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_END, "")
+
+	n.onStartWait4MyReply(msg.SrcAddr, msg.MsgID)
+	defer n.onEndWait4MyReply(msg.SrcAddr, msg.MsgID)
+
+	jarvisbase.ClearLogs()
+
+	return nil
 }

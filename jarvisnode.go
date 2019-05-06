@@ -40,6 +40,10 @@ type JarvisNode interface {
 	// UpdateAllNodes - update all nodes
 	UpdateAllNodes(ctx context.Context, nodetype string, nodetypever string,
 		funcOnResult FuncOnGroupSendMsgResult) error
+	// ClearLogs - clear logs
+	ClearLogs(ctx context.Context, addr string, funcOnResult FuncOnProcMsgResult) error
+	// ClearAllLogs - clear logs
+	ClearAllLogs(ctx context.Context, funcOnResult FuncOnGroupSendMsgResult) error
 
 	// AddNodeBaseInfo - add nodeinfo
 	AddNodeBaseInfo(nbi *pb.NodeBaseInfo) error
