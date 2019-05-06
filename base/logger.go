@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"sync"
+	"syscall"
+	"time"
 
 	"github.com/zhs007/jarviscore/basedef"
 	"go.uber.org/zap"
@@ -14,8 +17,35 @@ import (
 var logger *zap.Logger
 var onceLogger sync.Once
 var logPath string
+var curtime int64
+var panicFile *os.File
+
+func initPanicFile() error {
+	file, err := os.OpenFile(
+		path.Join(logPath, fmt.Sprintf("panic.%v.%v.log", basedef.VERSION, curtime)),
+		os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		Warn("initPanicFile:OpenFile",
+			zap.Error(err))
+
+		return err
+	}
+
+	panicFile = file
+
+	if err = syscall.Dup2(int(file.Fd()), int(os.Stderr.Fd())); err != nil {
+		Warn("initPanicFile:Dup2",
+			zap.Error(err))
+
+		return err
+	}
+
+	return nil
+}
 
 func initLogger(level zapcore.Level, isConsole bool, logpath string) (*zap.Logger, error) {
+	curtime = time.Now().Unix()
+
 	logPath = logpath
 
 	loglevel := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
@@ -38,8 +68,8 @@ func initLogger(level zapcore.Level, isConsole bool, logpath string) (*zap.Logge
 	cfg := &zap.Config{}
 
 	cfg.Level = zap.NewAtomicLevelAt(level)
-	cfg.OutputPaths = []string{path.Join(logpath, fmt.Sprintf("output.%v.log", basedef.VERSION))}
-	cfg.ErrorOutputPaths = []string{path.Join(logpath, fmt.Sprintf("error.%v.log", basedef.VERSION))}
+	cfg.OutputPaths = []string{path.Join(logpath, fmt.Sprintf("output.%v.%v.log", basedef.VERSION, curtime))}
+	cfg.ErrorOutputPaths = []string{path.Join(logpath, fmt.Sprintf("error.%v.%v.log", basedef.VERSION, curtime))}
 	cfg.Encoding = "json"
 	cfg.EncoderConfig = zapcore.EncoderConfig{
 		TimeKey:     "T",
@@ -50,6 +80,11 @@ func initLogger(level zapcore.Level, isConsole bool, logpath string) (*zap.Logge
 	}
 
 	cl, err := cfg.Build()
+	if err != nil {
+		return nil, err
+	}
+
+	err = initPanicFile()
 	if err != nil {
 		return nil, err
 	}
@@ -127,4 +162,28 @@ func Fatal(message string, fields ...zap.Field) {
 // SyncLogger - sync logger
 func SyncLogger() {
 	logger.Sync()
+}
+
+// ClearLogs - clear logs
+func ClearLogs() error {
+	if logPath != "" {
+		fn := path.Join(logPath, "*.log")
+		lst, err := filepath.Glob(fn)
+		if err != nil {
+			return err
+		}
+
+		panicfile := fmt.Sprintf("panic.%v.%v.log", basedef.VERSION, curtime)
+		outputfile := fmt.Sprintf("output.%v.%v.log", basedef.VERSION, curtime)
+		errorfile := fmt.Sprintf("error.%v.%v.log", basedef.VERSION, curtime)
+
+		for _, v := range lst {
+			cfn := filepath.Base(v)
+			if cfn != panicfile && cfn != outputfile && cfn != errorfile {
+				os.Remove(v)
+			}
+		}
+	}
+
+	return nil
 }

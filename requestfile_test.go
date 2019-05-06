@@ -514,7 +514,7 @@ func TestRequestFile(t *testing.T) {
 
 	obj := newObjRF()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 40*time.Second)
 	defer cancel()
 
 	var errobj error

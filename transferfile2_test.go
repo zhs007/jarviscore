@@ -436,7 +436,7 @@ func TestTransferFile2(t *testing.T) {
 
 	obj := newObjTF2()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 40*time.Second)
 	defer cancel()
 
 	var errobj error
