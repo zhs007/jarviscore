@@ -200,9 +200,9 @@ func (obj *objRF) oncheckrequestfile2(ctx context.Context, funcCancel context.Ca
 			func(ctx context.Context, jarvisnode JarvisNode,
 				lstResult []*JarvisMsgInfo) error {
 
-				for i := 0; i < len(lstResult); i++ {
-					if lstResult[i].Msg != nil {
-						jarvisbase.Info("obj.node2.RequestFile", JSONMsg2Zap("result", lstResult[i].Msg))
+				if len(lstResult) > 0 {
+					if lstResult[len(lstResult)-1].Msg != nil {
+						jarvisbase.Info("obj.node2.RequestFile", JSONMsg2Zap("result", lstResult[len(lstResult)-1].Msg))
 					}
 				}
 
@@ -363,9 +363,9 @@ func (obj *objRF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 			func(ctx context.Context, jarvisnode JarvisNode,
 				lstResult []*JarvisMsgInfo) error {
 
-				for i := 0; i < len(lstResult); i++ {
-					if lstResult[i].Msg != nil {
-						jarvisbase.Info("obj.node1.RequestFile", JSONMsg2Zap("result", lstResult[i].Msg))
+				if len(lstResult) > 0 {
+					if lstResult[len(lstResult)-1].Msg != nil {
+						jarvisbase.Info("obj.node1.RequestFile", JSONMsg2Zap("result", lstResult[len(lstResult)-1].Msg))
 					}
 				}
 

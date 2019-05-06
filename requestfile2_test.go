@@ -234,9 +234,9 @@ func (obj *objRF2) oncheck(ctx context.Context, funcCancel context.CancelFunc) e
 			func(ctx context.Context, jarvisnode JarvisNode,
 				lstResult []*JarvisMsgInfo) error {
 
-				for i := 0; i < len(lstResult); i++ {
-					if lstResult[i].Msg != nil {
-						jarvisbase.Info("obj.node1.RequestFile", JSONMsg2Zap("result", lstResult[i].Msg))
+				if len(lstResult) > 0 {
+					if lstResult[len(lstResult)-1].Msg != nil {
+						jarvisbase.Info("obj.node1.RequestFile", JSONMsg2Zap("result", lstResult[len(lstResult)-1].Msg))
 					}
 				}
 
@@ -322,9 +322,9 @@ func (obj *objRF2) oncheck(ctx context.Context, funcCancel context.CancelFunc) e
 			func(ctx context.Context, jarvisnode JarvisNode,
 				lstResult []*JarvisMsgInfo) error {
 
-				for i := 0; i < len(lstResult); i++ {
-					if lstResult[i].Msg != nil {
-						jarvisbase.Info("obj.node2.RequestFile", JSONMsg2Zap("result", lstResult[i].Msg))
+				if len(lstResult) > 0 {
+					if lstResult[len(lstResult)-1].Msg != nil {
+						jarvisbase.Info("obj.node2.RequestFile", JSONMsg2Zap("result", lstResult[len(lstResult)-1].Msg))
 					}
 				}
 
@@ -475,7 +475,7 @@ func TestRequestFile2(t *testing.T) {
 
 	obj := newObjRF2()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	var errobj error
