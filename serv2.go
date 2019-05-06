@@ -211,6 +211,15 @@ func (s *jarvisServer2) replyStream2ProcMsgStream(addr string, replyMsgID int64,
 		return err
 	}
 
+	sendmsg.LastMsgID = s.node.GetCoreDB().GetCurRecvMsgID(sendmsg.DestAddr)
+
+	err = SignJarvisMsg(s.node.GetCoreDB().GetPrivateKey(), sendmsg)
+	if err != nil {
+		jarvisbase.Warn("jarvisServer2.replyStream2ProcMsgStream:SignJarvisMsg", zap.Error(err))
+
+		return err
+	}
+
 	err = stream.Send(sendmsg)
 	if err != nil {
 		jarvisbase.Warn("jarvisServer2.replyStream2ProcMsgStream:SendMsg", zap.Error(err))
@@ -228,6 +237,15 @@ func (s *jarvisServer2) replyStream2ProcMsg(addr string, replyMsgID int64,
 	sendmsg, err := BuildReply2(s.node, s.node.myinfo.Addr, addr, rt, strErr, replyMsgID)
 	if err != nil {
 		jarvisbase.Warn("jarvisServer2.replyStream2ProcMsg:BuildReply2", zap.Error(err))
+
+		return err
+	}
+
+	sendmsg.LastMsgID = s.node.GetCoreDB().GetCurRecvMsgID(sendmsg.DestAddr)
+
+	err = SignJarvisMsg(s.node.GetCoreDB().GetPrivateKey(), sendmsg)
+	if err != nil {
+		jarvisbase.Warn("jarvisServer2.replyStream2ProcMsg:SignJarvisMsg", zap.Error(err))
 
 		return err
 	}
