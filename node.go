@@ -246,7 +246,7 @@ func (n *jarvisNode) onNormalMsg(ctx context.Context, normal *NormalTaskInfo, jm
 			}
 		}
 
-		if jmsgrs != nil && jmsgrs.IsValid() {
+		if jmsgrs != nil {
 			err = n.checkMsgID(ctx, normal.Msg)
 			if err != nil {
 				jarvisbase.Warn("jarvisNode.onNormalMsg:checkMsgID", zap.Error(err))
@@ -297,34 +297,58 @@ func (n *jarvisNode) onNormalMsg(ctx context.Context, normal *NormalTaskInfo, jm
 // onStreamMsg - proc JarvisMsg
 func (n *jarvisNode) onStreamMsg(ctx context.Context, stream *StreamTaskInfo, jmsgrs *JarvisMsgReplyStream) error {
 
-	var lsttfmsg []*pb.JarvisMsg
-	var firstmsg *pb.JarvisMsg
-	for i := 0; i < len(stream.Msgs); i++ {
-		curmsg := stream.Msgs[i]
-		if curmsg.Msg != nil {
-			if firstmsg == nil {
-				firstmsg = curmsg.Msg
+	if len(stream.Msgs) > 0 {
+		if stream.Msgs[0].Msg.MsgType == pb.MSGTYPE_TRANSFER_FILE2 {
+			var lsttfmsg []*pb.JarvisMsg
+			for i := 0; i < len(stream.Msgs); i++ {
+				curmsg := stream.Msgs[i]
+				if curmsg.Msg == nil || curmsg.Msg.MsgType != pb.MSGTYPE_TRANSFER_FILE2 {
+					if curmsg.Msg == nil {
+						jarvisbase.Warn("jarvisNode.onStreamMsg:TRANSFER_FILE2",
+							zap.Error(ErrInvalidStreamMsgTransferFile2))
+					} else {
+						jarvisbase.Warn("jarvisNode.onStreamMsg:TRANSFER_FILE2",
+							zap.Error(ErrInvalidStreamMsgTransferFile2),
+							zap.Int("msgtype", int(curmsg.Msg.MsgType)))
+					}
+
+					return ErrInvalidStreamMsgTransferFile2
+				}
+
+				lsttfmsg = append(lsttfmsg, curmsg.Msg)
 			}
 
-			if curmsg.Msg.MsgType == pb.MSGTYPE_TRANSFER_FILE2 {
-				lsttfmsg = append(lsttfmsg, curmsg.Msg)
+			n.onMsgTransferFile2(ctx, lsttfmsg, jmsgrs)
+		} else {
+			// var lsttfmsg []*pb.JarvisMsg
+			var firstmsg *pb.JarvisMsg
+			for i := 0; i < len(stream.Msgs); i++ {
+				curmsg := stream.Msgs[i]
+				if curmsg.Msg != nil {
+					if firstmsg == nil {
+						firstmsg = curmsg.Msg
+					}
 
-				if curmsg.Msg.GetFile() != nil && curmsg.Msg.GetFile().GetFileMD5String() != "" {
-					n.onMsgTransferFile2(ctx, lsttfmsg, jmsgrs)
+					if curmsg.Msg.MsgType == pb.MSGTYPE_TRANSFER_FILE2 {
+						jarvisbase.Warn("jarvisNode.onStreamMsg",
+							zap.Error(ErrInvalidStreamMsgTransferFile2))
 
-					lsttfmsg = nil
+						return ErrInvalidStreamMsgTransferFile2
+					}
+
+					n.onNormalMsg(ctx, &NormalTaskInfo{
+						Msg:      curmsg.Msg,
+						OnResult: stream.OnResult,
+					}, jmsgrs)
 				}
-			} else {
-				n.onNormalMsg(ctx, &NormalTaskInfo{
-					Msg:      curmsg.Msg,
-					OnResult: stream.OnResult,
-				}, jmsgrs)
+			}
+
+			// 注意：如果后面有stream的请求，这里end就是不对的
+			if firstmsg.ReplyMsgID == 0 {
+				n.replyStream2(firstmsg.SrcAddr, firstmsg.MsgID, jmsgrs, pb.REPLYTYPE_END, "")
 			}
 		}
 	}
-
-	// 注意：如果后面有stream的请求，这里end就是不对的
-	n.replyStream2(firstmsg.SrcAddr, firstmsg.MsgID, jmsgrs, pb.REPLYTYPE_END, "")
 
 	return nil
 }
@@ -385,7 +409,7 @@ func (n *jarvisNode) onMsgConnectNode(ctx context.Context, msg *pb.JarvisMsg, jm
 		return err
 	}
 
-	err = n.sendMsg2ClientStream(jmsgrs, sendmsg)
+	err = n.sendMsg2ClientStream(jmsgrs, msg.MsgID, sendmsg)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.onMsgConnectNode:sendMsg2ClientStream", zap.Error(err))
 
@@ -1008,7 +1032,7 @@ func (n *jarvisNode) onMsgRequestNodes(ctx context.Context, msg *pb.JarvisMsg, j
 			return err
 		}
 
-		err = n.sendMsg2ClientStream(jmsgrs, sendmsg)
+		err = n.sendMsg2ClientStream(jmsgrs, msg.MsgID, sendmsg)
 		if err != nil {
 			jarvisbase.Warn("jarvisNode.onMsgRequestNodes:sendMsg2ClientStream", zap.Error(err))
 
@@ -1046,7 +1070,7 @@ func (n *jarvisNode) replyStream2(addr string, replyMsgID int64, jmsgrs *JarvisM
 		return err
 	}
 
-	err = n.sendMsg2ClientStream(jmsgrs, sendmsg)
+	err = n.sendMsg2ClientStream(jmsgrs, replyMsgID, sendmsg)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.replyStream2:SendMsg", zap.Error(err))
 
@@ -1067,7 +1091,7 @@ func (n *jarvisNode) replyTransferFile(msg *pb.JarvisMsg, jmsgrs *JarvisMsgReply
 		return err
 	}
 
-	n.sendMsg2ClientStream(jmsgrs, sendmsg)
+	n.sendMsg2ClientStream(jmsgrs, msg.MsgID, sendmsg)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.replyTransferFile:sendMsg2ClientStream", zap.Error(err))
 
@@ -1231,7 +1255,7 @@ func (n *jarvisNode) replyFile(ctx context.Context, msg *pb.JarvisMsg, rf *pb.Re
 			return err
 		}
 
-		err = n.sendMsg2ClientStream(jmsgrs, sendmsg)
+		err = n.sendMsg2ClientStream(jmsgrs, msg.MsgID, sendmsg)
 		if err != nil {
 			jarvisbase.Warn("jarvisNode.replyFile:sendMsg2ClientStream", zap.Error(err))
 
@@ -1320,7 +1344,7 @@ func (n *jarvisNode) replyPartFile(ctx context.Context, msg *pb.JarvisMsg, rf *p
 		return err
 	}
 
-	err = n.sendMsg2ClientStream(jmsgrs, sendmsg)
+	err = n.sendMsg2ClientStream(jmsgrs, msg.MsgID, sendmsg)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.replyPartFile:sendMsg2ClientStream", zap.Error(err))
 
@@ -1365,7 +1389,7 @@ func (n *jarvisNode) onMsgRequestFile(ctx context.Context, msg *pb.JarvisMsg,
 // onMsgReplyRequestFile
 func (n *jarvisNode) onMsgReplyRequestFile(ctx context.Context, msg *pb.JarvisMsg) error {
 
-	jarvisbase.Info("jarvisNode.onMsgReplyRequestFile")
+	// jarvisbase.Info("jarvisNode.onMsgReplyRequestFile")
 
 	fd := msg.GetFile()
 	if fd == nil {
@@ -1481,23 +1505,24 @@ func (n *jarvisNode) checkMsgID(ctx context.Context, msg *pb.JarvisMsg) error {
 		return ErrUnknowNode
 	}
 
-	if msg.StreamMsgID > 0 {
-		if msg.StreamMsgID <= cn.LastRecvMsgID {
-			jarvisbase.Warn("jarvisNode.checkMsgID",
-				zap.String("destaddr", msg.DestAddr),
-				zap.String("srcaddr", msg.SrcAddr),
-				zap.Int64("msgid", msg.MsgID),
-				zap.Int64("streammsgid", msg.StreamMsgID),
-				zap.Int64("lasrrevmsgid", cn.LastRecvMsgID),
-				JSONMsg2Zap("msg", msg))
+	// if msg.StreamMsgID > 0 {
+	// 	if msg.StreamMsgID <= cn.LastRecvMsgID {
+	// 		jarvisbase.Warn("jarvisNode.checkMsgID",
+	// 			zap.String("destaddr", msg.DestAddr),
+	// 			zap.String("srcaddr", msg.SrcAddr),
+	// 			zap.Int64("msgid", msg.MsgID),
+	// 			zap.Int64("streammsgid", msg.StreamMsgID),
+	// 			zap.Int64("lasrrevmsgid", cn.LastRecvMsgID),
+	// 			JSONMsg2Zap("msg", msg))
 
-			return ErrInvalidMsgID
-		}
+	// 		return ErrInvalidMsgID
+	// 	}
 
-		// // 注意，后面很多代码还是简单的使用MsgID，所以在检查完以后，设置一下，让后面逻辑简单一些，而且省io传输
-		// msg.MsgID = msg.StreamMsgID
+	// 	// // 注意，后面很多代码还是简单的使用MsgID，所以在检查完以后，设置一下，让后面逻辑简单一些，而且省io传输
+	// 	// msg.MsgID = msg.StreamMsgID
 
-	} else if msg.MsgID <= cn.LastRecvMsgID {
+	// } else
+	if msg.StreamMsgIndex == 0 && msg.MsgID <= cn.LastRecvMsgID {
 		jarvisbase.Warn("jarvisNode.checkMsgID",
 			zap.String("destaddr", msg.DestAddr),
 			zap.String("srcaddr", msg.SrcAddr),
@@ -1580,12 +1605,14 @@ func (n *jarvisNode) UpdateAllNodes(ctx context.Context, nodetype string, nodety
 }
 
 // sendMsg2ClientStream
-func (n *jarvisNode) sendMsg2ClientStream(jmsgrs *JarvisMsgReplyStream, sendmsg *pb.JarvisMsg) error {
+func (n *jarvisNode) sendMsg2ClientStream(jmsgrs *JarvisMsgReplyStream, replyMsgID int64, sendmsg *pb.JarvisMsg) error {
 	if jmsgrs == nil {
 		jarvisbase.Warn("jarvisNode.sendMsg2ClientStream", zap.Error(ErrStreamNil))
 
 		return ErrStreamNil
 	}
+
+	sendmsg.ReplyMsgID = replyMsgID
 
 	return jmsgrs.ReplyMsg(n, sendmsg)
 }
@@ -1654,7 +1681,7 @@ func (n *jarvisNode) onMsgRequestMsgState(ctx context.Context, msg *pb.JarvisMsg
 		return err
 	}
 
-	n.sendMsg2ClientStream(jmsgrs, sendmsg)
+	n.sendMsg2ClientStream(jmsgrs, msg.MsgID, sendmsg)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.onMsgRequestMsgState:sendMsg2ClientStream", zap.Error(err))
 

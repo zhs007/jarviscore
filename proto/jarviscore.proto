@@ -262,7 +262,8 @@ message JarvisMsg {
     string err = 11;
     int64 lastMsgID = 12;
     int64 replyMsgID = 13;
-    int64 streamMsgID = 14;
+    int64 streamMsgID = 14 [deprecated = true];
+    int32 streamMsgIndex = 15;
 
     oneof data {
         NodeBaseInfo nodeInfo = 100;

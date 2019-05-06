@@ -295,7 +295,7 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 		return err
 	}
 
-	err = c._signJarvisMsg(smsg, newsendmsgid, false)
+	err = c._signJarvisMsg(smsg, newsendmsgid, 0)
 	if err != nil {
 		jarvisbase.Warn("jarvisClient2._sendMsg:_signJarvisMsg", zap.Error(err))
 
@@ -532,7 +532,7 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 		return err
 	}
 
-	err = c._signJarvisMsg(msg, 0, false)
+	err = c._signJarvisMsg(msg, 0, 0)
 	if err != nil {
 		jarvisbase.Warn("jarvisClient2._connectNode:_signJarvisMsg", zap.Error(err))
 
@@ -662,12 +662,14 @@ func (c *jarvisClient2) _getNewSendMsgID(destaddr string) int64 {
 	return c.node.GetCoreDB().GetNewSendMsgID(destaddr)
 }
 
-func (c *jarvisClient2) _signJarvisMsg(msg *pb.JarvisMsg, newsendmsgid int64, isstream bool) error {
-	if isstream {
-		msg.StreamMsgID = newsendmsgid
-	} else {
-		msg.MsgID = newsendmsgid
-	}
+func (c *jarvisClient2) _signJarvisMsg(msg *pb.JarvisMsg, newsendmsgid int64, streamMsgIndex int) error {
+	// if isstream {
+	// 	msg.StreamMsgID = newsendmsgid
+	// } else {
+	msg.MsgID = newsendmsgid
+	// }
+
+	msg.StreamMsgIndex = int32(streamMsgIndex)
 
 	msg.CurTime = time.Now().Unix()
 	msg.LastMsgID = c.node.GetCoreDB().GetCurRecvMsgID(msg.DestAddr)
@@ -787,7 +789,7 @@ func (c *jarvisClient2) _sendMsgStream(ctx context.Context, destAddr string, sms
 	go c._procRecvMsgStream(ctx, stream, funcOnResult, chanEnd, destaddr, newsendmsgid)
 
 	for i := 0; i < len(smsgs); i++ {
-		err := c._signJarvisMsg(smsgs[i], newsendmsgid, true)
+		err := c._signJarvisMsg(smsgs[i], newsendmsgid, i)
 		if err != nil {
 			jarvisbase.Warn("jarvisClient2._sendMsgStream:_signJarvisMsg", zap.Error(err))
 

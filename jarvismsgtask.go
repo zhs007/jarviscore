@@ -15,8 +15,8 @@ const (
 	JarvisResultTypeReply = 2
 	// JarvisResultTypeLocalError - error
 	JarvisResultTypeLocalError = 3
-	// JarvisResultTypeReplyStreamEnd - reply stream end
-	JarvisResultTypeReplyStreamEnd = 4
+	// // JarvisResultTypeReplyStreamEnd - reply stream end
+	// JarvisResultTypeReplyStreamEnd = 4
 )
 
 // NormalTaskInfo - normal task info
@@ -55,6 +55,7 @@ type JarvisTask struct {
 type JarvisMsgReplyStream struct {
 	msgs    []*pb.JarvisMsg
 	procMsg pb.JarvisCoreServ_ProcMsgServer
+	isSent  bool
 	// procMsgStream pb.JarvisCoreServ_ProcMsgStreamServer
 }
 
@@ -62,14 +63,15 @@ type JarvisMsgReplyStream struct {
 func NewJarvisMsgReplyStream(procMsg pb.JarvisCoreServ_ProcMsgServer) *JarvisMsgReplyStream {
 	return &JarvisMsgReplyStream{
 		procMsg: procMsg,
+		isSent:  false,
 		// procMsgStream: procMsgStream,
 	}
 }
 
-// IsValid - is valid stream
-func (stream *JarvisMsgReplyStream) IsValid() bool {
-	return true //stream.procMsg != nil || stream.procMsgStream != nil
-}
+// // IsValid - is valid stream
+// func (stream *JarvisMsgReplyStream) IsValid() bool {
+// 	return true //stream.procMsg != nil || stream.procMsgStream != nil
+// }
 
 // ReplyMsg - reply JarvisMsg
 func (stream *JarvisMsgReplyStream) ReplyMsg(jn JarvisNode, sendmsg *pb.JarvisMsg) error {
@@ -102,6 +104,13 @@ func (stream *JarvisMsgReplyStream) ReplyMsg(jn JarvisNode, sendmsg *pb.JarvisMs
 		return nil
 	}
 
+	if stream.isSent {
+		jarvisbase.Warn("JarvisMsgReplyStream.ReplyMsg",
+			zap.Error(ErrJarvisMsgReplyStreamSent))
+
+		return ErrJarvisMsgReplyStreamSent
+	}
+
 	if len(stream.msgs) > 0 {
 		if stream.msgs[0].DestAddr != sendmsg.DestAddr {
 			jarvisbase.Warn("JarvisMsgReplyStream.ReplyMsg",
@@ -109,12 +118,21 @@ func (stream *JarvisMsgReplyStream) ReplyMsg(jn JarvisNode, sendmsg *pb.JarvisMs
 
 			return ErrInvalidJarvisMsgReplyStreamDestAddr
 		}
+
+		if stream.msgs[0].ReplyMsgID != sendmsg.ReplyMsgID {
+			jarvisbase.Warn("JarvisMsgReplyStream.ReplyMsg",
+				zap.Error(ErrInvalidJarvisMsgReplyStreamReplyMsgID))
+
+			return ErrInvalidJarvisMsgReplyStreamReplyMsgID
+		}
 	}
 
 	stream.msgs = append(stream.msgs, sendmsg)
 
 	if sendmsg.MsgType == pb.MSGTYPE_REPLY2 && sendmsg.ReplyType == pb.REPLYTYPE_END {
 		jn.SendStreamMsg(sendmsg.DestAddr, stream.msgs, nil)
+
+		stream.isSent = true
 	}
 
 	// if stream.procMsg == nil && stream.procMsgStream == nil {

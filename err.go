@@ -111,4 +111,10 @@ var (
 	ErrInvalidJarvisMsgReplyStreamDestAddr = errors.New("Invalid JarvisMsgReplyStream dest addr")
 	// ErrInvalidJarvisMsgReplyStreamSendMsg - Invalid JarvisMsgReplyStream sendmsg
 	ErrInvalidJarvisMsgReplyStreamSendMsg = errors.New("Invalid JarvisMsgReplyStream sendmsg")
+	// ErrJarvisMsgReplyStreamSent - JarvisMsgReplyStream has been sent
+	ErrJarvisMsgReplyStreamSent = errors.New("JarvisMsgReplyStream has been sent")
+	// ErrInvalidJarvisMsgReplyStreamReplyMsgID - Invalid JarvisMsgReplyStream ReplyMsgID
+	ErrInvalidJarvisMsgReplyStreamReplyMsgID = errors.New("Invalid JarvisMsgReplyStream ReplyMsgID")
+	// ErrInvalidStreamMsgTransferFile2 - Invalid StreamMsg TRANSFER_FILE2
+	ErrInvalidStreamMsgTransferFile2 = errors.New("Invalid StreamMsg TRANSFER_FILE2")
 )

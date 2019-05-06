@@ -55,11 +55,6 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 
 			return append(str[:], buf[:]...), nil
 		}
-	} else if msg.MsgType == pb.MSGTYPE_REPLY {
-		str := []byte(fmt.Sprintf("%v%v%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr,
-			msg.ReplyType, msg.Err))
-
-		return str, nil
 	} else if msg.MsgType == pb.MSGTYPE_REPLY_CTRL_RESULT {
 		cr := msg.GetCtrlResult()
 		if cr != nil {
@@ -298,7 +293,7 @@ func BuildReply2(jarvisnode JarvisNode, srcAddr string,
 
 // BuildCtrlResult - build jarvismsg with REPLY_CTRL_RESULT
 func BuildCtrlResult(jarvisnode JarvisNode, srcAddr string,
-	destAddr string, msgid int64, result string) (*pb.JarvisMsg, error) {
+	destAddr string, replyMsgID int64, result string) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
 		CurTime:  time.Now().Unix(),
@@ -307,7 +302,7 @@ func BuildCtrlResult(jarvisnode JarvisNode, srcAddr string,
 		DestAddr: destAddr,
 		MsgType:  pb.MSGTYPE_REPLY_CTRL_RESULT,
 		// LastMsgID:  jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
-		ReplyMsgID: msgid,
+		ReplyMsgID: replyMsgID,
 		Data: &pb.JarvisMsg_CtrlResult{
 			CtrlResult: &pb.CtrlResult{
 				CtrlResult: result,
