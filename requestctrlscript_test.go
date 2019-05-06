@@ -191,7 +191,8 @@ func (obj *objRCS) oncheck(ctx context.Context, funcCancel context.CancelFunc) e
 				lstResult []*JarvisMsgInfo) error {
 
 				lastjmi := lstResult[len(lstResult)-1]
-				if lastjmi.IsEnd() {
+				if IsClientProcMsgResultEnd(lstResult) {
+					// if lastjmi.IsEnd() {
 					obj.requestctrlnode1ok = true
 
 					if obj.isDone() {

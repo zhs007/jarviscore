@@ -38,6 +38,11 @@ func (jmi *JarvisMsgInfo) IsEnd() bool {
 	return jmi.Msg != nil && jmi.Msg.MsgType == pb.MSGTYPE_REPLY2 && jmi.Msg.ReplyType == pb.REPLYTYPE_END
 }
 
+// IsEndOrIGI - is end msg or IGOTIT
+func (jmi *JarvisMsgInfo) IsEndOrIGI() bool {
+	return jmi.Msg != nil && jmi.Msg.MsgType == pb.MSGTYPE_REPLY2 && (jmi.Msg.ReplyType == pb.REPLYTYPE_END || jmi.Msg.ReplyType == pb.REPLYTYPE_IGOTIT)
+}
+
 // StreamTaskInfo - stream task info
 type StreamTaskInfo struct {
 	Msgs        []JarvisMsgInfo

@@ -247,7 +247,8 @@ func (obj *objRF) oncheckrequestfile2(ctx context.Context, funcCancel context.Ca
 							}
 						}
 
-						if lstResult[curresultnums].IsEnd() {
+						if IsClientProcMsgResultEnd(lstResult) {
+							// if lstResult[curresultnums].IsEnd() {
 							// if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
 							// if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
 
@@ -411,7 +412,8 @@ func (obj *objRF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 							}
 						}
 
-						if lstResult[curresultnums].IsEnd() {
+						if IsClientProcMsgResultEnd(lstResult) {
+							// if lstResult[curresultnums].IsEnd() {
 							// if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
 							// if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
 							obj.requestfile1ok = true

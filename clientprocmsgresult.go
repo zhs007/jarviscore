@@ -12,10 +12,18 @@ type FuncOnProcMsgResult func(ctx context.Context, jarvisnode JarvisNode,
 // IsClientProcMsgResultEnd - is end
 func IsClientProcMsgResultEnd(lstResult []*JarvisMsgInfo) bool {
 	if len(lstResult) > 0 {
+		hasend := false
+
 		for _, v := range lstResult {
 			if v.Msg != nil && v.IsEnd() {
-				return true
+				hasend = true
+
+				break
 			}
+		}
+
+		if hasend && lstResult[len(lstResult)-1].IsEndOrIGI() {
+			return true
 		}
 	}
 

@@ -883,6 +883,10 @@ func (n *jarvisNode) SendFile(ctx context.Context, addr string, fd *pb.FileData,
 		return err
 	}
 
+	jarvisbase.Info("jarvisNode.SendFile",
+		zap.String("md5", sendmsg.GetFile().Md5String),
+		zap.Int64("length", fd.Length))
+
 	n.mgrClient2.addSendMsgTask(sendmsg, addr, funcOnResult)
 
 	return nil
