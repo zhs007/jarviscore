@@ -86,6 +86,16 @@ func (s *jarvisServer2) ProcMsg(in *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcM
 		return nil
 	}
 
+	if in.DestAddr == s.node.myinfo.Addr {
+		err := s.replyStream2ProcMsg(in.SrcAddr, in.MsgID,
+			stream, pb.REPLYTYPE_IGOTIT, "")
+		if err != nil {
+			jarvisbase.Warn("jarvisServer2.ProcMsg:replyStream2ProcMsg:IGOTIT", zap.Error(err))
+
+			return err
+		}
+	}
+
 	// chanEnd := make(chan int)
 
 	s.node.PostMsg(&NormalTaskInfo{
@@ -166,6 +176,16 @@ func (s *jarvisServer2) ProcMsgStream(stream pb.JarvisCoreServ_ProcMsgStreamServ
 		}
 
 		return nil
+	}
+
+	if firstmsg.DestAddr == s.node.myinfo.Addr {
+		err := s.replyStream2ProcMsg(firstmsg.SrcAddr, firstmsg.MsgID,
+			stream, pb.REPLYTYPE_IGOTIT, "")
+		if err != nil {
+			jarvisbase.Warn("jarvisServer2.ProcMsg:replyStream2ProcMsgStream:IGOTIT", zap.Error(err))
+
+			return err
+		}
 	}
 
 	// chanEnd := make(chan int)

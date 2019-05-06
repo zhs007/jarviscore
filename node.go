@@ -159,7 +159,7 @@ func (n *jarvisNode) Start(ctx context.Context) (err error) {
 	})
 
 	StartTimer(ctx, basedef.TimeMsgState, func(ctx context.Context, timer *Timer) bool {
-		// n.onTimerMsgState(ctx)
+		n.onTimerMsgState(ctx)
 
 		return true
 	})
@@ -630,7 +630,7 @@ func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 
 	defer n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_WAITPUSH, "")
 
-	n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_ISME, "")
+	// n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_ISME, "")
 
 	n.onStartWait4MyReply(msg.SrcAddr, msg.MsgID)
 
@@ -706,7 +706,7 @@ func (n *jarvisNode) onMsgUpdateNode(ctx context.Context, msg *pb.JarvisMsg, jms
 	defer n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_END, "")
 
 	if n.cfg.AutoUpdate {
-		n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_ISME, "")
+		// n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_ISME, "")
 
 		n.onStartWait4MyReply(msg.SrcAddr, msg.MsgID)
 		defer n.onEndWait4MyReply(msg.SrcAddr, msg.MsgID)
@@ -1116,7 +1116,7 @@ func (n *jarvisNode) onMsgTransferFile(ctx context.Context, msg *pb.JarvisMsg,
 	n.onStartWait4MyReply(msg.SrcAddr, msg.MsgID)
 	defer n.onEndWait4MyReply(msg.SrcAddr, msg.MsgID)
 
-	n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_IGOTIT, "")
+	// n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_IGOTIT, "")
 
 	fd := msg.GetFile()
 
@@ -1161,7 +1161,7 @@ func (n *jarvisNode) onMsgTransferFile2(ctx context.Context, msgs []*pb.JarvisMs
 	n.onStartWait4MyReply(msgs[0].SrcAddr, msgs[0].MsgID)
 	defer n.onEndWait4MyReply(msgs[0].SrcAddr, msgs[0].MsgID)
 
-	n.replyStream2(msgs[0].SrcAddr, msgs[0].MsgID, jmsgrs, pb.REPLYTYPE_IGOTIT, "")
+	// n.replyStream2(msgs[0].SrcAddr, msgs[0].MsgID, jmsgrs, pb.REPLYTYPE_IGOTIT, "")
 
 	var lst []*pb.FileData
 	for i := 0; i < len(msgs); i++ {
@@ -1369,7 +1369,7 @@ func (n *jarvisNode) onMsgRequestFile(ctx context.Context, msg *pb.JarvisMsg,
 	n.onStartWait4MyReply(msg.SrcAddr, msg.MsgID)
 	defer n.onEndWait4MyReply(msg.SrcAddr, msg.MsgID)
 
-	n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_IGOTIT, "")
+	// n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_IGOTIT, "")
 
 	n.mgrEvent.onMsgEvent(ctx, EventOnRequestFile, msg)
 
