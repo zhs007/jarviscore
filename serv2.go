@@ -57,15 +57,28 @@ func (s *jarvisServer2) Stop() {
 
 // ProcMsg implements jarviscorepb.JarvisCoreServ
 func (s *jarvisServer2) ProcMsg(in *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcMsgServer) error {
+	if IsSyncMsg(in) {
+		chanEnd := make(chan int)
+
+		s.node.PostMsg(&NormalTaskInfo{
+			Msg:         in,
+			ReplyStream: NewJarvisMsgReplyStream(stream),
+		}, chanEnd)
+
+		<-chanEnd
+
+		return nil
+	}
+
 	// if isme
 	if in.SrcAddr == s.node.myinfo.Addr {
 		jarvisbase.Warn("jarvisServer2.ProcMsg:isme",
 			JSONMsg2Zap("msg", in))
 
-		err := s.node.replyStream2(in.SrcAddr, in.MsgID,
-			NewJarvisMsgReplyStream(stream, nil), pb.REPLYTYPE_ISME, "")
+		err := s.replyStream2ProcMsg(in.SrcAddr, in.MsgID,
+			stream, pb.REPLYTYPE_ISME, "")
 		if err != nil {
-			jarvisbase.Warn("jarvisServer2.ProcMsg:isme:err", zap.Error(err))
+			jarvisbase.Warn("jarvisServer2.ProcMsg:replyStream2ProcMsg", zap.Error(err))
 
 			return err
 		}
@@ -73,16 +86,14 @@ func (s *jarvisServer2) ProcMsg(in *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcM
 		return nil
 	}
 
-	chanEnd := make(chan int)
+	// chanEnd := make(chan int)
 
 	s.node.PostMsg(&NormalTaskInfo{
-		Msg: in,
-		ReplyStream: &JarvisMsgReplyStream{
-			procMsg: stream,
-		},
-	}, chanEnd)
+		Msg:         in,
+		ReplyStream: NewJarvisMsgReplyStream(nil),
+	}, nil)
 
-	<-chanEnd
+	// <-chanEnd
 
 	return nil
 }
@@ -108,11 +119,11 @@ func (s *jarvisServer2) ProcMsgStream(stream pb.JarvisCoreServ_ProcMsgStreamServ
 				zap.Error(err))
 
 			if firstmsg != nil {
-				err := s.node.replyStream2(firstmsg.SrcAddr, firstmsg.MsgID,
-					NewJarvisMsgReplyStream(nil, stream), pb.REPLYTYPE_ERROR, err.Error())
+				err := s.replyStream2ProcMsgStream(firstmsg.SrcAddr, firstmsg.MsgID,
+					stream, pb.REPLYTYPE_ERROR, err.Error())
 
 				if err != nil {
-					jarvisbase.Warn("jarvisServer2.ProcMsg:replyStream2:err",
+					jarvisbase.Warn("jarvisServer2.ProcMsg:replyStream2ProcMsgStream",
 						zap.Error(err))
 				}
 			}
@@ -135,16 +146,78 @@ func (s *jarvisServer2) ProcMsgStream(stream pb.JarvisCoreServ_ProcMsgStreamServ
 		}
 	}
 
-	chanEnd := make(chan int)
+	if firstmsg == nil {
+		jarvisbase.Warn("jarvisServer2.ProcMsg:firstmsg")
+
+		return nil
+	}
+
+	// if isme
+	if firstmsg.SrcAddr == s.node.myinfo.Addr {
+		jarvisbase.Warn("jarvisServer2.ProcMsg:isme",
+			JSONMsg2Zap("msg", firstmsg))
+
+		err := s.replyStream2ProcMsgStream(firstmsg.SrcAddr, firstmsg.MsgID,
+			stream, pb.REPLYTYPE_ISME, "")
+		if err != nil {
+			jarvisbase.Warn("jarvisServer2.ProcMsgStream:replyStream2ProcMsgStream", zap.Error(err))
+
+			return err
+		}
+
+		return nil
+	}
+
+	// chanEnd := make(chan int)
 
 	s.node.PostStreamMsg(&StreamTaskInfo{
-		Msgs: lstmsgs,
-		ReplyStream: &JarvisMsgReplyStream{
-			procMsgStream: stream,
-		},
-	}, chanEnd)
+		Msgs:        lstmsgs,
+		ReplyStream: NewJarvisMsgReplyStream(nil),
+	}, nil)
 
-	<-chanEnd
+	// <-chanEnd
+
+	return nil
+}
+
+// replyStream2ProcMsgStream
+func (s *jarvisServer2) replyStream2ProcMsgStream(addr string, replyMsgID int64,
+	stream pb.JarvisCoreServ_ProcMsgStreamServer, rt pb.REPLYTYPE, strErr string) error {
+
+	sendmsg, err := BuildReply2(s.node, s.node.myinfo.Addr, addr, rt, strErr, replyMsgID)
+	if err != nil {
+		jarvisbase.Warn("jarvisServer2.replyStream2ProcMsgStream:BuildReply2", zap.Error(err))
+
+		return err
+	}
+
+	err = stream.Send(sendmsg)
+	if err != nil {
+		jarvisbase.Warn("jarvisServer2.replyStream2ProcMsgStream:SendMsg", zap.Error(err))
+
+		return err
+	}
+
+	return nil
+}
+
+// replyStream2ProcMsg
+func (s *jarvisServer2) replyStream2ProcMsg(addr string, replyMsgID int64,
+	stream pb.JarvisCoreServ_ProcMsgServer, rt pb.REPLYTYPE, strErr string) error {
+
+	sendmsg, err := BuildReply2(s.node, s.node.myinfo.Addr, addr, rt, strErr, replyMsgID)
+	if err != nil {
+		jarvisbase.Warn("jarvisServer2.replyStream2ProcMsg:BuildReply2", zap.Error(err))
+
+		return err
+	}
+
+	err = stream.Send(sendmsg)
+	if err != nil {
+		jarvisbase.Warn("jarvisServer2.replyStream2ProcMsg:SendMsg", zap.Error(err))
+
+		return err
+	}
 
 	return nil
 }

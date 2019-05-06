@@ -149,6 +149,10 @@ func (n *jarvisNode) Start(ctx context.Context) (err error) {
 	jarvisbase.Info("StartServer:connectAllNodes")
 
 	StartTimer(ctx, int(n.cfg.TimeRequestChild), func(ctx context.Context, timer *Timer) bool {
+		// jarvisbase.Info("onTimerRequestNodes",
+		// 	zap.Int64("time", time.Now().Unix()),
+		// 	zap.String("addr", n.myinfo.Addr))
+
 		n.onTimerRequestNodes(ctx)
 
 		return true
@@ -1489,6 +1493,10 @@ func (n *jarvisNode) checkMsgID(ctx context.Context, msg *pb.JarvisMsg) error {
 
 			return ErrInvalidMsgID
 		}
+
+		// // 注意，后面很多代码还是简单的使用MsgID，所以在检查完以后，设置一下，让后面逻辑简单一些，而且省io传输
+		// msg.MsgID = msg.StreamMsgID
+
 	} else if msg.MsgID <= cn.LastRecvMsgID {
 		jarvisbase.Warn("jarvisNode.checkMsgID",
 			zap.String("destaddr", msg.DestAddr),
@@ -1580,25 +1588,6 @@ func (n *jarvisNode) sendMsg2ClientStream(jmsgrs *JarvisMsgReplyStream, sendmsg 
 	}
 
 	return jmsgrs.ReplyMsg(n, sendmsg)
-
-	// // sendmsg.MsgID = n.GetCoreDB().GetNewSendMsgID(sendmsg.DestAddr)
-	// sendmsg.CurTime = time.Now().Unix()
-
-	// err := SignJarvisMsg(n.GetCoreDB().GetPrivateKey(), sendmsg)
-	// if err != nil {
-	// 	jarvisbase.Warn("jarvisNode.sendMsg2ClientStream:SignJarvisMsg", zap.Error(err))
-
-	// 	return err
-	// }
-
-	// err = stream.Send(sendmsg)
-	// if err != nil {
-	// 	jarvisbase.Warn("jarvisNode.sendMsg2ClientStream:sendmsg", zap.Error(err))
-
-	// 	return err
-	// }
-
-	// return nil
 }
 
 // BuildStatus - build jarviscorepb.JarvisNodeStatus
@@ -1708,4 +1697,14 @@ func (n *jarvisNode) requestMsgState(ctx context.Context, addr string, msgid int
 	n.mgrClient2.addSendMsgTask(sendmsg, addr, nil)
 
 	return nil
+}
+
+// SendStreamMsg - send stream message to other node
+func (n *jarvisNode) SendStreamMsg(addr string, msgs []*pb.JarvisMsg, funcOnResult FuncOnProcMsgResult) {
+	n.mgrClient2.addSendMsgStreamTask(msgs, addr, funcOnResult)
+}
+
+// SendMsg - send a message to other node
+func (n *jarvisNode) SendMsg(addr string, msg *pb.JarvisMsg, funcOnResult FuncOnProcMsgResult) {
+	n.mgrClient2.addSendMsgTask(msg, addr, funcOnResult)
 }

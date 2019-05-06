@@ -247,7 +247,8 @@ func (obj *objRF) oncheckrequestfile2(ctx context.Context, funcCancel context.Ca
 							}
 						}
 
-						if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
+						if lstResult[curresultnums].IsEnd() {
+							// if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
 							// if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
 
 							var lst []*jarviscorepb.FileData
@@ -410,7 +411,8 @@ func (obj *objRF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 							}
 						}
 
-						if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
+						if lstResult[curresultnums].IsEnd() {
+							// if lstResult[curresultnums].JarvisResultType == JarvisResultTypeReplyStreamEnd {
 							// if lstResult[curresultnums].Err == nil && lstResult[curresultnums].Msg == nil {
 							obj.requestfile1ok = true
 
@@ -510,7 +512,7 @@ func TestRequestFile(t *testing.T) {
 
 	obj := newObjRF()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	var errobj error

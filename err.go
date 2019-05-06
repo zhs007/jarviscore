@@ -107,4 +107,8 @@ var (
 	ErrInvalidWait4MyReplyMsgID = errors.New("Invalid wait for my reply msgid")
 	// ErrInvalidWait4MyReplyAddr - Invalid wait for my reply addr
 	ErrInvalidWait4MyReplyAddr = errors.New("Invalid wait for my reply addr")
+	// ErrInvalidJarvisMsgReplyStreamDestAddr - Invalid JarvisMsgReplyStream dest addr
+	ErrInvalidJarvisMsgReplyStreamDestAddr = errors.New("Invalid JarvisMsgReplyStream dest addr")
+	// ErrInvalidJarvisMsgReplyStreamSendMsg - Invalid JarvisMsgReplyStream sendmsg
+	ErrInvalidJarvisMsgReplyStreamSendMsg = errors.New("Invalid JarvisMsgReplyStream sendmsg")
 )

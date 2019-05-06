@@ -42,10 +42,11 @@ func StartTimer(ctx context.Context, timer int, ontimer FuncOnTimer) (*Timer, er
 
 // Start - start
 func (t *Timer) Start(ctx context.Context) {
-	timer := time.NewTimer(time.Second * time.Duration(t.timer))
+	ct := time.Second * time.Duration(t.timer)
+	timer := time.NewTimer(ct)
 
 	for {
-		timer.Reset(time.Second)
+		timer.Reset(ct)
 
 		select {
 		case <-timer.C:

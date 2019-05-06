@@ -74,6 +74,11 @@ type JarvisNode interface {
 	// PostStreamMsg - like windows postMessage
 	PostStreamMsg(stream *StreamTaskInfo, chanEnd chan int)
 
+	// SendStreamMsg - send stream message to other node
+	SendStreamMsg(addr string, msgs []*pb.JarvisMsg, funcOnResult FuncOnProcMsgResult)
+	// SendMsg - send a message to other node
+	SendMsg(addr string, msg *pb.JarvisMsg, funcOnResult FuncOnProcMsgResult)
+
 	// ConnectNode - connect node
 	ConnectNode(node *coredbpb.NodeInfo, funcOnResult FuncOnProcMsgResult) error
 	// ConnectNodeWithServAddr - connect node

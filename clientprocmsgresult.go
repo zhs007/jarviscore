@@ -2,6 +2,8 @@ package jarviscore
 
 import (
 	"context"
+
+	pb "github.com/zhs007/jarviscore/proto"
 )
 
 // FuncOnProcMsgResult - on procmsg recv the message
@@ -10,7 +12,16 @@ type FuncOnProcMsgResult func(ctx context.Context, jarvisnode JarvisNode,
 
 // IsClientProcMsgResultEnd - is end
 func IsClientProcMsgResultEnd(lstResult []*JarvisMsgInfo) bool {
-	return len(lstResult) > 0 && lstResult[len(lstResult)-1].JarvisResultType == JarvisResultTypeReplyStreamEnd
+	if len(lstResult) > 0 {
+		for _, v := range lstResult {
+			if v.Msg != nil && v.Msg.MsgType == pb.MSGTYPE_REPLY2 && v.Msg.ReplyType == pb.REPLYTYPE_END {
+				return true
+			}
+		}
+	}
+
+	return false
+	// return len(lstResult) > 0 && lstResult[len(lstResult)-1].JarvisResultType == JarvisResultTypeReplyStreamEnd
 }
 
 // ProcMsgResultData -

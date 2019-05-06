@@ -630,3 +630,8 @@ func BuildReplyMsgState(jarvisnode JarvisNode, destAddr string, replyMsgID int64
 
 	return msg, nil
 }
+
+// IsSyncMsg - Is it a sync message?
+func IsSyncMsg(msg *pb.JarvisMsg) bool {
+	return msg.MsgType == pb.MSGTYPE_CONNECT_NODE || msg.MsgType == pb.MSGTYPE_REQUEST_MSG_STATE
+}

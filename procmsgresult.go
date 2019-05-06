@@ -64,6 +64,10 @@ func (mgr *procMsgResultMgr) startProcMsgResultData(addr string, msgid int64, on
 
 	pmrd := NewProcMsgResultData(addr, msgid, onProcMsgResult)
 
+	// jarvisbase.Info("procMsgResultMgr.startProcMsgResultData:Store",
+	// 	zap.String("key", AppendString(addr, ":", strconv.FormatInt(msgid, 10))),
+	// 	zap.Int("nums", mgr.countNums()))
+
 	mgr.mapWaitPush.Store(AppendString(addr, ":", strconv.FormatInt(msgid, 10)), pmrd)
 
 	return nil
@@ -116,7 +120,8 @@ func (mgr *procMsgResultMgr) onPorcMsgResult(ctx context.Context, addr string, r
 	if d != nil {
 		err := d.OnPorcMsgResult(ctx, jarvisnode, result)
 
-		if result.JarvisResultType == JarvisResultTypeReplyStreamEnd {
+		if result.IsEnd() {
+			// if result.JarvisResultType == JarvisResultTypeReplyStreamEnd {
 			// if result.Err == nil && result.Msg == nil {
 			if d.OnRecvEnd() {
 				jarvisbase.Info("procMsgResultMgr.onPorcMsgResult:Delete",
