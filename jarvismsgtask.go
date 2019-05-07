@@ -15,8 +15,8 @@ const (
 	JarvisResultTypeReply = 2
 	// JarvisResultTypeLocalError - error
 	JarvisResultTypeLocalError = 3
-	// // JarvisResultTypeReplyStreamEnd - reply stream end
-	// JarvisResultTypeReplyStreamEnd = 4
+	// JarvisResultTypeRemoved - removed
+	JarvisResultTypeRemoved = 5
 )
 
 // NormalMsgTaskInfo - normal message task info

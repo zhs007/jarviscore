@@ -1778,7 +1778,7 @@ func (n *jarvisNode) onMsgReplyMsgState(ctx context.Context, msg *pb.JarvisMsg) 
 
 	rms := msg.GetReplyMsgState()
 	if rms.State < 0 {
-		n.mgrProcMsgResult.delete(msg.SrcAddr, rms.MsgID)
+		n.mgrProcMsgResult.onCancelMsgResult(ctx, msg.SrcAddr, rms.MsgID, n)
 	}
 
 	return nil
