@@ -598,6 +598,7 @@ func (n *jarvisNode) runRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 	jmsgrs *JarvisMsgReplyStream, funcOnResult FuncOnProcMsgResult) {
 
 	defer n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_END, "")
+	defer n.onEndWait4MyReply(msg.SrcAddr, msg.MsgID)
 
 	ci := msg.GetCtrlInfo()
 	msgs := n.mgrCtrl.Run(ctx, n, msg.SrcAddr, msg.MsgID, ci)
@@ -614,7 +615,7 @@ func (n *jarvisNode) runRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 
 		// n.mgrClient2.addSendMsgStreamTask(msgs, msg.SrcAddr, funcOnResult)
 
-		n.onEndWait4MyReply(msg.SrcAddr, msg.MsgID)
+		// n.onEndWait4MyReply(msg.SrcAddr, msg.MsgID)
 
 		return
 	}
@@ -624,7 +625,7 @@ func (n *jarvisNode) runRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 
 	// n.mgrClient2.addSendMsgStreamTask(msgs, msg.SrcAddr, funcOnResult)
 
-	n.onEndWait4MyReply(msg.SrcAddr, msg.MsgID)
+	// n.onEndWait4MyReply(msg.SrcAddr, msg.MsgID)
 }
 
 // onMsgRequestCtrl

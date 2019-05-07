@@ -67,7 +67,7 @@ func (mgr *wait4MyReplyMgr) getMsgState(addr string, msgid int64) int {
 			return myri.funcGetMsgState(addr, msgid)
 		}
 
-		return -1
+		return 1
 	}
 
 	mgr.mapWait4MyReply.Delete(k)
