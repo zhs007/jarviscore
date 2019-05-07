@@ -60,7 +60,7 @@ func (s *jarvisServer2) ProcMsg(in *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcM
 	if IsSyncMsg(in) {
 		chanEnd := make(chan int)
 
-		s.node.PostMsg(&NormalTaskInfo{
+		s.node.PostMsg(&NormalMsgTaskInfo{
 			Msg:         in,
 			ReplyStream: NewJarvisMsgReplyStream(stream),
 		}, chanEnd)
@@ -98,7 +98,7 @@ func (s *jarvisServer2) ProcMsg(in *pb.JarvisMsg, stream pb.JarvisCoreServ_ProcM
 
 	// chanEnd := make(chan int)
 
-	s.node.PostMsg(&NormalTaskInfo{
+	s.node.PostMsg(&NormalMsgTaskInfo{
 		Msg:         in,
 		ReplyStream: NewJarvisMsgReplyStream(nil),
 	}, nil)
@@ -190,7 +190,7 @@ func (s *jarvisServer2) ProcMsgStream(stream pb.JarvisCoreServ_ProcMsgStreamServ
 
 	// chanEnd := make(chan int)
 
-	s.node.PostStreamMsg(&StreamTaskInfo{
+	s.node.PostStreamMsg(&StreamMsgTaskInfo{
 		Msgs:        lstmsgs,
 		ReplyStream: NewJarvisMsgReplyStream(nil),
 	}, nil)

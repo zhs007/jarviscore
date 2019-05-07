@@ -19,8 +19,8 @@ const (
 	// JarvisResultTypeReplyStreamEnd = 4
 )
 
-// NormalTaskInfo - normal task info
-type NormalTaskInfo struct {
+// NormalMsgTaskInfo - normal message task info
+type NormalMsgTaskInfo struct {
 	Msg         *pb.JarvisMsg
 	ReplyStream *JarvisMsgReplyStream
 	OnResult    FuncOnProcMsgResult
@@ -43,17 +43,17 @@ func (jmi *JarvisMsgInfo) IsEndOrIGI() bool {
 	return jmi.Msg != nil && jmi.Msg.MsgType == pb.MSGTYPE_REPLY2 && (jmi.Msg.ReplyType == pb.REPLYTYPE_END || jmi.Msg.ReplyType == pb.REPLYTYPE_IGOTIT)
 }
 
-// StreamTaskInfo - stream task info
-type StreamTaskInfo struct {
+// StreamMsgTaskInfo - stream message task info
+type StreamMsgTaskInfo struct {
 	Msgs        []JarvisMsgInfo
 	ReplyStream *JarvisMsgReplyStream
 	OnResult    FuncOnProcMsgResult
 }
 
-// JarvisTask - jarvis task
-type JarvisTask struct {
-	Normal *NormalTaskInfo
-	Stream *StreamTaskInfo
+// JarvisMsgTask - jarvis message task
+type JarvisMsgTask struct {
+	Normal *NormalMsgTaskInfo
+	Stream *StreamMsgTaskInfo
 }
 
 // JarvisMsgReplyStream - reply JarvisMsg stream

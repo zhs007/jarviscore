@@ -183,7 +183,7 @@ func (n *jarvisNode) GetCoreDB() *coredb.CoreDB {
 }
 
 // onNormalMsg - proc JarvisMsg
-func (n *jarvisNode) onNormalMsg(ctx context.Context, normal *NormalTaskInfo, jmsgrs *JarvisMsgReplyStream) error {
+func (n *jarvisNode) onNormalMsg(ctx context.Context, normal *NormalMsgTaskInfo, jmsgrs *JarvisMsgReplyStream) error {
 	jarvisbase.Debug("jarvisNode.onNormalMsg",
 		JSONMsg2Zap("msg", normal.Msg))
 
@@ -297,7 +297,7 @@ func (n *jarvisNode) onNormalMsg(ctx context.Context, normal *NormalTaskInfo, jm
 }
 
 // onStreamMsg - proc JarvisMsg
-func (n *jarvisNode) onStreamMsg(ctx context.Context, stream *StreamTaskInfo, jmsgrs *JarvisMsgReplyStream) error {
+func (n *jarvisNode) onStreamMsg(ctx context.Context, stream *StreamMsgTaskInfo, jmsgrs *JarvisMsgReplyStream) error {
 
 	if len(stream.Msgs) > 0 {
 		if stream.Msgs[0].Msg.MsgType == pb.MSGTYPE_TRANSFER_FILE2 {
@@ -338,7 +338,7 @@ func (n *jarvisNode) onStreamMsg(ctx context.Context, stream *StreamTaskInfo, jm
 						return ErrInvalidStreamMsgTransferFile2
 					}
 
-					n.onNormalMsg(ctx, &NormalTaskInfo{
+					n.onNormalMsg(ctx, &NormalMsgTaskInfo{
 						Msg:      curmsg.Msg,
 						OnResult: stream.OnResult,
 					}, jmsgrs)
@@ -356,7 +356,7 @@ func (n *jarvisNode) onStreamMsg(ctx context.Context, stream *StreamTaskInfo, jm
 }
 
 // OnMsg - proc JarvisMsg
-func (n *jarvisNode) OnMsg(ctx context.Context, task *JarvisTask) error {
+func (n *jarvisNode) OnMsg(ctx context.Context, task *JarvisMsgTask) error {
 
 	if task.Normal != nil {
 		err := n.onNormalMsg(ctx, task.Normal, task.Normal.ReplyStream)
@@ -1523,13 +1523,13 @@ func (n *jarvisNode) RegCtrl(ctrltype string, ctrl Ctrl) error {
 }
 
 // PostMsg - like windows postMessage
-func (n *jarvisNode) PostMsg(normal *NormalTaskInfo, chanEnd chan int) {
+func (n *jarvisNode) PostMsg(normal *NormalMsgTaskInfo, chanEnd chan int) {
 
 	n.mgrJasvisMsg.sendMsg(normal, chanEnd)
 }
 
 // PostStreamMsg - like windows postMessage
-func (n *jarvisNode) PostStreamMsg(stream *StreamTaskInfo, chanEnd chan int) {
+func (n *jarvisNode) PostStreamMsg(stream *StreamMsgTaskInfo, chanEnd chan int) {
 
 	n.mgrJasvisMsg.sendStreamMsg(stream, chanEnd)
 }
