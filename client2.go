@@ -344,7 +344,7 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 			jarvisbase.Debug("jarvisClient2._sendMsg:stream",
 				JSONMsg2Zap("msg", getmsg))
 
-			c.node.PostMsg(&NormalTaskInfo{
+			c.node.PostMsg(&NormalMsgTaskInfo{
 				Msg: getmsg,
 			}, nil)
 
@@ -640,7 +640,7 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 			c.mapClient.Store(ni.Addr, ci)
 		}
 
-		c.node.PostMsg(&NormalTaskInfo{
+		c.node.PostMsg(&NormalMsgTaskInfo{
 			Msg: msg,
 		}, nil)
 
@@ -705,7 +705,7 @@ func (c *jarvisClient2) _procRecvMsgStream(ctx context.Context,
 			jarvisbase.Debug("jarvisClient2._procRecvMsgStream:stream",
 				JSONMsg2Zap("msg", getmsg))
 
-			c.node.PostMsg(&NormalTaskInfo{
+			c.node.PostMsg(&NormalMsgTaskInfo{
 				Msg: getmsg,
 			}, nil)
 

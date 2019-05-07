@@ -22,7 +22,7 @@ var panicFile *os.File
 
 func getLogFileName(head string) string {
 	tm := time.Unix(curtime, 0)
-	str := tm.Format("2006-01-02 15:04:05")
+	str := tm.Format("2006-01-02_15:04:05")
 	return fmt.Sprintf("%v.%v.%v.log", head, basedef.VERSION, str)
 }
 

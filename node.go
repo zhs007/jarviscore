@@ -183,7 +183,7 @@ func (n *jarvisNode) GetCoreDB() *coredb.CoreDB {
 }
 
 // onNormalMsg - proc JarvisMsg
-func (n *jarvisNode) onNormalMsg(ctx context.Context, normal *NormalTaskInfo, jmsgrs *JarvisMsgReplyStream) error {
+func (n *jarvisNode) onNormalMsg(ctx context.Context, normal *NormalMsgTaskInfo, jmsgrs *JarvisMsgReplyStream) error {
 	jarvisbase.Debug("jarvisNode.onNormalMsg",
 		JSONMsg2Zap("msg", normal.Msg))
 
@@ -297,7 +297,7 @@ func (n *jarvisNode) onNormalMsg(ctx context.Context, normal *NormalTaskInfo, jm
 }
 
 // onStreamMsg - proc JarvisMsg
-func (n *jarvisNode) onStreamMsg(ctx context.Context, stream *StreamTaskInfo, jmsgrs *JarvisMsgReplyStream) error {
+func (n *jarvisNode) onStreamMsg(ctx context.Context, stream *StreamMsgTaskInfo, jmsgrs *JarvisMsgReplyStream) error {
 
 	if len(stream.Msgs) > 0 {
 		if stream.Msgs[0].Msg.MsgType == pb.MSGTYPE_TRANSFER_FILE2 {
@@ -338,7 +338,7 @@ func (n *jarvisNode) onStreamMsg(ctx context.Context, stream *StreamTaskInfo, jm
 						return ErrInvalidStreamMsgTransferFile2
 					}
 
-					n.onNormalMsg(ctx, &NormalTaskInfo{
+					n.onNormalMsg(ctx, &NormalMsgTaskInfo{
 						Msg:      curmsg.Msg,
 						OnResult: stream.OnResult,
 					}, jmsgrs)
@@ -356,7 +356,7 @@ func (n *jarvisNode) onStreamMsg(ctx context.Context, stream *StreamTaskInfo, jm
 }
 
 // OnMsg - proc JarvisMsg
-func (n *jarvisNode) OnMsg(ctx context.Context, task *JarvisTask) error {
+func (n *jarvisNode) OnMsg(ctx context.Context, task *JarvisMsgTask) error {
 
 	if task.Normal != nil {
 		err := n.onNormalMsg(ctx, task.Normal, task.Normal.ReplyStream)
@@ -547,36 +547,36 @@ func (n *jarvisNode) ConnectNode(node *coredbpb.NodeInfo, funcOnResult FuncOnPro
 	return nil
 }
 
-// replyCtrlResult
-func (n *jarvisNode) replyCtrlResult(ctx context.Context, msg *pb.JarvisMsg, info string) error {
+// // replyCtrlResult
+// func (n *jarvisNode) replyCtrlResult(ctx context.Context, msg *pb.JarvisMsg, info string) error {
 
-	ci := msg.GetCtrlInfo()
-	if ci == nil {
-		jarvisbase.Warn("jarvisNode.replyCtrlResult:GetCtrlInfo", zap.Error(ErrNoCtrlInfo))
+// 	ci := msg.GetCtrlInfo()
+// 	if ci == nil {
+// 		jarvisbase.Warn("jarvisNode.replyCtrlResult:GetCtrlInfo", zap.Error(ErrNoCtrlInfo))
 
-		n.reply2(msg, pb.REPLYTYPE_ERROR, ErrNoCtrlInfo.Error())
+// 		n.reply2(msg, pb.REPLYTYPE_ERROR, ErrNoCtrlInfo.Error())
 
-		return ErrNoCtrlInfo
-	}
+// 		return ErrNoCtrlInfo
+// 	}
 
-	sendmsg2, err := BuildCtrlResult(n, n.myinfo.Addr, msg.SrcAddr, msg.MsgID, info)
+// 	sendmsg2, err := BuildCtrlResult(n, n.myinfo.Addr, msg.SrcAddr, msg.MsgID, info)
 
-	if err != nil {
-		jarvisbase.Warn("jarvisNode.replyCtrlResult:BuildCtrlResult", zap.Error(err))
+// 	if err != nil {
+// 		jarvisbase.Warn("jarvisNode.replyCtrlResult:BuildCtrlResult", zap.Error(err))
 
-		n.reply2(msg, pb.REPLYTYPE_ERROR, err.Error())
+// 		n.reply2(msg, pb.REPLYTYPE_ERROR, err.Error())
 
-		return err
-	}
+// 		return err
+// 	}
 
-	jarvisbase.Info("jarvisNode.replyCtrlResult",
-		JSONMsg2Zap("msg", msg),
-		JSONMsg2Zap("sendmsg", sendmsg2))
+// 	jarvisbase.Info("jarvisNode.replyCtrlResult",
+// 		JSONMsg2Zap("msg", msg),
+// 		JSONMsg2Zap("sendmsg", sendmsg2))
 
-	n.mgrClient2.addSendMsgTask(sendmsg2, msg.SrcAddr, nil)
+// 	n.mgrClient2.addSendMsgTask(sendmsg2, msg.SrcAddr, nil)
 
-	return nil
-}
+// 	return nil
+// }
 
 // reply2
 func (n *jarvisNode) reply2(msg *pb.JarvisMsg, rt pb.REPLYTYPE, strErr string) error {
@@ -597,12 +597,22 @@ func (n *jarvisNode) reply2(msg *pb.JarvisMsg, rt pb.REPLYTYPE, strErr string) e
 func (n *jarvisNode) runRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 	jmsgrs *JarvisMsgReplyStream, funcOnResult FuncOnProcMsgResult) {
 
+	defer n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_END, "")
+
 	ci := msg.GetCtrlInfo()
 	msgs := n.mgrCtrl.Run(ctx, n, msg.SrcAddr, msg.MsgID, ci)
 	if msgs != nil {
-		msgs = PushReply22Msgs(msgs, n, msg.SrcAddr, msg.MsgID, pb.REPLYTYPE_END, "")
 
-		n.mgrClient2.addSendMsgStreamTask(msgs, msg.SrcAddr, funcOnResult)
+		for _, v := range msgs {
+			err := n.sendMsg2ClientStream(jmsgrs, msg.MsgID, v)
+			if err != nil {
+				jarvisbase.Warn("jarvisNode.runRequestCtrl:sendMsg2ClientStream",
+					zap.Error(err))
+			}
+		}
+		// msgs = PushReply22Msgs(msgs, n, msg.SrcAddr, msg.MsgID, pb.REPLYTYPE_END, "")
+
+		// n.mgrClient2.addSendMsgStreamTask(msgs, msg.SrcAddr, funcOnResult)
 
 		n.onEndWait4MyReply(msg.SrcAddr, msg.MsgID)
 
@@ -610,9 +620,9 @@ func (n *jarvisNode) runRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 	}
 
 	msgs = PushReply22Msgs(msgs, n, msg.SrcAddr, msg.MsgID, pb.REPLYTYPE_ERROR, ErrUnknownCtrlError.Error())
-	msgs = PushReply22Msgs(msgs, n, msg.SrcAddr, msg.MsgID, pb.REPLYTYPE_END, "")
+	// msgs = PushReply22Msgs(msgs, n, msg.SrcAddr, msg.MsgID, pb.REPLYTYPE_END, "")
 
-	n.mgrClient2.addSendMsgStreamTask(msgs, msg.SrcAddr, funcOnResult)
+	// n.mgrClient2.addSendMsgStreamTask(msgs, msg.SrcAddr, funcOnResult)
 
 	n.onEndWait4MyReply(msg.SrcAddr, msg.MsgID)
 }
@@ -630,7 +640,7 @@ func (n *jarvisNode) onMsgRequestCtrl(ctx context.Context, msg *pb.JarvisMsg,
 		return ErrStreamNil
 	}
 
-	defer n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_WAITPUSH, "")
+	// defer n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_WAITPUSH, "")
 
 	// n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_ISME, "")
 
@@ -1523,13 +1533,13 @@ func (n *jarvisNode) RegCtrl(ctrltype string, ctrl Ctrl) error {
 }
 
 // PostMsg - like windows postMessage
-func (n *jarvisNode) PostMsg(normal *NormalTaskInfo, chanEnd chan int) {
+func (n *jarvisNode) PostMsg(normal *NormalMsgTaskInfo, chanEnd chan int) {
 
 	n.mgrJasvisMsg.sendMsg(normal, chanEnd)
 }
 
 // PostStreamMsg - like windows postMessage
-func (n *jarvisNode) PostStreamMsg(stream *StreamTaskInfo, chanEnd chan int) {
+func (n *jarvisNode) PostStreamMsg(stream *StreamMsgTaskInfo, chanEnd chan int) {
 
 	n.mgrJasvisMsg.sendStreamMsg(stream, chanEnd)
 }

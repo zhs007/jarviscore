@@ -30,7 +30,7 @@ func newProcMsgResultMgr(node JarvisNode) *procMsgResultMgr {
 }
 
 // onProcMsg
-func (mgr *procMsgResultMgr) onProcMsg(ctx context.Context, taskinfo *JarvisTask) error {
+func (mgr *procMsgResultMgr) onProcMsg(ctx context.Context, taskinfo *JarvisMsgTask) error {
 	if taskinfo.Normal != nil {
 		if taskinfo.Normal.Msg.MsgType == jarviscorepb.MSGTYPE_REPLY2 &&
 			taskinfo.Normal.Msg.ReplyType == jarviscorepb.REPLYTYPE_END &&

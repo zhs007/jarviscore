@@ -49,7 +49,7 @@ type JarvisNode interface {
 	AddNodeBaseInfo(nbi *pb.NodeBaseInfo) error
 
 	// OnMsg - proc JarvisMsg
-	OnMsg(ctx context.Context, task *JarvisTask) error
+	OnMsg(ctx context.Context, task *JarvisMsgTask) error
 
 	// GetMyInfo - get my nodeinfo
 	GetMyInfo() *BaseInfo
@@ -74,9 +74,9 @@ type JarvisNode interface {
 	RegCtrl(ctrltype string, ctrl Ctrl) error
 
 	// PostMsg - like windows postMessage
-	PostMsg(normal *NormalTaskInfo, chanEnd chan int)
+	PostMsg(normal *NormalMsgTaskInfo, chanEnd chan int)
 	// PostStreamMsg - like windows postMessage
-	PostStreamMsg(stream *StreamTaskInfo, chanEnd chan int)
+	PostStreamMsg(stream *StreamMsgTaskInfo, chanEnd chan int)
 
 	// SendStreamMsg - send stream message to other node
 	SendStreamMsg(addr string, msgs []*pb.JarvisMsg, funcOnResult FuncOnProcMsgResult)

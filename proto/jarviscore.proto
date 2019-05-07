@@ -85,7 +85,7 @@ enum REPLYTYPE {
     // end
     END = 7;
     // wait for me to push the message
-    WAITPUSH = 8;
+    WAITPUSH = 8 [deprecated = true];
 }
 
 message NodeBaseInfo {
