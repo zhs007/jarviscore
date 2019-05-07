@@ -20,9 +20,15 @@ var logPath string
 var curtime int64
 var panicFile *os.File
 
+func getLogFileName(head string) string {
+	tm := time.Unix(curtime, 0)
+	str := tm.Format("2006-01-02 15:04:05")
+	return fmt.Sprintf("%v.%v.%v.log", head, basedef.VERSION, str)
+}
+
 func initPanicFile() error {
 	file, err := os.OpenFile(
-		path.Join(logPath, fmt.Sprintf("panic.%v.%v.log", basedef.VERSION, curtime)),
+		path.Join(logPath, getLogFileName("panic")),
 		os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		Warn("initPanicFile:OpenFile",
@@ -68,8 +74,8 @@ func initLogger(level zapcore.Level, isConsole bool, logpath string) (*zap.Logge
 	cfg := &zap.Config{}
 
 	cfg.Level = zap.NewAtomicLevelAt(level)
-	cfg.OutputPaths = []string{path.Join(logpath, fmt.Sprintf("output.%v.%v.log", basedef.VERSION, curtime))}
-	cfg.ErrorOutputPaths = []string{path.Join(logpath, fmt.Sprintf("error.%v.%v.log", basedef.VERSION, curtime))}
+	cfg.OutputPaths = []string{path.Join(logpath, getLogFileName("output"))}
+	cfg.ErrorOutputPaths = []string{path.Join(logpath, getLogFileName("error"))}
 	cfg.Encoding = "json"
 	cfg.EncoderConfig = zapcore.EncoderConfig{
 		TimeKey:     "T",
@@ -173,9 +179,9 @@ func ClearLogs() error {
 			return err
 		}
 
-		panicfile := fmt.Sprintf("panic.%v.%v.log", basedef.VERSION, curtime)
-		outputfile := fmt.Sprintf("output.%v.%v.log", basedef.VERSION, curtime)
-		errorfile := fmt.Sprintf("error.%v.%v.log", basedef.VERSION, curtime)
+		panicfile := getLogFileName("panic")
+		outputfile := getLogFileName("output")
+		errorfile := getLogFileName("error")
 
 		for _, v := range lst {
 			cfn := filepath.Base(v)
