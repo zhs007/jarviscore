@@ -120,6 +120,10 @@ func (mgr *procMsgResultMgr) onPorcMsgResult(ctx context.Context, addr string, r
 
 	if d != nil {
 		err := d.OnPorcMsgResult(ctx, jarvisnode, result)
+		if err != nil {
+			jarvisbase.Warn("procMsgResultMgr.onPorcMsgResult:OnPorcMsgResult",
+				zap.Error(err))
+		}
 
 		if result.IsEnd() {
 			// if result.JarvisResultType == JarvisResultTypeReplyStreamEnd {
@@ -151,12 +155,31 @@ func (mgr *procMsgResultMgr) countNums() int {
 	return nums
 }
 
-func (mgr *procMsgResultMgr) delete(addr string, replymsgid int64) {
-	jarvisbase.Info("procMsgResultMgr.delete",
-		zap.String("key", AppendString(addr, ":", strconv.FormatInt(replymsgid, 10))),
-		zap.Int("nums", mgr.countNums()))
+func (mgr *procMsgResultMgr) onCancelMsgResult(ctx context.Context, addr string, replymsgid int64,
+	jarvisnode JarvisNode) {
 
-	mgr.mapWaitPush.Delete(AppendString(addr, ":", strconv.FormatInt(replymsgid, 10)))
+	d, err := mgr.getProcMsgResultData(addr, replymsgid)
+	if err != nil {
+		jarvisbase.Warn("procMsgResultMgr.onCancelMsgResult:getProcMsgResultData",
+			zap.Error(err))
+	}
+
+	if d != nil {
+		jarvisbase.Info("procMsgResultMgr.onCancelMsgResult",
+			zap.String("key", AppendString(addr, ":", strconv.FormatInt(replymsgid, 10))),
+			zap.Int("nums", mgr.countNums()))
+
+		err := d.OnPorcMsgResult(ctx, jarvisnode, &JarvisMsgInfo{
+			JarvisResultType: JarvisResultTypeRemoved,
+		})
+
+		if err != nil {
+			jarvisbase.Warn("procMsgResultMgr.onPorcMsgResult:OnPorcMsgResult",
+				zap.Error(err))
+		}
+
+		mgr.mapWaitPush.Delete(AppendString(addr, ":", strconv.FormatInt(replymsgid, 10)))
+	}
 }
 
 func (mgr *procMsgResultMgr) forEach(onRange FuncOnRangeProcMsgResult) {
