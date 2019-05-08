@@ -2,7 +2,7 @@ package jarviscore
 
 import (
 	"context"
-	"os/exec"
+	"errors"
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/zhs007/jarviscore/base"
@@ -20,16 +20,23 @@ type CtrlScriptFile3 struct {
 }
 
 // runScript
-func (ctrl *CtrlScriptFile3) runScript(ci *pb.CtrlInfo) (*pb.CtrlScript3Data, []byte, error) {
+func (ctrl *CtrlScriptFile3) runScript(logpath string, ci *pb.CtrlInfo) (*pb.CtrlScript3Data, []byte, error) {
 	var csd3 pb.CtrlScript3Data
 	err := ptypes.UnmarshalAny(ci.Dat, &csd3)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	out, err := exec.Command("sh", "-c", string(csd3.ScriptFile.File)).CombinedOutput()
+	outstr, errstr, err := RunCommand(logpath, string(csd3.ScriptFile.File))
+	if err != nil {
+		return nil, nil, err
+	}
 
-	return &csd3, out, err
+	if errstr == "" {
+		return &csd3, []byte(outstr), nil
+	}
+
+	return &csd3, []byte(outstr), errors.New(errstr)
 }
 
 // Run -
@@ -37,8 +44,12 @@ func (ctrl *CtrlScriptFile3) Run(ctx context.Context, jarvisnode JarvisNode, src
 
 	var msgs []*pb.JarvisMsg
 
-	csd3, out, err := ctrl.runScript(ci)
+	csd3, out, err := ctrl.runScript(jarvisnode.GetConfig().Log.LogPath, ci)
 	if err != nil {
+		if out == nil {
+			return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, err.Error(), msgs)
+		}
+
 		return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, AppendString(string(out), err.Error()), msgs)
 	}
 

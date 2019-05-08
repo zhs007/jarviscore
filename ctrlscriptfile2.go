@@ -2,7 +2,7 @@ package jarviscore
 
 import (
 	"context"
-	"os/exec"
+	"errors"
 
 	"github.com/golang/protobuf/ptypes"
 	pb "github.com/zhs007/jarviscore/proto"
@@ -18,7 +18,7 @@ type CtrlScriptFile2 struct {
 }
 
 // runScript
-func (ctrl *CtrlScriptFile2) runScript(ci *pb.CtrlInfo) ([]byte, error) {
+func (ctrl *CtrlScriptFile2) runScript(logpath string, ci *pb.CtrlInfo) ([]byte, error) {
 	var csd2 pb.CtrlScript2Data
 	err := ptypes.UnmarshalAny(ci.Dat, &csd2)
 	if err != nil {
@@ -32,7 +32,16 @@ func (ctrl *CtrlScriptFile2) runScript(ci *pb.CtrlInfo) ([]byte, error) {
 		}
 	}
 
-	return exec.Command("sh", "-c", string(csd2.ScriptFile.File)).CombinedOutput()
+	outstr, errstr, err := RunCommand(logpath, string(csd2.ScriptFile.File))
+	if err != nil {
+		return nil, err
+	}
+
+	if errstr == "" {
+		return []byte(outstr), nil
+	}
+
+	return []byte(outstr), errors.New(errstr)
 }
 
 // Run -
@@ -40,8 +49,12 @@ func (ctrl *CtrlScriptFile2) Run(ctx context.Context, jarvisnode JarvisNode, src
 
 	var msgs []*pb.JarvisMsg
 
-	out, err := ctrl.runScript(ci)
+	out, err := ctrl.runScript(jarvisnode.GetConfig().Log.LogPath, ci)
 	if err != nil {
+		if out == nil {
+			return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, err.Error(), msgs)
+		}
+
 		return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, AppendString(string(out), err.Error()), msgs)
 	}
 

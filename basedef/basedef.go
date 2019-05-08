@@ -1,7 +1,7 @@
 package basedef
 
 // VERSION - jarviscore version
-const VERSION = "0.7.168"
+const VERSION = "0.7.169"
 
 // TimeFailedServAddr - if the servaddr is failed, we won't try to connect it within this time
 const TimeFailedServAddr = 60
@@ -33,3 +33,6 @@ const BigMsgLength = 4*1024*1024 - 1024
 
 // TimeMsgState - Each time interval, it will check msgstate
 const TimeMsgState = 60
+
+// BigLogFileLength -if command log file length >= BigLogFileLength, the message is big message
+const BigLogFileLength = 1 * 1024 * 1024

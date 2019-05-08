@@ -8,6 +8,8 @@ import (
 	"io"
 	"net"
 	"os"
+	"os/exec"
+	"path"
 	"strings"
 	"time"
 
@@ -468,4 +470,75 @@ func AppendString(strs ...string) string {
 	}
 
 	return buffer.String()
+}
+
+// RunCommand - run command
+func RunCommand(logpath string, cmd string) (string, string, error) {
+	md5str := GetMD5String([]byte(cmd))
+	tm := time.Now()
+	timestr := tm.Format("2006-01-02_15:04:05")
+
+	nc := exec.Command("sh", "-c", cmd)
+
+	outfn := path.Join(logpath, fmt.Sprintf("cmd.out.%v.%v.log", md5str, timestr))
+	errfn := path.Join(logpath, fmt.Sprintf("cmd.err.%v.%v.log", md5str, timestr))
+
+	var errStdout, errStderr error
+	stdoutIn, _ := nc.StdoutPipe()
+	stderrIn, _ := nc.StderrPipe()
+
+	cmdstd, err := NewCMDStdOutErr(outfn, errfn)
+	if err != nil {
+		jarvisbase.Warn("RunCommand:NewCMDStdOutErr",
+			zap.Error(err))
+
+		return "", "", err
+	}
+
+	go func() {
+		errStdout = cmdstd.countStdOut(stdoutIn)
+	}()
+
+	go func() {
+		errStderr = cmdstd.countStdErr(stderrIn)
+	}()
+
+	nc.Start()
+
+	err = nc.Wait()
+	if err != nil {
+		return "", "", err
+	}
+
+	if errStdout != nil {
+		jarvisbase.Warn("RunCommand:errStdout",
+			zap.Error(errStdout))
+
+		// return "", "", errStdout
+	}
+
+	if errStderr != nil {
+		jarvisbase.Warn("RunCommand:errStderr",
+			zap.Error(errStderr))
+
+		// return "", "", errStderr
+	}
+
+	outbuf, err := cmdstd.GetStdOut()
+	if err != nil {
+		jarvisbase.Warn("RunCommand:GetStdOut",
+			zap.Error(err))
+
+		return "", "", err
+	}
+
+	errbuf, err := cmdstd.GetStdErr()
+	if err != nil {
+		jarvisbase.Warn("RunCommand:GetStdErr",
+			zap.Error(err))
+
+		return "", "", err
+	}
+
+	return string(outbuf), string(errbuf), nil
 }

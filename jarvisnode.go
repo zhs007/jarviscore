@@ -17,6 +17,9 @@ type JarvisNode interface {
 	// GetCoreDB - get jarvis node coredb
 	GetCoreDB() *coredb.CoreDB
 
+	// GetConfig - get config
+	GetConfig() *Config
+
 	// BuildStatus - build jarviscorepb.JarvisNodeStatus
 	BuildStatus() *pb.JarvisNodeStatus
 
