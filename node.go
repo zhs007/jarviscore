@@ -108,6 +108,11 @@ func NewNode(cfg *Config) (JarvisNode, error) {
 	return node, nil
 }
 
+// GetConfig - get config
+func (n *jarvisNode) GetConfig() *Config {
+	return n.cfg
+}
+
 // Stop -
 func (n *jarvisNode) Stop() error {
 	if n.serv2 != nil {

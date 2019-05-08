@@ -117,4 +117,6 @@ var (
 	ErrInvalidJarvisMsgReplyStreamReplyMsgID = errors.New("Invalid JarvisMsgReplyStream ReplyMsgID")
 	// ErrInvalidStreamMsgTransferFile2 - Invalid StreamMsg TRANSFER_FILE2
 	ErrInvalidStreamMsgTransferFile2 = errors.New("Invalid StreamMsg TRANSFER_FILE2")
+	// ErrInvalidCMDStdOutErrErrFile - Invalid CMDStdOutErr errfile
+	ErrInvalidCMDStdOutErrErrFile = errors.New("Invalid CMDStdOutErr errfile")
 )
