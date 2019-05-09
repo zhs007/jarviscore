@@ -97,7 +97,12 @@ func (out *CMDStdOutErr) countStdErr(r io.Reader) error {
 
 // GetStdErr - get stderr
 func (out *CMDStdOutErr) GetStdErr() ([]byte, error) {
-	return ioutil.ReadFile(out.ErrFileName)
+	fi, _ := os.Stat(out.ErrFileName)
+	if fi.Size() < basedef.BigLogFileLength {
+		return ioutil.ReadFile(out.ErrFileName)
+	}
+
+	return []byte(fmt.Sprintf("The err file is too large, please check it through %v.", out.ErrFileName)), nil
 }
 
 // GetStdOut - get stdout
