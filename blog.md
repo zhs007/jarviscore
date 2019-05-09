@@ -40,6 +40,7 @@
 端口约定：
 
 - 7788: jarvissh docker环境
+- 7789: jarvissh task server
 - 7700: jarvissh 宿主环境
 - 6061: pprof
 - 7051: jarviscrawlercore
