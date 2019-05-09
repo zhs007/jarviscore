@@ -20,7 +20,7 @@ func TestCtrlScriptFile3(t *testing.T) {
 		File:     dat,
 	}
 
-	ci, err := BuildCtrlInfoForScriptFile3(sf, nil)
+	ci, err := BuildCtrlInfoForScriptFile3(sf, nil, "")
 	if err != nil {
 		t.Fatalf("TestCtrlScriptFile3 BuildCtrlInfoForScriptFile3 %v", err)
 	}

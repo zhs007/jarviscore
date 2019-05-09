@@ -40,7 +40,8 @@ func (ctrl *CtrlScriptFile3) runScript(logpath string, ci *pb.CtrlInfo) (*pb.Ctr
 }
 
 // Run -
-func (ctrl *CtrlScriptFile3) Run(ctx context.Context, jarvisnode JarvisNode, srcAddr string, msgid int64, ci *pb.CtrlInfo) []*pb.JarvisMsg {
+func (ctrl *CtrlScriptFile3) Run(ctx context.Context, jarvisnode JarvisNode,
+	srcAddr string, msgid int64, ci *pb.CtrlInfo) []*pb.JarvisMsg {
 
 	var msgs []*pb.JarvisMsg
 
@@ -79,11 +80,13 @@ func (ctrl *CtrlScriptFile3) Run(ctx context.Context, jarvisnode JarvisNode, src
 }
 
 // BuildCtrlInfoForScriptFile3 - build ctrlinfo for scriptfile
-func BuildCtrlInfoForScriptFile3(scriptfile *pb.FileData, endFiles []string) (*pb.CtrlInfo, error) {
+func BuildCtrlInfoForScriptFile3(scriptfile *pb.FileData, endFiles []string,
+	scriptName string) (*pb.CtrlInfo, error) {
 
 	csd3 := &pb.CtrlScript3Data{
 		ScriptFile: scriptfile,
 		EndFiles:   endFiles,
+		ScriptName: scriptName,
 	}
 
 	dat, err := ptypes.MarshalAny(csd3)

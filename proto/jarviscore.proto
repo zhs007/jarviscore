@@ -164,6 +164,7 @@ message CtrlScriptData {
     bytes file = 1;
     string destPath = 2;
     string filename = 3;
+    string scriptName = 4;
 }
 
 // CtrlScript2Data - used in CtrlInfo.dat
@@ -171,6 +172,7 @@ message CtrlScriptData {
 message CtrlScript2Data {
     FileData scriptFile = 1;
     repeated FileData srcFiles = 2;
+    string scriptName = 3;
 }
 
 // CtrlScript3Data - used in CtrlInfo.dat
@@ -178,6 +180,7 @@ message CtrlScript2Data {
 message CtrlScript3Data {
     FileData scriptFile = 1;
     repeated string endFiles = 2;
+    string scriptName = 3;
 }
 
 // CtrlInfo - 

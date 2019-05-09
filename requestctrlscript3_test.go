@@ -189,7 +189,7 @@ func (obj *objRCS3) oncheck(ctx context.Context, funcCancel context.CancelFunc) 
 		ci, err := BuildCtrlInfoForScriptFile3(sf, []string{
 			"./test/test5090_requestscript3root.yaml",
 			"./test/test5080_requestscript2root.yaml",
-		})
+		}, "test.script3")
 		if err != nil {
 			obj.err = err
 
