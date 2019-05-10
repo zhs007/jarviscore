@@ -13,7 +13,7 @@ func TestCtrlScriptFile(t *testing.T) {
 		t.Fatalf("TestCtrlScriptFile load script file %v", err)
 	}
 
-	ci, err := BuildCtrlInfoForScriptFile("test.sh", dat, "")
+	ci, err := BuildCtrlInfoForScriptFile("test.sh", dat, "", "")
 	if err != nil {
 		t.Fatalf("TestCtrlScriptFile BuildCtrlInfoForScriptFile %v", err)
 	}

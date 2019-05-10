@@ -179,7 +179,7 @@ func (obj *objRCS) oncheck(ctx context.Context, funcCancel context.CancelFunc) e
 			funcCancel()
 		}
 
-		ci, err := BuildCtrlInfoForScriptFile("test.sh", dat, "")
+		ci, err := BuildCtrlInfoForScriptFile("test.sh", dat, "", "test.script")
 		if err != nil {
 			obj.err = err
 

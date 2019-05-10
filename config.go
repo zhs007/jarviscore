@@ -32,7 +32,14 @@ type Config struct {
 
 	Pprof struct {
 		BaseURL string
-		// GoRoutineURL string
+	}
+
+	//------------------------------------------------------------------
+	// task server configuration
+
+	TaskServ struct {
+		BindAddr string
+		ServAddr string
 	}
 
 	//------------------------------------------------------------------

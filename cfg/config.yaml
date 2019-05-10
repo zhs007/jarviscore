@@ -16,7 +16,13 @@ maxmsglength: 4194304
 # pprof - pprof
 pprof:
   baseurl: ':6061'
-  # goroutineurl: ':6060'
+
+# taskserv - task server
+taskserv:
+  # bindaddr - my bind address
+  bindaddr: ':7789'
+  # servaddr - other node connct me
+  servaddr: '127.0.0.1:7789'
 
 # ankadb - ankadb config
 ankadb:

@@ -63,11 +63,13 @@ func (ctrl *CtrlScriptFile2) Run(ctx context.Context, jarvisnode JarvisNode, src
 
 // BuildCtrlInfoForScriptFile2 - build ctrlinfo for scriptfile
 // Deprecated: you can use BuildCtrlInfoForScriptFile3
-func BuildCtrlInfoForScriptFile2(scriptfile *pb.FileData, files []*pb.FileData) (*pb.CtrlInfo, error) {
+func BuildCtrlInfoForScriptFile2(scriptfile *pb.FileData, files []*pb.FileData,
+	scriptName string) (*pb.CtrlInfo, error) {
 
 	csd2 := &pb.CtrlScript2Data{
 		ScriptFile: scriptfile,
 		SrcFiles:   files,
+		ScriptName: scriptName,
 	}
 
 	dat, err := ptypes.MarshalAny(csd2)
