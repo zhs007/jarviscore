@@ -294,20 +294,3 @@ service JarvisCoreServ {
     rpc procMsg(JarvisMsg) returns (stream JarvisMsg) {}
     rpc procMsgStream(stream JarvisMsg) returns (stream JarvisMsg) {}
 }
-
-// JarvisTask
-message JarvisTask {
-    string name = 1;
-    map<string, string> cfgFiles = 2;
-    map<string, string> logFiles = 3;
-}
-
-// ReplyUpdTask
-message ReplyUpdTask {
-    bool isOK = 1;
-}
-
-// JarvisTaskServ -
-service JarvisTaskServ {
-    rpc updTask(JarvisTask) returns (ReplyUpdTask) {}
-}

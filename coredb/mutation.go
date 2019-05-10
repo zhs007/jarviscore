@@ -12,7 +12,7 @@ import (
 func newPrivateData(anka ankadb.AnkaDB, priKey string, pubKey string, addr string,
 	createTime int64) (*pb.PrivateData, error) {
 
-	curdb := anka.GetDBMgr().GetDB("coredb")
+	curdb := anka.GetDBMgr().GetDB(CoreDBName)
 	if curdb == nil {
 		return nil, ankadb.ErrCtxCurDB
 	}
@@ -50,7 +50,7 @@ func newPrivateData(anka ankadb.AnkaDB, priKey string, pubKey string, addr strin
 
 // updPrivateData - update private data
 func updPrivateData(anka ankadb.AnkaDB, curOnlineTime int64) (*pb.PrivateData, error) {
-	curdb := anka.GetDBMgr().GetDB("coredb")
+	curdb := anka.GetDBMgr().GetDB(CoreDBName)
 	if curdb == nil {
 		return nil, ankadb.ErrCtxCurDB
 	}
@@ -78,7 +78,7 @@ func updPrivateData(anka ankadb.AnkaDB, curOnlineTime int64) (*pb.PrivateData, e
 
 // trustNode - trust a node
 func trustNode(anka ankadb.AnkaDB, addr string) (*pb.PrivateData, error) {
-	curdb := anka.GetDBMgr().GetDB("coredb")
+	curdb := anka.GetDBMgr().GetDB(CoreDBName)
 	if curdb == nil {
 		return nil, ankadb.ErrCtxCurDB
 	}
@@ -119,7 +119,7 @@ func trustNode(anka ankadb.AnkaDB, addr string) (*pb.PrivateData, error) {
 
 // updNodeInfo - update node info
 func updNodeInfo(anka ankadb.AnkaDB, ni *pb.NodeInfo) (*pb.NodeInfo, error) {
-	curdb := anka.GetDBMgr().GetDB("coredb")
+	curdb := anka.GetDBMgr().GetDB(CoreDBName)
 	if curdb == nil {
 		return nil, ankadb.ErrCtxCurDB
 	}
