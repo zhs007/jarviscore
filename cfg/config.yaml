@@ -24,6 +24,13 @@ taskserv:
   # servaddr - other node connct me
   servaddr: '127.0.0.1:7789'
 
+# httpserv - http server
+httpserv:
+  # bindaddr - my bind address
+  bindaddr: ':7787'
+  # servaddr - other node connct me
+  servaddr: '127.0.0.1:7787'  
+
 # ankadb - ankadb config
 ankadb:
   # dbpath - dbpath

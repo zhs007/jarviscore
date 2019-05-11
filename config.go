@@ -43,6 +43,14 @@ type Config struct {
 	}
 
 	//------------------------------------------------------------------
+	// http server configuration
+
+	HTTPServ struct {
+		BindAddr string
+		ServAddr string
+	}
+
+	//------------------------------------------------------------------
 	// ankadb configuration
 
 	AnkaDB struct {
