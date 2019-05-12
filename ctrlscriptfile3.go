@@ -29,13 +29,8 @@ func (ctrl *CtrlScriptFile3) runScript(ctx context.Context, jarvisnode JarvisNod
 		return nil, nil, err
 	}
 
-	logpath := "./"
-	if jarvisnode != nil {
-		logpath = jarvisnode.GetConfig().Log.LogPath
-	}
-
 	outstr, errstr, err := RunCommand(ctx, jarvisnode, csd3.ScriptName,
-		logpath, string(csd3.ScriptFile.File))
+		string(csd3.ScriptFile.File))
 	if err != nil {
 		return nil, nil, err
 	}

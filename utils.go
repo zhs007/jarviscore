@@ -488,7 +488,7 @@ func GetAbsPath(p string) string {
 
 // RunCommand - run command
 func RunCommand(ctx context.Context, jnode JarvisNode, cmdname string,
-	logpath string, cmd string) (string, string, error) {
+	cmd string) (string, string, error) {
 
 	md5str := GetMD5String([]byte(cmd))
 	tm := time.Now()
@@ -496,16 +496,31 @@ func RunCommand(ctx context.Context, jnode JarvisNode, cmdname string,
 
 	nc := exec.Command("sh", "-c", cmd)
 
+	// logpath := "./"
+	// if jnode != nil {
+	// 	logpath = jnode.GetConfig().Log.LogPath
+	// }
+
 	// outfn := GetAbsPath(path.Join(logpath,
 	// 	fmt.Sprintf("cmd.out.%v.%v.log", md5str, timestr)))
 	// errfn := GetAbsPath(path.Join(logpath,
 	// 	fmt.Sprintf("cmd.err.%v.%v.log", md5str, timestr)))
-	outfn := path.Join(logpath,
-		fmt.Sprintf("cmd.out.%v.%v.log", md5str, timestr))
-	errfn := path.Join(logpath,
-		fmt.Sprintf("cmd.err.%v.%v.log", md5str, timestr))
+	// outfn := path.Join(logpath,
+	// 	fmt.Sprintf("cmd.out.%v.%v.log", md5str, timestr))
+	// errfn := path.Join(logpath,
+	// 	fmt.Sprintf("cmd.err.%v.%v.log", md5str, timestr))
+
+	var outfn string
+	var errfn string
 
 	if jnode != nil {
+		logpath := jnode.GetConfig().Log.LogPath
+
+		outfn = path.Join(logpath,
+			fmt.Sprintf("cmd.out.%v.%v.log", md5str, timestr))
+		errfn = path.Join(logpath,
+			fmt.Sprintf("cmd.err.%v.%v.log", md5str, timestr))
+
 		jt := &pb.JarvisTask{
 			Name:     cmdname,
 			TaskType: pb.TASKTYPE_NORMAL,
@@ -517,6 +532,13 @@ func RunCommand(ctx context.Context, jnode JarvisNode, cmdname string,
 		jt.LogFiles["err"] = outfn
 
 		jnode.GetCoreDB().AddTask(ctx, jt)
+	} else {
+		logpath := "./"
+
+		outfn = path.Join(logpath,
+			fmt.Sprintf("cmd.out.%v.%v.log", md5str, timestr))
+		errfn = path.Join(logpath,
+			fmt.Sprintf("cmd.err.%v.%v.log", md5str, timestr))
 	}
 
 	var errStdout, errStderr error
