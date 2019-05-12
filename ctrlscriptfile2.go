@@ -52,13 +52,13 @@ func (ctrl *CtrlScriptFile2) Run(ctx context.Context, jarvisnode JarvisNode, src
 	out, err := ctrl.runScript(jarvisnode.GetConfig().Log.LogPath, ci)
 	if err != nil {
 		if out == nil {
-			return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, err.Error(), msgs)
+			return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, "", err.Error(), msgs)
 		}
 
-		return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, AppendString(string(out), err.Error()), msgs)
+		return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, string(out), err.Error(), msgs)
 	}
 
-	return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, string(out), msgs)
+	return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, string(out), "", msgs)
 }
 
 // BuildCtrlInfoForScriptFile2 - build ctrlinfo for scriptfile

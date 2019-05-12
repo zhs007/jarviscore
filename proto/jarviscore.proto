@@ -194,9 +194,11 @@ message CtrlInfo {
     google.protobuf.Any dat = 1000;
 }
 
+// CtrlResult -
 message CtrlResult {
     int64 ctrlID = 1 [deprecated = true];
     string ctrlResult = 2;
+    string errInfo = 3;
 
     google.protobuf.Any dat = 1000;
 }

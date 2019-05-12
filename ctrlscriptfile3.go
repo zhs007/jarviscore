@@ -48,13 +48,13 @@ func (ctrl *CtrlScriptFile3) Run(ctx context.Context, jarvisnode JarvisNode,
 	csd3, out, err := ctrl.runScript(jarvisnode.GetConfig().Log.LogPath, ci)
 	if err != nil {
 		if out == nil {
-			return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, err.Error(), msgs)
+			return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, "", err.Error(), msgs)
 		}
 
-		return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, AppendString(string(out), err.Error()), msgs)
+		return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, string(out), err.Error(), msgs)
 	}
 
-	msgs = BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, string(out), msgs)
+	msgs = BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, string(out), "", msgs)
 
 	for i := 0; i < len(csd3.EndFiles); i++ {
 		err := ProcFileData(csd3.EndFiles[i], func(fd *pb.FileData, isend bool) error {
@@ -72,7 +72,7 @@ func (ctrl *CtrlScriptFile3) Run(ctx context.Context, jarvisnode JarvisNode,
 			return nil
 		})
 		if err != nil {
-			msgs = BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, err.Error(), msgs)
+			msgs = BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, "", err.Error(), msgs)
 		}
 	}
 
