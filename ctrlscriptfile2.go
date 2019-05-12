@@ -18,7 +18,9 @@ type CtrlScriptFile2 struct {
 }
 
 // runScript
-func (ctrl *CtrlScriptFile2) runScript(logpath string, ci *pb.CtrlInfo) ([]byte, error) {
+func (ctrl *CtrlScriptFile2) runScript(ctx context.Context, jarvisnode JarvisNode,
+	ci *pb.CtrlInfo) ([]byte, error) {
+
 	var csd2 pb.CtrlScript2Data
 	err := ptypes.UnmarshalAny(ci.Dat, &csd2)
 	if err != nil {
@@ -32,7 +34,13 @@ func (ctrl *CtrlScriptFile2) runScript(logpath string, ci *pb.CtrlInfo) ([]byte,
 		}
 	}
 
-	outstr, errstr, err := RunCommand(logpath, string(csd2.ScriptFile.File))
+	logpath := "./"
+	if jarvisnode != nil {
+		logpath = jarvisnode.GetConfig().Log.LogPath
+	}
+
+	outstr, errstr, err := RunCommand(ctx, jarvisnode, csd2.ScriptName,
+		logpath, string(csd2.ScriptFile.File))
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +57,7 @@ func (ctrl *CtrlScriptFile2) Run(ctx context.Context, jarvisnode JarvisNode, src
 
 	var msgs []*pb.JarvisMsg
 
-	out, err := ctrl.runScript(jarvisnode.GetConfig().Log.LogPath, ci)
+	out, err := ctrl.runScript(ctx, jarvisnode, ci)
 	if err != nil {
 		if out == nil {
 			return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, "", err.Error(), msgs)

@@ -20,14 +20,22 @@ type CtrlScriptFile3 struct {
 }
 
 // runScript
-func (ctrl *CtrlScriptFile3) runScript(logpath string, ci *pb.CtrlInfo) (*pb.CtrlScript3Data, []byte, error) {
+func (ctrl *CtrlScriptFile3) runScript(ctx context.Context, jarvisnode JarvisNode,
+	ci *pb.CtrlInfo) (*pb.CtrlScript3Data, []byte, error) {
+
 	var csd3 pb.CtrlScript3Data
 	err := ptypes.UnmarshalAny(ci.Dat, &csd3)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	outstr, errstr, err := RunCommand(logpath, string(csd3.ScriptFile.File))
+	logpath := "./"
+	if jarvisnode != nil {
+		logpath = jarvisnode.GetConfig().Log.LogPath
+	}
+
+	outstr, errstr, err := RunCommand(ctx, jarvisnode, csd3.ScriptName,
+		logpath, string(csd3.ScriptFile.File))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -45,7 +53,7 @@ func (ctrl *CtrlScriptFile3) Run(ctx context.Context, jarvisnode JarvisNode,
 
 	var msgs []*pb.JarvisMsg
 
-	csd3, out, err := ctrl.runScript(jarvisnode.GetConfig().Log.LogPath, ci)
+	csd3, out, err := ctrl.runScript(ctx, jarvisnode, ci)
 	if err != nil {
 		if out == nil {
 			return BuildCtrlResultForCtrl(jarvisnode, srcAddr, msgid, "", err.Error(), msgs)
