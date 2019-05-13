@@ -1,0 +1,29 @@
+syntax = "proto3";
+package jarviscorepb;
+
+// jarvis task type
+enum TASKTYPE {
+    // normal
+    NORMAL = 0;
+    // service
+    SERVICE = 1;
+}
+
+// JarvisTask
+message JarvisTask {
+    string name = 1;
+    map<string, string> cfgFiles = 2;
+    map<string, string> logFiles = 3;
+    TASKTYPE taskType = 4;
+    int64 curTime = 5;
+}
+
+// ReplyUpdTask
+message ReplyUpdTask {
+    bool isOK = 1;
+}
+
+// JarvisTaskServ -
+service JarvisTaskServ {
+    rpc updTask(JarvisTask) returns (ReplyUpdTask) {}
+}

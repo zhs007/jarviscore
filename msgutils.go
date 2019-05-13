@@ -295,7 +295,8 @@ func BuildReply2(jarvisnode JarvisNode, srcAddr string,
 
 // BuildCtrlResult - build jarvismsg with REPLY_CTRL_RESULT
 func BuildCtrlResult(jarvisnode JarvisNode, srcAddr string,
-	destAddr string, replyMsgID int64, result string) (*pb.JarvisMsg, error) {
+	destAddr string, replyMsgID int64, result string,
+	errInfo string) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
 		CurTime:  time.Now().Unix(),
@@ -308,6 +309,7 @@ func BuildCtrlResult(jarvisnode JarvisNode, srcAddr string,
 		Data: &pb.JarvisMsg_CtrlResult{
 			CtrlResult: &pb.CtrlResult{
 				CtrlResult: result,
+				ErrInfo:    errInfo,
 			},
 		},
 	}

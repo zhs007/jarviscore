@@ -35,9 +35,9 @@ func BuildReply2ForCtrl(jarvisnode JarvisNode, srcAddr string, msgid int64,
 
 // BuildCtrlResultForCtrl - build CtrlResult for Ctrl
 func BuildCtrlResultForCtrl(jarvisnode JarvisNode, srcAddr string, msgid int64,
-	str string, msgs []*pb.JarvisMsg) []*pb.JarvisMsg {
+	str string, errInfo string, msgs []*pb.JarvisMsg) []*pb.JarvisMsg {
 
-	msg, err := BuildCtrlResult(jarvisnode, jarvisnode.GetMyInfo().Addr, srcAddr, msgid, str)
+	msg, err := BuildCtrlResult(jarvisnode, jarvisnode.GetMyInfo().Addr, srcAddr, msgid, str, errInfo)
 	if err != nil {
 		jarvisbase.Warn("BuildCtrlResultForCtrl", zap.Error(err))
 

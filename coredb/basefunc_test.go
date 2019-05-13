@@ -18,9 +18,9 @@ func TestBaseFunc(t *testing.T) {
 
 	cfg.PathDBRoot = "../test/coredbbasefunc"
 	cfg.ListDB = append(cfg.ListDB, ankadb.DBConfig{
-		Name:   "coredb",
+		Name:   CoreDBName,
 		Engine: "leveldb",
-		PathDB: "coredb",
+		PathDB: CoreDBName,
 	})
 
 	dblogic, err := ankadb.NewBaseDBLogic(graphql.SchemaConfig{

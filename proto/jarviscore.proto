@@ -194,9 +194,11 @@ message CtrlInfo {
     google.protobuf.Any dat = 1000;
 }
 
+// CtrlResult -
 message CtrlResult {
     int64 ctrlID = 1 [deprecated = true];
     string ctrlResult = 2;
+    string errInfo = 3;
 
     google.protobuf.Any dat = 1000;
 }
@@ -293,21 +295,4 @@ message JarvisMsg {
 service JarvisCoreServ {
     rpc procMsg(JarvisMsg) returns (stream JarvisMsg) {}
     rpc procMsgStream(stream JarvisMsg) returns (stream JarvisMsg) {}
-}
-
-// JarvisTask
-message JarvisTask {
-    string name = 1;
-    map<string, string> cfgFiles = 2;
-    map<string, string> logFiles = 3;
-}
-
-// ReplyUpdTask
-message ReplyUpdTask {
-    bool isOK = 1;
-}
-
-// JarvisTaskServ -
-service JarvisTaskServ {
-    rpc updTask(JarvisTask) returns (ReplyUpdTask) {}
 }

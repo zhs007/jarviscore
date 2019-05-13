@@ -13,7 +13,7 @@ import (
 
 // getPrivateKey - get private key
 func getPrivateKey(anka ankadb.AnkaDB) (*pb.PrivateData, error) {
-	curdb := anka.GetDBMgr().GetDB("coredb")
+	curdb := anka.GetDBMgr().GetDB(CoreDBName)
 	if curdb == nil {
 		return nil, ankadb.ErrCtxCurDB
 	}
@@ -42,7 +42,7 @@ func getPrivateKey(anka ankadb.AnkaDB) (*pb.PrivateData, error) {
 
 // getPrivateData - get private data
 func getPrivateData(anka ankadb.AnkaDB) (*pb.PrivateData, error) {
-	curdb := anka.GetDBMgr().GetDB("coredb")
+	curdb := anka.GetDBMgr().GetDB(CoreDBName)
 	if curdb == nil {
 		return nil, ankadb.ErrCtxCurDB
 	}
@@ -67,7 +67,7 @@ func getPrivateData(anka ankadb.AnkaDB) (*pb.PrivateData, error) {
 
 // getNodeInfo - get node info
 func getNodeInfo(anka ankadb.AnkaDB, addr string) (*pb.NodeInfo, error) {
-	curdb := anka.GetDBMgr().GetDB("coredb")
+	curdb := anka.GetDBMgr().GetDB(CoreDBName)
 	if curdb == nil {
 		return nil, ankadb.ErrCtxCurDB
 	}
@@ -86,12 +86,12 @@ func getNodeInfo(anka ankadb.AnkaDB, addr string) (*pb.NodeInfo, error) {
 
 // getNodeInfos - get node info list
 func getNodeInfos(anka ankadb.AnkaDB, snapshotID int64, beginIndex int, nums int) (*pb.NodeInfoList, error) {
-	mgrSnapshot := anka.GetDBMgr().GetMgrSnapshot("coredb")
+	mgrSnapshot := anka.GetDBMgr().GetMgrSnapshot(CoreDBName)
 	if mgrSnapshot == nil {
 		return nil, ankadb.ErrCtxSnapshotMgr
 	}
 
-	curdb := anka.GetDBMgr().GetDB("coredb")
+	curdb := anka.GetDBMgr().GetDB(CoreDBName)
 	if curdb == nil {
 		return nil, ankadb.ErrCtxCurDB
 	}

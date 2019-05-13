@@ -85,9 +85,9 @@ func NewCoreDB(dbpath string, httpAddr string, engine string, lstTrust []string)
 	cfg.AddrHTTP = httpAddr
 	cfg.PathDBRoot = dbpath
 	cfg.ListDB = append(cfg.ListDB, ankadb.DBConfig{
-		Name:   "coredb",
+		Name:   CoreDBName,
 		Engine: engine,
-		PathDB: "coredb",
+		PathDB: CoreDBName,
 	})
 
 	dblogic, err := ankadb.NewBaseDBLogic(graphql.SchemaConfig{
@@ -626,7 +626,7 @@ func (db *CoreDB) FindMapNode(name string) *coredbpb.NodeInfo {
 
 // Close - close database
 func (db *CoreDB) Close() {
-	db.ankaDB.GetDBMgr().GetDB("coredb").Close()
+	db.ankaDB.GetDBMgr().GetDB(CoreDBName).Close()
 }
 
 // GetNewSendMsgID - get msgid
@@ -711,6 +711,23 @@ func (db *CoreDB) TrustNodes(lstNode []string) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+// AddTask - add task
+func (db *CoreDB) AddTask(ctx context.Context, task *jarviscorepb.JarvisTask) error {
+	key := makeTaskKey(task)
+
+	curdb := db.ankaDB.GetDBMgr().GetDB(CoreDBName)
+	if curdb == nil {
+		return ankadb.ErrCtxCurDB
+	}
+
+	err := ankadb.PutMsg2DB(curdb, []byte(key), task)
+	if err != nil {
+		return err
 	}
 
 	return nil
