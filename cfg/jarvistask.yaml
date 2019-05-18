@@ -1,0 +1,37 @@
+# jarvis task
+
+author: zhs007
+author-email: zerrozhao@gmail.com
+
+name: shadowsocks
+description: This script is ...
+keywords:
+  - ss
+  - shadowsocks
+
+version: 0.0.1
+
+type: service
+
+docker: true
+
+# There are some variables that can be used in this script.
+#   - ScriptPath: In which directory this script will run
+#   - JarvisScriptPath: Jarvis script path
+#   - JarvisNodeType: Jarvis node type
+#   - JarvisNodeVersion: Jarvis node version
+#   - JarvisCoreVersion: Jarvis core version
+#   - ScriptVersion: This script version
+
+config:
+  - {name: port, type: int, default: '3824'}
+  - {name: password, type: password, generatepassword: 16}
+
+# onstart - script
+onstart: |
+  docker run -dt --name {.taskname} -p {.cfg.port}:{.cfg.port} mritd/shadowsocks -s "-s 0.0.0.0 -p {.cfg.port} -m aes-256-cfb -k {.cfg.password} --fast-open"
+
+# onstop - script
+onstart: |
+  docker stop {.taskname}
+  docker rm {.taskname}
