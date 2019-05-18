@@ -1,5 +1,30 @@
 # JarvisCore Development Log
 
+### 2019-05-18
+
+关于 ``JARVISNODETYPE`` 和 ``VERSION``。
+
+``` go
+// JARVISNODETYPE - jarvis.market
+const JARVISNODETYPE = "jarvis.market"
+
+// VERSION - version
+const VERSION = "0.1.2"
+```
+
+一般来说，``JARVISNODETYPE``是完整的节点类型名，建议用``.``号隔开。  
+
+Jarvis和Siri这类智能语音助理的区别是什么？  
+估计终极目标是一致的，但现阶段，Jarvis是整合服务器资源为用户提供服务，可以让用户通过聊天工具，来执行各种云端任务。  
+然后就是Jarvis崇尚开放性，智能语音助理其实存在很大的安全隐患（个人隐私），Jarvis是基于一个开放网络的，个人数据和算法模型其实可以完全分离，保障用户数据的安全性。  
+最后就是Jarvis会主动的去加入各种开放环境，譬如现在会有telegram的bot，后面还会有QQ、WeChat的bot出现，我们希望是Jarvis无处不在。
+
+Jarvis发展规划是怎样的？  
+现在来看，Jarvis主要有3个可能的主要发展方向：  
+1. 企业服务：这也是Jarvis最初产生的原因之一，在企业内部，替代部分助理的工作，打通各种工作流，提升工作效率。
+2. 细分市场下的2C业务：为一部分细分市场用户，提供用户级的服务。
+3. 通用2C市场：这里可能的发展是社区化，鼓励用户自建节点，提交好用的服务和想法，帮助一部分用户赚钱，最终平台也能获利。
+
 ### 2019-05-11
 
 Jarvis运维功能和k8s的区别是什么？  
