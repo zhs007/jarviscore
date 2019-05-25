@@ -1759,6 +1759,9 @@ func (n *jarvisNode) onMsgRequestMsgState(ctx context.Context, msg *pb.JarvisMsg
 
 	defer n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_END, "")
 
+	n.onStartWait4MyReply(msg.SrcAddr, msg.MsgID)
+	defer n.onEndWait4MyReply(msg.SrcAddr, msg.MsgID)
+
 	rms := msg.GetRequestMsgState()
 	s := n.mgrWait4MyReply.getMsgState(msg.SrcAddr, rms.MsgID)
 
