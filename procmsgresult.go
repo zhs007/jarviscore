@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/zhs007/jarviscore/base"
+	jarvisbase "github.com/zhs007/jarviscore/base"
 	"go.uber.org/zap"
 
-	"github.com/zhs007/jarviscore/proto"
+	jarviscorepb "github.com/zhs007/jarviscore/proto"
 )
 
 // FuncOnRangeProcMsgResult - onRangeProcMsgResult
@@ -115,7 +115,8 @@ func (mgr *procMsgResultMgr) onPorcMsgResult(ctx context.Context, addr string, r
 	d, err := mgr.getProcMsgResultData(addr, replymsgid)
 	if err != nil {
 		jarvisbase.Warn("procMsgResultMgr.onPorcMsgResult:getProcMsgResultData",
-			zap.Error(err))
+			zap.Error(err),
+			zap.Int64("replymsgid", replymsgid))
 	}
 
 	if d != nil {
