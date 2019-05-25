@@ -116,7 +116,8 @@ func (mgr *procMsgResultMgr) onPorcMsgResult(ctx context.Context, addr string, r
 	if err != nil {
 		jarvisbase.Warn("procMsgResultMgr.onPorcMsgResult:getProcMsgResultData",
 			zap.Error(err),
-			zap.Int64("replymsgid", replymsgid))
+			zap.Int64("replymsgid", replymsgid),
+			jarvisbase.JSON("result", result))
 	}
 
 	if d != nil {
