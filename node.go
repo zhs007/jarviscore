@@ -1759,6 +1759,9 @@ func (n *jarvisNode) onMsgRequestMsgState(ctx context.Context, msg *pb.JarvisMsg
 
 	defer n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_END, "")
 
+	// n.onStartWait4MyReply(msg.SrcAddr, msg.MsgID)
+	// defer n.onEndWait4MyReply(msg.SrcAddr, msg.MsgID)
+
 	rms := msg.GetRequestMsgState()
 	s := n.mgrWait4MyReply.getMsgState(msg.SrcAddr, rms.MsgID)
 
@@ -1779,12 +1782,19 @@ func (n *jarvisNode) onMsgRequestMsgState(ctx context.Context, msg *pb.JarvisMsg
 	return nil
 }
 
+func (n *jarvisNode) delayCancelMsgResult(ctx context.Context, msg *pb.JarvisMsg, rms *pb.ReplyMsgState) {
+	time.Sleep(time.Second * basedef.TimeMsgState * 2)
+
+	n.mgrProcMsgResult.onCancelMsgResult(ctx, msg.SrcAddr, rms.MsgID, n)
+}
+
 // onMsgReplyMsgState
 func (n *jarvisNode) onMsgReplyMsgState(ctx context.Context, msg *pb.JarvisMsg) error {
 
 	rms := msg.GetReplyMsgState()
 	if rms.State < 0 {
-		n.mgrProcMsgResult.onCancelMsgResult(ctx, msg.SrcAddr, rms.MsgID, n)
+		go n.delayCancelMsgResult(ctx, msg, rms)
+		// n.mgrProcMsgResult.onCancelMsgResult(ctx, msg.SrcAddr, rms.MsgID, n)
 	}
 
 	return nil
