@@ -6,10 +6,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/zhs007/jarviscore/base"
+	jarvisbase "github.com/zhs007/jarviscore/base"
 	"github.com/zhs007/jarviscore/basedef"
 	"github.com/zhs007/jarviscore/coredb"
-	"github.com/zhs007/jarviscore/coredb/proto"
+	coredbpb "github.com/zhs007/jarviscore/coredb/proto"
 	pb "github.com/zhs007/jarviscore/proto"
 	"go.uber.org/zap"
 )
@@ -829,7 +829,7 @@ func onDeprecateNode(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.
 
 // onIConnectNodeFail - func event
 func onIConnectNodeFail(ctx context.Context, jarvisnode JarvisNode, node *coredbpb.NodeInfo) error {
-	jarvisbase.Debug("onIConnectNodeFail")
+	// jarvisbase.Debug("onIConnectNodeFail")
 
 	if !node.Deprecated {
 		node.NumsConnectFail++

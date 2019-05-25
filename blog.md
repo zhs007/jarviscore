@@ -1,5 +1,15 @@
 # JarvisCore Development Log
 
+### 2019-05-25
+
+今天发现在sendmsg阶段，如果某个节点出问题，其实没有进入connectfail流程，这样会导致大量的连接重试。
+
+### 2019-05-19
+
+这几天在处理jarvismarket，顺带将以前做过和想做但没做的一些服务理了一下。  
+- 服务器监控，打算用netdata
+- 要有一个整合的代理服务，主要是代理HTTP，整合文件系统也会用到。
+
 ### 2019-05-18
 
 关于 ``JARVISNODETYPE`` 和 ``VERSION``。

@@ -10,11 +10,11 @@ import (
 
 	"github.com/zhs007/jarviscore/coredb"
 
-	"github.com/zhs007/jarviscore/coredb/proto"
+	coredbpb "github.com/zhs007/jarviscore/coredb/proto"
 
 	"go.uber.org/zap"
 
-	"github.com/zhs007/jarviscore/base"
+	jarvisbase "github.com/zhs007/jarviscore/base"
 	pb "github.com/zhs007/jarviscore/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
@@ -35,11 +35,29 @@ type clientTask struct {
 func (task *clientTask) Run(ctx context.Context) error {
 
 	if task.msgs != nil {
-		return task.client._sendMsgStream(ctx, task.addr, task.msgs, task.funcOnResult)
+		err := task.client._sendMsgStream(ctx, task.addr, task.msgs, task.funcOnResult)
+		if err != nil && task.node != nil {
+			if err == ErrServAddrIsMe || err == ErrInvalidServAddr {
+				task.client.node.mgrEvent.onNodeEvent(ctx, EventOnDeprecateNode, task.node)
+			}
+
+			task.client.node.mgrEvent.onNodeEvent(ctx, EventOnIConnectNodeFail, task.node)
+		}
+
+		return err
 	}
 
 	if task.msg != nil {
-		return task.client._sendMsg(ctx, task.msg, task.funcOnResult)
+		err := task.client._sendMsg(ctx, task.msg, task.funcOnResult)
+		if err != nil && task.node != nil {
+			if err == ErrServAddrIsMe || err == ErrInvalidServAddr {
+				task.client.node.mgrEvent.onNodeEvent(ctx, EventOnDeprecateNode, task.node)
+			}
+
+			task.client.node.mgrEvent.onNodeEvent(ctx, EventOnIConnectNodeFail, task.node)
+		}
+
+		return err
 	}
 
 	err := task.client._connectNode(ctx, task.servaddr, task.node, task.funcOnResult)
