@@ -7,7 +7,7 @@ import (
 	"go.uber.org/zap/zapcore"
 	yaml "gopkg.in/yaml.v2"
 
-	"github.com/zhs007/jarviscore/base"
+	jarvisbase "github.com/zhs007/jarviscore/base"
 	"go.uber.org/zap"
 )
 
@@ -80,8 +80,9 @@ type Config struct {
 	//------------------------------------------------------------------
 	// auto update
 
-	AutoUpdate   bool
-	UpdateScript string
+	AutoUpdate    bool
+	UpdateScript  string
+	RestartScript string
 }
 
 // const normalLogFilename = "output.log"
@@ -130,6 +131,12 @@ func checkConfig(cfg *Config) error {
 
 	if cfg.MaxMsgLength <= 0 {
 		cfg.MaxMsgLength = 4194304
+	}
+
+	if cfg.AutoUpdate {
+		if cfg.UpdateScript == "" || cfg.RestartScript == "" {
+			return ErrCfgInvalidUpdateScript
+		}
 	}
 
 	return nil

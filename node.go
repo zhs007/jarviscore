@@ -731,17 +731,30 @@ func (n *jarvisNode) onMsgUpdateNode(ctx context.Context, msg *pb.JarvisMsg, jms
 
 		n.mgrEvent.onMsgEvent(ctx, EventOnUpdateNode, msg)
 
-		curscript, outstring, err := updateNode(&UpdateNodeParam{
-			NewVersion: "v" + msg.GetUpdateNode().NodeTypeVersion,
-		}, n.cfg.UpdateScript)
-		if err != nil {
-			n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_ERROR, err.Error())
+		unmsg := msg.GetUpdateNode()
+		if unmsg.IsOnlyRestart {
+			curscript, outstring, err := restartNode(&RestartNodeParam{}, n.cfg.RestartScript)
+			if err != nil {
+				n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_ERROR, err.Error())
 
-			return err
+				return err
+			}
+
+			n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_OK, curscript)
+			n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_OK, outstring)
+		} else {
+			curscript, outstring, err := updateNode(&UpdateNodeParam{
+				NewVersion: "v" + msg.GetUpdateNode().NodeTypeVersion,
+			}, n.cfg.UpdateScript)
+			if err != nil {
+				n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_ERROR, err.Error())
+
+				return err
+			}
+
+			n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_OK, curscript)
+			n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_OK, outstring)
 		}
-
-		n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_OK, curscript)
-		n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_OK, outstring)
 	} else {
 		n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_ERROR, ErrAutoUpdateClosed.Error())
 	}

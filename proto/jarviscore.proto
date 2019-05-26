@@ -218,6 +218,8 @@ message UpdateNode {
     string nodeTypeVersion = 1;
     // node type
     string nodeType = 2;
+    // Just need to restart the node
+    bool isOnlyRestart = 3;
 }
 
 // L2PoolInfo -

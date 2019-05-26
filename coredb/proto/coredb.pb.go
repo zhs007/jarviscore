@@ -49,7 +49,7 @@ func (x CONNECTTYPE) String() string {
 	return proto.EnumName(CONNECTTYPE_name, int32(x))
 }
 func (CONNECTTYPE) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_coredb_71aed0bbcb80d5a0, []int{0}
+	return fileDescriptor_coredb_36f48f46e93e7854, []int{0}
 }
 
 // private data
@@ -71,7 +71,7 @@ func (m *PrivateData) Reset()         { *m = PrivateData{} }
 func (m *PrivateData) String() string { return proto.CompactTextString(m) }
 func (*PrivateData) ProtoMessage()    {}
 func (*PrivateData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_coredb_71aed0bbcb80d5a0, []int{0}
+	return fileDescriptor_coredb_36f48f46e93e7854, []int{0}
 }
 func (m *PrivateData) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PrivateData.Unmarshal(m, b)
@@ -149,16 +149,26 @@ func (m *PrivateData) GetLstTrustNode() []string {
 
 // node info
 type NodeInfo struct {
-	ServAddr      string   `protobuf:"bytes,1,opt,name=servAddr,proto3" json:"servAddr,omitempty"`
-	Addr          string   `protobuf:"bytes,2,opt,name=addr,proto3" json:"addr,omitempty"`
-	Name          string   `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	ConnectNums   int32    `protobuf:"varint,4,opt,name=connectNums,proto3" json:"connectNums,omitempty"`
-	ConnectedNums int32    `protobuf:"varint,5,opt,name=connectedNums,proto3" json:"connectedNums,omitempty"`
-	CtrlID        int64    `protobuf:"varint,6,opt,name=ctrlID,proto3" json:"ctrlID,omitempty"` // Deprecated: Do not use.
+	// This is the connection address of the node
+	ServAddr string `protobuf:"bytes,1,opt,name=servAddr,proto3" json:"servAddr,omitempty"`
+	// This is the address of the node
+	Addr string `protobuf:"bytes,2,opt,name=addr,proto3" json:"addr,omitempty"`
+	// This is the node name
+	Name string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	// This is the number of times I connected this node.
+	ConnectNums int32 `protobuf:"varint,4,opt,name=connectNums,proto3" json:"connectNums,omitempty"`
+	// This is the number of times I successfully connected this node.
+	ConnectedNums int32 `protobuf:"varint,5,opt,name=connectedNums,proto3" json:"connectedNums,omitempty"`
+	// ctrlID
+	CtrlID int64 `protobuf:"varint,6,opt,name=ctrlID,proto3" json:"ctrlID,omitempty"` // Deprecated: Do not use.
+	// This is the list of addresses connected to this node
 	LstClientAddr []string `protobuf:"bytes,7,rep,name=lstClientAddr,proto3" json:"lstClientAddr,omitempty"`
-	AddTime       int64    `protobuf:"varint,8,opt,name=addTime,proto3" json:"addTime,omitempty"`
-	ConnectMe     bool     `protobuf:"varint,9,opt,name=connectMe,proto3" json:"connectMe,omitempty"`
-	ConnectNode   bool     `protobuf:"varint,10,opt,name=connectNode,proto3" json:"connectNode,omitempty"` // Deprecated: Do not use.
+	// This is the timestamp added for the first time.
+	AddTime int64 `protobuf:"varint,8,opt,name=addTime,proto3" json:"addTime,omitempty"`
+	// Is this node connected to me?
+	ConnectMe bool `protobuf:"varint,9,opt,name=connectMe,proto3" json:"connectMe,omitempty"`
+	// Am I connected to this node?
+	ConnectNode bool `protobuf:"varint,10,opt,name=connectNode,proto3" json:"connectNode,omitempty"` // Deprecated: Do not use.
 	// nodetype version
 	NodeTypeVersion string `protobuf:"bytes,11,opt,name=nodeTypeVersion,proto3" json:"nodeTypeVersion,omitempty"`
 	// node type
@@ -200,7 +210,7 @@ func (m *NodeInfo) Reset()         { *m = NodeInfo{} }
 func (m *NodeInfo) String() string { return proto.CompactTextString(m) }
 func (*NodeInfo) ProtoMessage()    {}
 func (*NodeInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_coredb_71aed0bbcb80d5a0, []int{1}
+	return fileDescriptor_coredb_36f48f46e93e7854, []int{1}
 }
 func (m *NodeInfo) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_NodeInfo.Unmarshal(m, b)
@@ -405,7 +415,7 @@ func (m *NodeInfoList) Reset()         { *m = NodeInfoList{} }
 func (m *NodeInfoList) String() string { return proto.CompactTextString(m) }
 func (*NodeInfoList) ProtoMessage()    {}
 func (*NodeInfoList) Descriptor() ([]byte, []int) {
-	return fileDescriptor_coredb_71aed0bbcb80d5a0, []int{2}
+	return fileDescriptor_coredb_36f48f46e93e7854, []int{2}
 }
 func (m *NodeInfoList) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_NodeInfoList.Unmarshal(m, b)
@@ -465,7 +475,7 @@ func (m *FileSystem) Reset()         { *m = FileSystem{} }
 func (m *FileSystem) String() string { return proto.CompactTextString(m) }
 func (*FileSystem) ProtoMessage()    {}
 func (*FileSystem) Descriptor() ([]byte, []int) {
-	return fileDescriptor_coredb_71aed0bbcb80d5a0, []int{3}
+	return fileDescriptor_coredb_36f48f46e93e7854, []int{3}
 }
 func (m *FileSystem) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_FileSystem.Unmarshal(m, b)
@@ -500,9 +510,9 @@ func init() {
 	proto.RegisterEnum("coredbpb.CONNECTTYPE", CONNECTTYPE_name, CONNECTTYPE_value)
 }
 
-func init() { proto.RegisterFile("coredb.proto", fileDescriptor_coredb_71aed0bbcb80d5a0) }
+func init() { proto.RegisterFile("coredb.proto", fileDescriptor_coredb_36f48f46e93e7854) }
 
-var fileDescriptor_coredb_71aed0bbcb80d5a0 = []byte{
+var fileDescriptor_coredb_36f48f46e93e7854 = []byte{
 	// 688 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x94, 0xef, 0x6e, 0xda, 0x30,
 	0x14, 0xc5, 0x17, 0x02, 0x14, 0x2e, 0xb4, 0xa5, 0xee, 0x9f, 0x59, 0xd5, 0x34, 0x45, 0xa8, 0x9a,
