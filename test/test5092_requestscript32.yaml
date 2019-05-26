@@ -47,4 +47,5 @@ autoupdate: true
 #       - NewVersion: new version
 updatescript: |
   echo {{.NewVersion}}
-  
+restartscript: |
+  echo {{.NewVersion}}    

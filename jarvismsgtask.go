@@ -17,6 +17,8 @@ const (
 	JarvisResultTypeLocalError = 3
 	// JarvisResultTypeRemoved - removed
 	JarvisResultTypeRemoved = 5
+	// JarvisResultTypeLocalErrorEnd - error & end
+	JarvisResultTypeLocalErrorEnd = 6
 )
 
 // NormalMsgTaskInfo - normal message task info
@@ -36,6 +38,11 @@ type JarvisMsgInfo struct {
 // IsEnd - is end msg
 func (jmi *JarvisMsgInfo) IsEnd() bool {
 	return jmi.Msg != nil && jmi.Msg.MsgType == pb.MSGTYPE_REPLY2 && jmi.Msg.ReplyType == pb.REPLYTYPE_END
+}
+
+// IsErrorEnd - is error end msg
+func (jmi *JarvisMsgInfo) IsErrorEnd() bool {
+	return jmi.JarvisResultType == JarvisResultTypeLocalErrorEnd
 }
 
 // IsEndOrIGI - is end msg or IGOTIT
