@@ -41,7 +41,8 @@ func (mgr *procMsgResultMgr) onProcMsg(ctx context.Context, taskinfo *JarvisMsgT
 		}
 	} else if taskinfo.Stream != nil {
 		for i := 0; i < len(taskinfo.Stream.Msgs); i++ {
-			if taskinfo.Stream.Msgs[i].Msg != nil && taskinfo.Stream.Msgs[i].Msg.MsgType == jarviscorepb.MSGTYPE_REPLY2 &&
+			if taskinfo.Stream.Msgs[i].Msg != nil &&
+				taskinfo.Stream.Msgs[i].Msg.MsgType == jarviscorepb.MSGTYPE_REPLY2 &&
 				taskinfo.Stream.Msgs[i].Msg.ReplyType == jarviscorepb.REPLYTYPE_END &&
 				taskinfo.Stream.Msgs[i].Msg.ReplyMsgID > 0 {
 
@@ -95,7 +96,7 @@ func (mgr *procMsgResultMgr) onEndMsg(addr string, replymsgid int64) {
 	if err != nil {
 		jarvisbase.Warn("procMsgResultMgr.onEndMsg:getProcMsgResultData",
 			zap.Error(err),
-			zap.Int64("replymsgid", replymsgid))
+			zap.String("key", AppendString(addr, ":", strconv.FormatInt(replymsgid, 10))))
 	}
 
 	if d != nil {
@@ -116,7 +117,7 @@ func (mgr *procMsgResultMgr) onPorcMsgResult(ctx context.Context, addr string, r
 	if err != nil {
 		jarvisbase.Warn("procMsgResultMgr.onPorcMsgResult:getProcMsgResultData",
 			zap.Error(err),
-			zap.Int64("replymsgid", replymsgid),
+			zap.String("key", AppendString(addr, ":", strconv.FormatInt(replymsgid, 10))),
 			jarvisbase.JSON("result", result))
 	}
 

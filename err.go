@@ -119,4 +119,6 @@ var (
 	ErrInvalidStreamMsgTransferFile2 = errors.New("Invalid StreamMsg TRANSFER_FILE2")
 	// ErrInvalidCMDStdOutErrErrFile - Invalid CMDStdOutErr errfile
 	ErrInvalidCMDStdOutErrErrFile = errors.New("Invalid CMDStdOutErr errfile")
+	// ErrCfgInvalidUpdateScript - Invalid UpdateScript
+	ErrCfgInvalidUpdateScript = errors.New("Invalid UpdateScript")
 )

@@ -3,7 +3,7 @@ package jarviscore
 import (
 	"time"
 
-	"github.com/zhs007/jarviscore/base"
+	jarvisbase "github.com/zhs007/jarviscore/base"
 	pb "github.com/zhs007/jarviscore/proto"
 	"go.uber.org/zap"
 )
@@ -40,7 +40,8 @@ func (jmi *JarvisMsgInfo) IsEnd() bool {
 
 // IsEndOrIGI - is end msg or IGOTIT
 func (jmi *JarvisMsgInfo) IsEndOrIGI() bool {
-	return jmi.Msg != nil && jmi.Msg.MsgType == pb.MSGTYPE_REPLY2 && (jmi.Msg.ReplyType == pb.REPLYTYPE_END || jmi.Msg.ReplyType == pb.REPLYTYPE_IGOTIT)
+	return jmi.Msg != nil && jmi.Msg.MsgType == pb.MSGTYPE_REPLY2 &&
+		(jmi.Msg.ReplyType == pb.REPLYTYPE_END || jmi.Msg.ReplyType == pb.REPLYTYPE_IGOTIT)
 }
 
 // StreamMsgTaskInfo - stream message task info
@@ -61,7 +62,6 @@ type JarvisMsgReplyStream struct {
 	msgs    []*pb.JarvisMsg
 	procMsg pb.JarvisCoreServ_ProcMsgServer
 	isSent  bool
-	// procMsgStream pb.JarvisCoreServ_ProcMsgStreamServer
 }
 
 // NewJarvisMsgReplyStream - new JarvisMsgReplyStream
@@ -69,14 +69,8 @@ func NewJarvisMsgReplyStream(procMsg pb.JarvisCoreServ_ProcMsgServer) *JarvisMsg
 	return &JarvisMsgReplyStream{
 		procMsg: procMsg,
 		isSent:  false,
-		// procMsgStream: procMsgStream,
 	}
 }
-
-// // IsValid - is valid stream
-// func (stream *JarvisMsgReplyStream) IsValid() bool {
-// 	return true //stream.procMsg != nil || stream.procMsgStream != nil
-// }
 
 // ReplyMsg - reply JarvisMsg
 func (stream *JarvisMsgReplyStream) ReplyMsg(jn JarvisNode, sendmsg *pb.JarvisMsg) error {
@@ -139,40 +133,6 @@ func (stream *JarvisMsgReplyStream) ReplyMsg(jn JarvisNode, sendmsg *pb.JarvisMs
 
 		stream.isSent = true
 	}
-
-	// if stream.procMsg == nil && stream.procMsgStream == nil {
-
-	// 	jarvisbase.Warn("JarvisMsgReplyStream.ReplyMsg", zap.Error(ErrStreamNil))
-
-	// 	return ErrStreamNil
-	// }
-
-	// sendmsg.CurTime = time.Now().Unix()
-
-	// err := SignJarvisMsg(jn.GetCoreDB().GetPrivateKey(), sendmsg)
-	// if err != nil {
-	// 	jarvisbase.Warn("JarvisMsgReplyStream.ReplyMsg:SignJarvisMsg", zap.Error(err))
-
-	// 	return err
-	// }
-
-	// if stream.procMsg != nil {
-	// 	err = stream.procMsg.Send(sendmsg)
-	// 	if err != nil {
-	// 		jarvisbase.Warn("JarvisMsgReplyStream.ReplyMsg:procMsg.sendmsg", zap.Error(err))
-
-	// 		return err
-	// 	}
-	// }
-
-	// if stream.procMsgStream != nil {
-	// 	err = stream.procMsgStream.Send(sendmsg)
-	// 	if err != nil {
-	// 		jarvisbase.Warn("JarvisMsgReplyStream.ReplyMsg:procMsgStream.sendmsg", zap.Error(err))
-
-	// 		return err
-	// 	}
-	// }
 
 	return nil
 }

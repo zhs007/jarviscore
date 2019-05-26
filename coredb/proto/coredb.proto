@@ -28,15 +28,25 @@ message PrivateData {
 
 // node info
 message NodeInfo {
+    // This is the connection address of the node
     string servAddr = 1;
+    // This is the address of the node
     string addr = 2;
+    // This is the node name
     string name = 3;
+    // This is the number of times I connected this node. 
     int32 connectNums = 4;
+    // This is the number of times I successfully connected this node.
     int32 connectedNums = 5;
+    // ctrlID
     int64 ctrlID = 6 [deprecated = true];
+    // This is the list of addresses connected to this node
     repeated string lstClientAddr = 7;
+    // This is the timestamp added for the first time.
     int64 addTime = 8;
+    // Is this node connected to me?
     bool connectMe = 9;
+    // Am I connected to this node?
     bool connectNode = 10 [deprecated = true];
     // nodetype version
     string nodeTypeVersion = 11;
