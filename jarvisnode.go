@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/zhs007/jarviscore/coredb"
-	"github.com/zhs007/jarviscore/coredb/proto"
+	coredbpb "github.com/zhs007/jarviscore/coredb/proto"
 	pb "github.com/zhs007/jarviscore/proto"
 )
 
@@ -38,10 +38,10 @@ type JarvisNode interface {
 	// RequestNodes - request nodes
 	RequestNodes(ctx context.Context, funcOnResult FuncOnGroupSendMsgResult) error
 	// UpdateNode - update node
-	UpdateNode(ctx context.Context, addr string, nodetype string, nodetypever string,
+	UpdateNode(ctx context.Context, addr string, nodetype string, nodetypever string, isOnlyRestart bool,
 		funcOnResult FuncOnProcMsgResult) error
 	// UpdateAllNodes - update all nodes
-	UpdateAllNodes(ctx context.Context, nodetype string, nodetypever string,
+	UpdateAllNodes(ctx context.Context, nodetype string, nodetypever string, isOnlyRestart bool,
 		funcOnResult FuncOnGroupSendMsgResult) error
 	// ClearLogs - clear logs
 	ClearLogs(ctx context.Context, addr string, funcOnResult FuncOnProcMsgResult) error

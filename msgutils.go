@@ -9,8 +9,8 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	"go.uber.org/zap"
 
-	"github.com/zhs007/jarviscore/base"
-	"github.com/zhs007/jarviscore/crypto"
+	jarvisbase "github.com/zhs007/jarviscore/base"
+	jarviscrypto "github.com/zhs007/jarviscore/crypto"
 	pb "github.com/zhs007/jarviscore/proto"
 )
 
@@ -459,7 +459,7 @@ func BuildReplyTransferFile(jarvisnode JarvisNode, srcAddr string, destAddr stri
 
 // BuildUpdateNode - build jarvismsg with UPDATENODE
 func BuildUpdateNode(jarvisnode JarvisNode, srcAddr string, destAddr string,
-	nodetype string, nodetypever string) (*pb.JarvisMsg, error) {
+	nodetype string, nodetypever string, isOnlyRestart bool) (*pb.JarvisMsg, error) {
 
 	msg := &pb.JarvisMsg{
 		CurTime:  time.Now().Unix(),
@@ -472,6 +472,7 @@ func BuildUpdateNode(jarvisnode JarvisNode, srcAddr string, destAddr string,
 			UpdateNode: &pb.UpdateNode{
 				NodeType:        nodetype,
 				NodeTypeVersion: nodetypever,
+				IsOnlyRestart:   isOnlyRestart,
 			},
 		},
 	}
