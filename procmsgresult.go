@@ -128,9 +128,16 @@ func (mgr *procMsgResultMgr) onPorcMsgResult(ctx context.Context, addr string, r
 				zap.Error(err))
 		}
 
-		if result.IsEnd() {
-			// if result.JarvisResultType == JarvisResultTypeReplyStreamEnd {
-			// if result.Err == nil && result.Msg == nil {
+		if result.IsErrorEnd() {
+
+			jarvisbase.Info("procMsgResultMgr.onPorcMsgResult:IsErrorEnd:Delete",
+				zap.String("key", AppendString(addr, ":", strconv.FormatInt(replymsgid, 10))),
+				zap.Int("nums", mgr.countNums()))
+
+			mgr.mapWaitPush.Delete(AppendString(addr, ":", strconv.FormatInt(replymsgid, 10)))
+
+		} else if result.IsEnd() {
+
 			if d.OnRecvEnd() {
 				jarvisbase.Info("procMsgResultMgr.onPorcMsgResult:Delete",
 					zap.String("key", AppendString(addr, ":", strconv.FormatInt(replymsgid, 10))),
@@ -164,6 +171,7 @@ func (mgr *procMsgResultMgr) onCancelMsgResult(ctx context.Context, addr string,
 	d, err := mgr.getProcMsgResultData(addr, replymsgid)
 	if err != nil {
 		jarvisbase.Warn("procMsgResultMgr.onCancelMsgResult:getProcMsgResultData",
+			zap.String("key", AppendString(addr, ":", strconv.FormatInt(replymsgid, 10))),
 			zap.Error(err))
 	}
 
@@ -177,7 +185,7 @@ func (mgr *procMsgResultMgr) onCancelMsgResult(ctx context.Context, addr string,
 		})
 
 		if err != nil {
-			jarvisbase.Warn("procMsgResultMgr.onPorcMsgResult:OnPorcMsgResult",
+			jarvisbase.Warn("procMsgResultMgr.onCancelMsgResult:OnPorcMsgResult",
 				zap.Error(err))
 		}
 

@@ -7,7 +7,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/zhs007/jarviscore/base"
+	jarvisbase "github.com/zhs007/jarviscore/base"
 	pb "github.com/zhs007/jarviscore/proto"
 	"google.golang.org/grpc"
 )
@@ -139,7 +139,7 @@ func (s *jarvisServer2) ProcMsgStream(stream pb.JarvisCoreServ_ProcMsgStreamServ
 			}
 
 			lstmsgs = append(lstmsgs, JarvisMsgInfo{
-				JarvisResultType: JarvisResultTypeLocalError,
+				JarvisResultType: JarvisResultTypeLocalErrorEnd,
 				Err:              err,
 			})
 

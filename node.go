@@ -1795,19 +1795,19 @@ func (n *jarvisNode) onMsgRequestMsgState(ctx context.Context, msg *pb.JarvisMsg
 	return nil
 }
 
-func (n *jarvisNode) delayCancelMsgResult(ctx context.Context, msg *pb.JarvisMsg, rms *pb.ReplyMsgState) {
-	time.Sleep(time.Second * basedef.TimeMsgState * 2)
+// func (n *jarvisNode) delayCancelMsgResult(ctx context.Context, msg *pb.JarvisMsg, rms *pb.ReplyMsgState) {
+// 	time.Sleep(time.Second * basedef.TimeMsgState * 2)
 
-	n.mgrProcMsgResult.onCancelMsgResult(ctx, msg.SrcAddr, rms.MsgID, n)
-}
+// 	n.mgrProcMsgResult.onCancelMsgResult(ctx, msg.SrcAddr, rms.MsgID, n)
+// }
 
 // onMsgReplyMsgState
 func (n *jarvisNode) onMsgReplyMsgState(ctx context.Context, msg *pb.JarvisMsg) error {
 
 	rms := msg.GetReplyMsgState()
 	if rms.State < 0 {
-		go n.delayCancelMsgResult(ctx, msg, rms)
-		// n.mgrProcMsgResult.onCancelMsgResult(ctx, msg.SrcAddr, rms.MsgID, n)
+		// go n.delayCancelMsgResult(ctx, msg, rms)
+		n.mgrProcMsgResult.onCancelMsgResult(ctx, msg.SrcAddr, rms.MsgID, n)
 	}
 
 	return nil
@@ -1815,6 +1815,8 @@ func (n *jarvisNode) onMsgReplyMsgState(ctx context.Context, msg *pb.JarvisMsg) 
 
 // onTimerMsgState
 func (n *jarvisNode) onTimerMsgState(ctx context.Context) error {
+	n.mgrWait4MyReply.clearEndCache()
+
 	n.mgrProcMsgResult.forEach(func(prmd *ProcMsgResultData) {
 		n.requestMsgState(ctx, prmd.addr, prmd.msgid)
 	})
