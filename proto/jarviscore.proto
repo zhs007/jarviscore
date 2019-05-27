@@ -64,6 +64,14 @@ enum MSGTYPE {
     REPLY_MSG_STATE = 28;
     // clear logs
     CLEAR_LOGS = 29;
+    // request log list
+    REQUEST_LOGLIST = 30;
+    // request log
+    REQUEST_LOG = 31;
+    // reply log list
+    REPLY_LOGLIST = 32;
+    // reply log
+    REPLY_LOG = 33;
 }
 
 // REPLYTYPE - reply type
@@ -101,6 +109,21 @@ message NodeBaseInfo {
     string nodeType = 5;
     // jarviscore version
     string coreVersion = 6;
+}
+
+message LogInfo {
+    // appName 
+    string appName = 1;
+    // subName
+    string subName = 2;
+    // fileLen
+    int64 fileLen = 3;
+    // startPos
+    int64 startPos = 4;
+    // bufLen
+    int64 bufLen = 5;
+    // buf
+    bytes buf = 6;
 }
 
 // ReplyConnect2 - used in REPLY_CONNECT2
@@ -255,6 +278,21 @@ message ReplyMsgState {
     int32 state = 2;
 }
 
+// ReplyLogList - for REPLY_LOGLIST
+message ReplyLogList {
+    repeated LogInfo logs = 1;
+}
+
+// RequestLog - for REQUEST_LOG
+message RequestLog {
+    LogInfo log = 1;
+}
+
+// ReplyLog - for REPLY_LOG
+message ReplyLog {
+    LogInfo logs = 1;
+}
+
 // JarvisMsg - jarvis base msg
 //      sign(msgID + msgType + destAddr + curTime + srcAddr + data)
 message JarvisMsg {
@@ -290,6 +328,12 @@ message JarvisMsg {
         FileHashData fileHashData = 112;
         RequestMsgState requestMsgState = 113;
         ReplyMsgState replyMsgState = 115;
+        // REPLY_LOGLIST
+        ReplyLogList logs = 116;
+        // REQUEST_LOG
+        RequestLog requestLog = 117;
+        // REPLY_LOG
+        ReplyLog logInfo = 118;
     }
 }
 
