@@ -171,6 +171,7 @@ func (mgr *procMsgResultMgr) onCancelMsgResult(ctx context.Context, addr string,
 	d, err := mgr.getProcMsgResultData(addr, replymsgid)
 	if err != nil {
 		jarvisbase.Warn("procMsgResultMgr.onCancelMsgResult:getProcMsgResultData",
+			zap.String("key", AppendString(addr, ":", strconv.FormatInt(replymsgid, 10))),
 			zap.Error(err))
 	}
 
@@ -184,7 +185,7 @@ func (mgr *procMsgResultMgr) onCancelMsgResult(ctx context.Context, addr string,
 		})
 
 		if err != nil {
-			jarvisbase.Warn("procMsgResultMgr.onPorcMsgResult:OnPorcMsgResult",
+			jarvisbase.Warn("procMsgResultMgr.onCancelMsgResult:OnPorcMsgResult",
 				zap.Error(err))
 		}
 
