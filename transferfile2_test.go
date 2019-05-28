@@ -10,15 +10,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zhs007/jarviscore/proto"
-
-	"github.com/zhs007/jarviscore/base"
-	"github.com/zhs007/jarviscore/coredb/proto"
+	jarvisbase "github.com/zhs007/jarviscore/base"
+	coredbpb "github.com/zhs007/jarviscore/coredb/proto"
+	jarviscorepb "github.com/zhs007/jarviscore/proto"
 
 	"go.uber.org/zap"
 )
 
-func sendfile22node(ctx context.Context, fn string, destfn string, srcnode JarvisNode, destaddr string, funcOnResult FuncOnProcMsgResult) error {
+func sendfile22node(ctx context.Context, fn string, destfn string, srcnode JarvisNode,
+	destaddr string, funcOnResult FuncOnProcMsgResult) error {
+
 	dat, err := ioutil.ReadFile(fn)
 	if err != nil {
 		return err
@@ -431,7 +432,7 @@ func TestTransferFile2(t *testing.T) {
 		return
 	}
 
-	InitJarvisCore(rootcfg)
+	InitJarvisCore(rootcfg, "testnode")
 	defer ReleaseJarvisCore()
 
 	obj := newObjTF2()

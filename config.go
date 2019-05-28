@@ -104,10 +104,11 @@ func getLogLevel(str string) zapcore.Level {
 }
 
 // InitJarvisCore -
-func InitJarvisCore(cfg *Config) {
+func InitJarvisCore(cfg *Config, nodeType string) {
 	// config = cfg
 
-	jarvisbase.InitLogger(getLogLevel(cfg.Log.LogLevel), cfg.Log.LogConsole, cfg.Log.LogPath)
+	jarvisbase.InitLogger(getLogLevel(cfg.Log.LogLevel), cfg.Log.LogConsole,
+		cfg.Log.LogPath, nodeType)
 
 	jarvisbase.Info("InitJarvisCore",
 		zap.String("DBPath", cfg.AnkaDB.DBPath),

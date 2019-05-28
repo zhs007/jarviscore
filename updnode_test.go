@@ -267,7 +267,7 @@ func TestUpdNode(t *testing.T) {
 		return
 	}
 
-	InitJarvisCore(rootcfg)
+	InitJarvisCore(rootcfg, "testnode")
 	defer ReleaseJarvisCore()
 
 	obj := newObjUN()

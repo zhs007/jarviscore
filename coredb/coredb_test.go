@@ -5,14 +5,14 @@ import (
 
 	"go.uber.org/zap/zapcore"
 
-	"github.com/zhs007/jarviscore/base"
-	"github.com/zhs007/jarviscore/coredb/proto"
-	"github.com/zhs007/jarviscore/crypto"
-	"github.com/zhs007/jarviscore/proto"
+	jarvisbase "github.com/zhs007/jarviscore/base"
+	coredbpb "github.com/zhs007/jarviscore/coredb/proto"
+	jarviscrypto "github.com/zhs007/jarviscore/crypto"
+	jarviscorepb "github.com/zhs007/jarviscore/proto"
 )
 
 func TestCoreDB(t *testing.T) {
-	jarvisbase.InitLogger(zapcore.DebugLevel, true, "")
+	jarvisbase.InitLogger(zapcore.DebugLevel, true, "", "")
 
 	//------------------------------------------------------------------------
 	// initial CoreDB

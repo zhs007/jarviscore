@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zhs007/jarviscore/base"
-	"github.com/zhs007/jarviscore/coredb/proto"
+	jarvisbase "github.com/zhs007/jarviscore/base"
+	coredbpb "github.com/zhs007/jarviscore/coredb/proto"
 	pb "github.com/zhs007/jarviscore/proto"
 
 	"go.uber.org/zap"
@@ -295,7 +295,7 @@ func TestRequestCtrlScript2(t *testing.T) {
 		return
 	}
 
-	InitJarvisCore(rootcfg)
+	InitJarvisCore(rootcfg, "testnode")
 	defer ReleaseJarvisCore()
 
 	obj := newObjRCS2()

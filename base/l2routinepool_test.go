@@ -137,7 +137,7 @@ func l2makeTask(mgr *l2taskMgr, pool L2RoutinePool, maxpid int, maxc int) {
 }
 
 func TestL2RountinePool128(t *testing.T) {
-	InitLogger(zap.InfoLevel, true, "")
+	InitLogger(zap.InfoLevel, true, "", "")
 	Debug("start...")
 	// fmt.Print("haha\n")
 
@@ -164,7 +164,7 @@ func TestL2RountinePool128(t *testing.T) {
 }
 
 func TestL2RountinePool1(t *testing.T) {
-	InitLogger(zap.InfoLevel, true, "")
+	InitLogger(zap.InfoLevel, true, "", "")
 	Debug("start...")
 	// fmt.Print("haha\n")
 
@@ -191,7 +191,7 @@ func TestL2RountinePool1(t *testing.T) {
 }
 
 func TestL2RountinePool2(t *testing.T) {
-	InitLogger(zap.InfoLevel, true, "")
+	InitLogger(zap.InfoLevel, true, "", "")
 	Debug("start...")
 	// fmt.Print("haha\n")
 

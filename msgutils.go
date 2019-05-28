@@ -67,7 +67,8 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 			return append(str[:], buf[:]...), nil
 		}
 	} else if msg.MsgType == pb.MSGTYPE_REQUEST_NODES ||
-		msg.MsgType == pb.MSGTYPE_CLEAR_LOGS {
+		msg.MsgType == pb.MSGTYPE_CLEAR_LOGS ||
+		msg.MsgType == pb.MSGTYPE_REQUEST_LOGLIST {
 
 		str := []byte(fmt.Sprintf("%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr))
 

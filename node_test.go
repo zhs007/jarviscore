@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zhs007/jarviscore/coredb/proto"
-	"github.com/zhs007/jarviscore/proto"
+	coredbpb "github.com/zhs007/jarviscore/coredb/proto"
+	jarviscorepb "github.com/zhs007/jarviscore/proto"
 )
 
 func TestCheckPrivateKey(t *testing.T) {
@@ -18,7 +18,7 @@ func TestCheckPrivateKey(t *testing.T) {
 		return
 	}
 
-	InitJarvisCore(cfg)
+	InitJarvisCore(cfg, "testnode")
 	defer ReleaseJarvisCore()
 
 	node1, err := NewNode(cfg)
@@ -59,7 +59,7 @@ func TestCheckNode(t *testing.T) {
 		t.Fatalf("TestCheckNode load config %v", err)
 	}
 
-	InitJarvisCore(cfg1)
+	InitJarvisCore(cfg1, "testnode")
 	defer ReleaseJarvisCore()
 
 	node1, err := NewNode(cfg1)
@@ -245,7 +245,7 @@ func TestConnectNodeFail(t *testing.T) {
 		t.Fatalf("TestConnectNodeFail load config %v", err)
 	}
 
-	InitJarvisCore(cfg1)
+	InitJarvisCore(cfg1, "testnode")
 	defer ReleaseJarvisCore()
 
 	node1, err := NewNode(cfg1)
