@@ -63,9 +63,10 @@ type Config struct {
 	// logger configuration
 
 	Log struct {
-		LogPath    string
-		LogLevel   string
-		LogConsole bool
+		LogPath        string
+		LogLevel       string
+		LogConsole     bool
+		LogSubFileName string
 	}
 
 	//------------------------------------------------------------------
@@ -104,11 +105,13 @@ func getLogLevel(str string) zapcore.Level {
 }
 
 // InitJarvisCore -
-func InitJarvisCore(cfg *Config, nodeType string) {
+func InitJarvisCore(cfg *Config, nodeType string, version string) {
 	// config = cfg
 
+	cfg.Log.LogSubFileName = jarvisbase.BuildLogSubFilename(nodeType, version)
+
 	jarvisbase.InitLogger(getLogLevel(cfg.Log.LogLevel), cfg.Log.LogConsole,
-		cfg.Log.LogPath, nodeType)
+		cfg.Log.LogPath, cfg.Log.LogSubFileName)
 
 	jarvisbase.Info("InitJarvisCore",
 		zap.String("DBPath", cfg.AnkaDB.DBPath),

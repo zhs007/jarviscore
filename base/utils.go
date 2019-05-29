@@ -18,9 +18,14 @@ func JSON(key string, obj interface{}) zap.Field {
 	return zap.String(key, string(s))
 }
 
-// BuildLogSubFileName -
-func BuildLogSubFileName(appName string, version string) string {
+// BuildLogSubFilename -
+func BuildLogSubFilename(appName string, version string) string {
 	tm := time.Unix(curtime, 0)
 	str := tm.Format("2006-01-02_15:04:05")
 	return fmt.Sprintf("%v.%v.%v", appName, version, str)
+}
+
+// BuildLogFilename -
+func BuildLogFilename(logtype string, subname string) string {
+	return fmt.Sprintf("%v.%v.log", subname, logtype)
 }

@@ -476,7 +476,7 @@ func TestTransferFile(t *testing.T) {
 		return
 	}
 
-	InitJarvisCore(rootcfg, "testnode")
+	InitJarvisCore(rootcfg, "testnode", "1.2.3")
 	defer ReleaseJarvisCore()
 
 	obj := newObjTF()
