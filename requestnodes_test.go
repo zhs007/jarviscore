@@ -7,11 +7,9 @@ import (
 	"testing"
 	"time"
 
+	jarvisbase "github.com/zhs007/jarviscore/base"
+	coredbpb "github.com/zhs007/jarviscore/coredb/proto"
 	"go.uber.org/zap"
-
-	"github.com/zhs007/jarviscore/base"
-
-	"github.com/zhs007/jarviscore/coredb/proto"
 )
 
 // funconcallRN
@@ -247,7 +245,7 @@ func TestRequestNode(t *testing.T) {
 		return
 	}
 
-	InitJarvisCore(rootcfg)
+	InitJarvisCore(rootcfg, "testnode", "1.2.3")
 	defer ReleaseJarvisCore()
 
 	obj := newObjRN()

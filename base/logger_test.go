@@ -7,14 +7,14 @@ import (
 )
 
 func TestInitLogger(t *testing.T) {
-	_, err := initLogger(zapcore.DebugLevel, true, "../test/testinitlogger")
+	_, err := initLogger(zapcore.DebugLevel, true, "../test/testinitlogger", "")
 	if err != nil {
 		t.Fatalf("TestBaseFunc TestInitLogger err! %v", err)
 
 		return
 	}
 
-	_, err = initLogger(zapcore.DebugLevel, false, "../test/")
+	_, err = initLogger(zapcore.DebugLevel, false, "../test/", "")
 	if err != nil {
 		t.Fatalf("TestBaseFunc TestInitLogger err! %v", err)
 

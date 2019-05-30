@@ -9,10 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zhs007/jarviscore/proto"
-
-	"github.com/zhs007/jarviscore/base"
-	"github.com/zhs007/jarviscore/coredb/proto"
+	jarvisbase "github.com/zhs007/jarviscore/base"
+	coredbpb "github.com/zhs007/jarviscore/coredb/proto"
+	jarviscorepb "github.com/zhs007/jarviscore/proto"
 
 	"go.uber.org/zap"
 )
@@ -509,7 +508,7 @@ func TestRequestFile(t *testing.T) {
 		return
 	}
 
-	InitJarvisCore(rootcfg)
+	InitJarvisCore(rootcfg, "testnode", "1.2.3")
 	defer ReleaseJarvisCore()
 
 	obj := newObjRF()

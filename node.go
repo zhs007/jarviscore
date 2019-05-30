@@ -1644,10 +1644,10 @@ func (n *jarvisNode) checkMsgID(ctx context.Context, msg *pb.JarvisMsg) error {
 }
 
 // UpdateNode - update node
-func (n *jarvisNode) UpdateNode(ctx context.Context, addr string, nodetype string, nodetypever string,
+func (n *jarvisNode) UpdateNode(ctx context.Context, addr string, nodetype string, nodetypever string, isOnlyRestart bool,
 	funcOnResult FuncOnProcMsgResult) error {
 
-	sendmsg, err := BuildUpdateNode(n, n.myinfo.Addr, addr, nodetype, nodetypever)
+	sendmsg, err := BuildUpdateNode(n, n.myinfo.Addr, addr, nodetype, nodetypever, isOnlyRestart)
 	if err != nil {
 		jarvisbase.Warn("jarvisNode.RequestFile", zap.Error(err))
 
@@ -1660,7 +1660,7 @@ func (n *jarvisNode) UpdateNode(ctx context.Context, addr string, nodetype strin
 }
 
 // UpdateAllNodes - update all nodes
-func (n *jarvisNode) UpdateAllNodes(ctx context.Context, nodetype string, nodetypever string,
+func (n *jarvisNode) UpdateAllNodes(ctx context.Context, nodetype string, nodetypever string, isOnlyRestart bool,
 	funcOnResult FuncOnGroupSendMsgResult) error {
 
 	numsSend := 0
@@ -1683,7 +1683,7 @@ func (n *jarvisNode) UpdateAllNodes(ctx context.Context, nodetype string, nodety
 			curResult := &ClientGroupProcMsgResults{}
 			totalResults = append(totalResults, curResult)
 
-			err := n.UpdateNode(ctx, addr, nodetype, nodetypever,
+			err := n.UpdateNode(ctx, addr, nodetype, nodetypever, isOnlyRestart,
 				func(ctx context.Context, jarvisnode JarvisNode, lstResult []*JarvisMsgInfo) error {
 					curResult.Results = lstResult
 

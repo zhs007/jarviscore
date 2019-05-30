@@ -9,7 +9,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/zhs007/jarviscore/basedef"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -19,16 +18,11 @@ var onceLogger sync.Once
 var logPath string
 var curtime int64
 var panicFile *os.File
-
-func getLogFileName(head string) string {
-	tm := time.Unix(curtime, 0)
-	str := tm.Format("2006-01-02_15:04:05")
-	return fmt.Sprintf("%v.%v.%v.log", head, basedef.VERSION, str)
-}
+var logSubName string
 
 func initPanicFile() error {
 	file, err := os.OpenFile(
-		path.Join(logPath, getLogFileName("panic")),
+		path.Join(logPath, BuildLogFilename("panic", logSubName)),
 		os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		Warn("initPanicFile:OpenFile",
@@ -49,7 +43,11 @@ func initPanicFile() error {
 	return nil
 }
 
-func initLogger(level zapcore.Level, isConsole bool, logpath string) (*zap.Logger, error) {
+func initLogger(level zapcore.Level, isConsole bool, logpath string,
+	subName string) (*zap.Logger, error) {
+
+	logSubName = subName
+
 	curtime = time.Now().Unix()
 
 	logPath = logpath
@@ -74,8 +72,8 @@ func initLogger(level zapcore.Level, isConsole bool, logpath string) (*zap.Logge
 	cfg := &zap.Config{}
 
 	cfg.Level = zap.NewAtomicLevelAt(level)
-	cfg.OutputPaths = []string{path.Join(logpath, getLogFileName("output"))}
-	cfg.ErrorOutputPaths = []string{path.Join(logpath, getLogFileName("error"))}
+	cfg.OutputPaths = []string{path.Join(logpath, BuildLogFilename("output", logSubName))}
+	cfg.ErrorOutputPaths = []string{path.Join(logpath, BuildLogFilename("error", logSubName))}
 	cfg.Encoding = "json"
 	cfg.EncoderConfig = zapcore.EncoderConfig{
 		TimeKey:     "T",
@@ -99,10 +97,12 @@ func initLogger(level zapcore.Level, isConsole bool, logpath string) (*zap.Logge
 }
 
 // InitLogger - initializes a thread-safe singleton logger
-func InitLogger(level zapcore.Level, isConsole bool, logpath string) {
+func InitLogger(level zapcore.Level, isConsole bool, logpath string,
+	nodeType string) {
+
 	// once ensures the singleton is initialized only once
 	onceLogger.Do(func() {
-		cl, err := initLogger(level, isConsole, logpath)
+		cl, err := initLogger(level, isConsole, logpath, nodeType)
 		if err != nil {
 			fmt.Printf("initLogger error! %v \n", err)
 
@@ -179,9 +179,9 @@ func ClearLogs() error {
 			return err
 		}
 
-		panicfile := getLogFileName("panic")
-		outputfile := getLogFileName("output")
-		errorfile := getLogFileName("error")
+		panicfile := BuildLogFilename("panic", logSubName)
+		outputfile := BuildLogFilename("output", logSubName)
+		errorfile := BuildLogFilename("error", logSubName)
 
 		for _, v := range lst {
 			cfn := filepath.Base(v)

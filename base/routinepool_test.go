@@ -124,7 +124,7 @@ func makeTask(mgr *taskMgr, pool RoutinePool, maxtasks int) {
 }
 
 func TestRountinePool(t *testing.T) {
-	InitLogger(zap.InfoLevel, true, "")
+	InitLogger(zap.InfoLevel, true, "", "")
 	Debug("start...")
 	// fmt.Print("haha\n")
 

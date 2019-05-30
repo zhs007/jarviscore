@@ -132,7 +132,7 @@ func sleepl2makeTask(mgr *sleepl2taskMgr, pool L2RoutinePool, maxpid int, maxc i
 }
 
 func TestL2RountinePoolSleep128(t *testing.T) {
-	InitLogger(zap.InfoLevel, true, "")
+	InitLogger(zap.InfoLevel, true, "", "")
 	Debug("start...")
 
 	pool := NewL2RoutinePool()
@@ -158,7 +158,7 @@ func TestL2RountinePoolSleep128(t *testing.T) {
 }
 
 func TestL2RountinePoolSleep1(t *testing.T) {
-	InitLogger(zap.InfoLevel, true, "")
+	InitLogger(zap.InfoLevel, true, "", "")
 	Debug("start...")
 
 	pool := NewL2RoutinePool()
@@ -184,7 +184,7 @@ func TestL2RountinePoolSleep1(t *testing.T) {
 }
 
 func TestL2RountinePoolSleep2(t *testing.T) {
-	InitLogger(zap.InfoLevel, true, "")
+	InitLogger(zap.InfoLevel, true, "", "")
 	Debug("start...")
 
 	pool := NewL2RoutinePool()

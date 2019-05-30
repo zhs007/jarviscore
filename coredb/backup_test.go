@@ -5,11 +5,11 @@ import (
 
 	"go.uber.org/zap/zapcore"
 
-	"github.com/zhs007/jarviscore/base"
+	jarvisbase "github.com/zhs007/jarviscore/base"
 )
 
 func TestBackup06(t *testing.T) {
-	jarvisbase.InitLogger(zapcore.DebugLevel, true, "")
+	jarvisbase.InitLogger(zapcore.DebugLevel, true, "", "")
 
 	//------------------------------------------------------------------------
 	// initial CoreDB

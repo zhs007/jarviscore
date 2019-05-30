@@ -7,9 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zhs007/jarviscore/base"
-	"github.com/zhs007/jarviscore/coredb/proto"
-
+	jarvisbase "github.com/zhs007/jarviscore/base"
+	coredbpb "github.com/zhs007/jarviscore/coredb/proto"
 	"go.uber.org/zap"
 )
 
@@ -169,7 +168,7 @@ func (obj *objUN) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 
 	if obj.node1ni.numsConnMe == 2 && obj.node2ni.numsConnMe == 2 &&
 		obj.node1ni.numsIConn == 2 && obj.node2ni.numsIConn == 2 && !obj.updnodefromnode1 {
-		err := obj.node1.UpdateAllNodes(ctx, "testupdnode", "0.7.25",
+		err := obj.node1.UpdateAllNodes(ctx, "testupdnode", "0.7.25", false,
 			func(ctx context.Context, jarvisnode JarvisNode, numsNode int, lstResult []*ClientGroupProcMsgResults) error {
 
 				jarvisbase.Info("objUN.onIConn:node1.UpdateAllNodes",
@@ -268,7 +267,7 @@ func TestUpdNode(t *testing.T) {
 		return
 	}
 
-	InitJarvisCore(rootcfg)
+	InitJarvisCore(rootcfg, "testnode", "1.2.3")
 	defer ReleaseJarvisCore()
 
 	obj := newObjUN()

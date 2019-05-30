@@ -19,9 +19,9 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	"github.com/zhs007/jarviscore/base"
+	jarvisbase "github.com/zhs007/jarviscore/base"
 	"github.com/zhs007/jarviscore/basedef"
-	"github.com/zhs007/jarviscore/coredb/proto"
+	coredbpb "github.com/zhs007/jarviscore/coredb/proto"
 	pb "github.com/zhs007/jarviscore/proto"
 )
 
@@ -492,34 +492,22 @@ func RunCommand(ctx context.Context, jnode JarvisNode, cmdname string,
 
 	md5str := GetMD5String([]byte(cmd))
 	tm := time.Now()
-	timestr := tm.Format("2006-01-02_15:04:05")
+	// timestr := tm.Format("2006-01-02_15:04:05")
 
 	nc := exec.Command("sh", "-c", cmd)
 
-	// logpath := "./"
-	// if jnode != nil {
-	// 	logpath = jnode.GetConfig().Log.LogPath
-	// }
-
-	// outfn := GetAbsPath(path.Join(logpath,
-	// 	fmt.Sprintf("cmd.out.%v.%v.log", md5str, timestr)))
-	// errfn := GetAbsPath(path.Join(logpath,
-	// 	fmt.Sprintf("cmd.err.%v.%v.log", md5str, timestr)))
-	// outfn := path.Join(logpath,
-	// 	fmt.Sprintf("cmd.out.%v.%v.log", md5str, timestr))
-	// errfn := path.Join(logpath,
-	// 	fmt.Sprintf("cmd.err.%v.%v.log", md5str, timestr))
-
 	var outfn string
 	var errfn string
+
+	subname := jarvisbase.BuildLogSubFilename(cmdname, md5str)
 
 	if jnode != nil {
 		logpath := jnode.GetConfig().Log.LogPath
 
 		outfn = path.Join(logpath,
-			fmt.Sprintf("cmd.out.%v.%v.log", md5str, timestr))
+			jarvisbase.BuildLogFilename("output", subname))
 		errfn = path.Join(logpath,
-			fmt.Sprintf("cmd.err.%v.%v.log", md5str, timestr))
+			jarvisbase.BuildLogFilename("error", subname))
 
 		jt := &pb.JarvisTask{
 			Name:     cmdname,
@@ -536,9 +524,9 @@ func RunCommand(ctx context.Context, jnode JarvisNode, cmdname string,
 		logpath := "./"
 
 		outfn = path.Join(logpath,
-			fmt.Sprintf("cmd.out.%v.%v.log", md5str, timestr))
+			jarvisbase.BuildLogFilename("output", subname))
 		errfn = path.Join(logpath,
-			fmt.Sprintf("cmd.err.%v.%v.log", md5str, timestr))
+			jarvisbase.BuildLogFilename("error", subname))
 	}
 
 	var errStdout, errStderr error
