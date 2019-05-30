@@ -1670,7 +1670,9 @@ func (n *jarvisNode) UpdateAllNodes(ctx context.Context, nodetype string, nodety
 	//!! 在网络IO很快的时候，假设一共有2个节点，但第一个节点很快返回的话，可能还没全部发送完成，就产生回调
 	//!! 所以这里分2次遍历
 	n.coredb.ForEachMapNodes(func(addr string, ni *coredbpb.NodeInfo) error {
-		if ni.NodeType == nodetype && ni.NodeTypeVersion != nodetypever {
+		if ni.NodeType == nodetype && ni.NodeTypeVersion != nodetypever &&
+			!ni.Deprecated {
+
 			numsSend++
 		}
 
@@ -1678,7 +1680,8 @@ func (n *jarvisNode) UpdateAllNodes(ctx context.Context, nodetype string, nodety
 	})
 
 	n.coredb.ForEachMapNodes(func(addr string, ni *coredbpb.NodeInfo) error {
-		if ni.NodeType == nodetype && ni.NodeTypeVersion != nodetypever {
+		if ni.NodeType == nodetype && ni.NodeTypeVersion != nodetypever &&
+			!ni.Deprecated {
 
 			curResult := &ClientGroupProcMsgResults{}
 			totalResults = append(totalResults, curResult)

@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"sync"
 	"syscall"
-	"time"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -16,7 +15,8 @@ import (
 var logger *zap.Logger
 var onceLogger sync.Once
 var logPath string
-var curtime int64
+
+// var curtime int64
 var panicFile *os.File
 var logSubName string
 
@@ -48,7 +48,7 @@ func initLogger(level zapcore.Level, isConsole bool, logpath string,
 
 	logSubName = subName
 
-	curtime = time.Now().Unix()
+	// curtime = time.Now().Unix()
 
 	logPath = logpath
 
