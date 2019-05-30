@@ -20,7 +20,7 @@ func JSON(key string, obj interface{}) zap.Field {
 
 // BuildLogSubFilename -
 func BuildLogSubFilename(appName string, version string) string {
-	tm := time.Unix(curtime, 0)
+	tm := time.Now()
 	str := tm.Format("2006-01-02_15:04:05")
 	return fmt.Sprintf("%v.%v.%v", appName, version, str)
 }
