@@ -31,7 +31,7 @@ func newProcMsgResultMgr(node JarvisNode) *procMsgResultMgr {
 
 // onProcMsg
 func (mgr *procMsgResultMgr) onProcMsg(ctx context.Context, taskinfo *JarvisMsgTask) error {
-	if taskinfo.Normal != nil && taskinfo.Normal.OnResult != nil {
+	if taskinfo.Normal != nil {
 		if taskinfo.Normal.Msg.MsgType == jarviscorepb.MSGTYPE_REPLY2 &&
 			taskinfo.Normal.Msg.ReplyType == jarviscorepb.REPLYTYPE_END &&
 			taskinfo.Normal.Msg.ReplyMsgID > 0 {
@@ -39,7 +39,7 @@ func (mgr *procMsgResultMgr) onProcMsg(ctx context.Context, taskinfo *JarvisMsgT
 			mgr.onEndMsg(taskinfo.Normal.Msg.SrcAddr,
 				taskinfo.Normal.Msg.ReplyMsgID)
 		}
-	} else if taskinfo.Stream != nil && taskinfo.Stream.OnResult != nil {
+	} else if taskinfo.Stream != nil {
 		for i := 0; i < len(taskinfo.Stream.Msgs); i++ {
 			if taskinfo.Stream.Msgs[i].Msg != nil &&
 				taskinfo.Stream.Msgs[i].Msg.MsgType == jarviscorepb.MSGTYPE_REPLY2 &&
@@ -65,9 +65,9 @@ func (mgr *procMsgResultMgr) startProcMsgResultData(addr string, msgid int64, on
 
 	pmrd := NewProcMsgResultData(addr, msgid, onProcMsgResult)
 
-	// jarvisbase.Info("procMsgResultMgr.startProcMsgResultData:Store",
-	// 	zap.String("key", AppendString(addr, ":", strconv.FormatInt(msgid, 10))),
-	// 	zap.Int("nums", mgr.countNums()))
+	jarvisbase.Info("procMsgResultMgr.startProcMsgResultData:Store",
+		zap.String("key", AppendString(addr, ":", strconv.FormatInt(msgid, 10))),
+		zap.Int("nums", mgr.countNums()))
 
 	mgr.mapWaitPush.Store(AppendString(addr, ":", strconv.FormatInt(msgid, 10)), pmrd)
 
