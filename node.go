@@ -294,6 +294,8 @@ func (n *jarvisNode) onNormalMsg(ctx context.Context, normal *NormalMsgTaskInfo,
 			return n.onMsgReplyMsgState(ctx, normal.Msg)
 		} else if normal.Msg.MsgType == pb.MSGTYPE_CLEAR_LOGS {
 			return n.onMsgClearLogs(ctx, normal.Msg, jmsgrs)
+		} else if normal.Msg.MsgType == pb.MSGTYPE_REQUEST_NODES2 {
+			return n.onMsgRequestNodes2(ctx, normal.Msg, jmsgrs)
 		}
 
 	}
@@ -384,6 +386,12 @@ func (n *jarvisNode) OnMsg(ctx context.Context, task *JarvisMsgTask) error {
 
 // onMsgNodeInfo
 func (n *jarvisNode) onMsgNodeInfo(ctx context.Context, msg *pb.JarvisMsg) error {
+
+	sn := n.coredb.GetNode(msg.MyAddr)
+	if sn != nil && sn.LastMsgID4RequestNodes > 0 {
+		sn.LastMsgID4RequestNodes = 0
+	}
+
 	ni := msg.GetNodeInfo()
 	return n.AddNodeBaseInfo(ni)
 }
@@ -962,7 +970,7 @@ func (n *jarvisNode) SendFile2(ctx context.Context, addr string, fd *pb.FileData
 func (n *jarvisNode) onTimerRequestNodes(ctx context.Context) error {
 	// jarvisbase.Debug("jarvisNode.onTimerRequestNodes")
 
-	return n.RequestNodes(ctx, nil)
+	return n.RequestNodes(ctx, false, nil)
 }
 
 // ClearLogs - clear logs
@@ -985,14 +993,14 @@ func (n *jarvisNode) ClearLogs(ctx context.Context, addr string,
 }
 
 // RequestNode - update node
-func (n *jarvisNode) RequestNode(ctx context.Context, addr string,
+func (n *jarvisNode) RequestNode(ctx context.Context, addr string, isNeedLocalHost bool,
 	funcOnResult FuncOnProcMsgResult) error {
 
 	ni := n.coredb.GetNode(addr)
 	if ni != nil && !coredb.IsDeprecatedNode(ni) {
-		sendmsg, err := BuildRequestNodes(n, n.myinfo.Addr, ni.Addr)
+		sendmsg, err := BuildRequestNodes2(n, n.myinfo.Addr, ni.Addr, isNeedLocalHost)
 		if err != nil {
-			jarvisbase.Warn("jarvisNode.RequestNode:BuildRequestNodes", zap.Error(err))
+			jarvisbase.Warn("jarvisNode.RequestNode:BuildRequestNodes2", zap.Error(err))
 
 			return nil
 		}
@@ -1051,7 +1059,7 @@ func (n *jarvisNode) ClearAllLogs(ctx context.Context, funcOnResult FuncOnGroupS
 }
 
 // RequestNodes - request nodes
-func (n *jarvisNode) RequestNodes(ctx context.Context, funcOnResult FuncOnGroupSendMsgResult) error {
+func (n *jarvisNode) RequestNodes(ctx context.Context, isNeedLocalHost bool, funcOnResult FuncOnGroupSendMsgResult) error {
 
 	numsSend := 0
 
@@ -1060,7 +1068,7 @@ func (n *jarvisNode) RequestNodes(ctx context.Context, funcOnResult FuncOnGroupS
 	//!! 在网络IO很快的时候，假设一共有2个节点，但第一个节点很快返回的话，可能还没全部发送完成，就产生回调
 	//!! 所以这里分2次遍历
 	n.coredb.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
-		if !coredb.IsDeprecatedNode(v) && n.mgrClient2.isConnected(v.Addr) {
+		if !coredb.IsDeprecatedNode(v) && n.mgrClient2.isConnected(v.Addr) && v.LastMsgID4RequestNodes == 0 {
 			numsSend++
 		}
 
@@ -1070,11 +1078,13 @@ func (n *jarvisNode) RequestNodes(ctx context.Context, funcOnResult FuncOnGroupS
 	n.coredb.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
 		jarvisbase.Debug(fmt.Sprintf("jarvisNode.RequestNodes %v", v))
 
-		if !coredb.IsDeprecatedNode(v) && n.mgrClient2.isConnected(v.Addr) {
+		if !coredb.IsDeprecatedNode(v) && n.mgrClient2.isConnected(v.Addr) && v.LastMsgID4RequestNodes == 0 {
+			v.LastMsgID4RequestNodes = 1
+
 			curResult := &ClientGroupProcMsgResults{}
 			totalResults = append(totalResults, curResult)
 
-			err := n.RequestNode(ctx, v.Addr,
+			err := n.RequestNode(ctx, v.Addr, isNeedLocalHost,
 				func(ctx context.Context, jarvisnode JarvisNode, lstResult []*JarvisMsgInfo) error {
 					curResult.Results = lstResult
 
@@ -1136,6 +1146,58 @@ func (n *jarvisNode) onMsgRequestNodes(ctx context.Context, msg *pb.JarvisMsg, j
 		err = n.sendMsg2ClientStream(jmsgrs, msg.MsgID, sendmsg)
 		if err != nil {
 			jarvisbase.Warn("jarvisNode.onMsgRequestNodes:sendMsg2ClientStream", zap.Error(err))
+
+			return err
+		}
+
+		return nil
+	})
+
+	return nil
+}
+
+// onMsgRequestNodes2
+func (n *jarvisNode) onMsgRequestNodes2(ctx context.Context, msg *pb.JarvisMsg, jmsgrs *JarvisMsgReplyStream) error {
+	if jmsgrs == nil {
+		jarvisbase.Warn("jarvisNode.onMsgRequestNodes2", zap.Error(ErrStreamNil))
+
+		return ErrStreamNil
+	}
+
+	defer n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_END, "")
+
+	n.onStartWait4MyReply(msg.SrcAddr, msg.MsgID)
+	defer n.onEndWait4MyReply(msg.SrcAddr, msg.MsgID)
+
+	rn2 := msg.GetRequestNodes2()
+
+	n.coredb.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
+		//!!! don't broadcast the localhost node
+		if !rn2.IsNeedLocalHost && IsLocalHostAddr(v.ServAddr) {
+			return nil
+		}
+
+		//!!! don't broadcast the deprecated node
+		if v.Deprecated {
+			return nil
+		}
+
+		mni := &pb.NodeBaseInfo{
+			ServAddr: v.ServAddr,
+			Addr:     v.Addr,
+			Name:     v.Name,
+		}
+
+		sendmsg, err := BuildNodeInfo(n, n.myinfo.Addr, msg.SrcAddr, mni)
+		if err != nil {
+			jarvisbase.Warn("jarvisNode.onMsgRequestNodes2:BuildNodeInfo", zap.Error(err))
+
+			return err
+		}
+
+		err = n.sendMsg2ClientStream(jmsgrs, msg.MsgID, sendmsg)
+		if err != nil {
+			jarvisbase.Warn("jarvisNode.onMsgRequestNodes2:sendMsg2ClientStream", zap.Error(err))
 
 			return err
 		}

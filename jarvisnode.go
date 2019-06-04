@@ -36,7 +36,7 @@ type JarvisNode interface {
 	RequestFile(ctx context.Context, addr string, rf *pb.RequestFile,
 		funcOnResult FuncOnProcMsgResult) error
 	// RequestNodes - request nodes
-	RequestNodes(ctx context.Context, funcOnResult FuncOnGroupSendMsgResult) error
+	RequestNodes(ctx context.Context, isNeedLocalHost bool, funcOnResult FuncOnGroupSendMsgResult) error
 	// UpdateNode - update node
 	UpdateNode(ctx context.Context, addr string, nodetype string, nodetypever string, isOnlyRestart bool,
 		funcOnResult FuncOnProcMsgResult) error

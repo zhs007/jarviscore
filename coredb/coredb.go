@@ -10,10 +10,10 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/zhs007/ankadb"
 	"github.com/zhs007/ankadb/database"
-	"github.com/zhs007/jarviscore/base"
-	"github.com/zhs007/jarviscore/coredb/proto"
-	"github.com/zhs007/jarviscore/crypto"
-	"github.com/zhs007/jarviscore/proto"
+	jarvisbase "github.com/zhs007/jarviscore/base"
+	coredbpb "github.com/zhs007/jarviscore/coredb/proto"
+	jarviscrypto "github.com/zhs007/jarviscore/crypto"
+	jarviscorepb "github.com/zhs007/jarviscore/proto"
 )
 
 const (
@@ -319,6 +319,8 @@ func (db *CoreDB) loadAllNodes() error {
 		val.ConnectMe = false
 		val.ConnType = coredbpb.CONNECTTYPE_UNKNOWN_CONN
 		val.Deprecated = false
+		val.LastMsgID4RequestNodes = 0
+
 		if val.LastRecvMsgID < 0 {
 			val.LastRecvMsgID = 0
 		}

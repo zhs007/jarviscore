@@ -80,6 +80,8 @@ message NodeInfo {
     // This property is the number of failures to connect to the node. 
     // If there is a successful connection, this property will be reset to 0.
     int32 numsConnectFail = 24;
+    // Only if this value is 0, I will execute requestnodes
+    int64 lastMsgID4RequestNodes = 25;
 }
 
 // node info list

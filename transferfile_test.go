@@ -222,12 +222,12 @@ func (obj *objTF) oncheck(ctx context.Context, funcCancel context.CancelFunc) er
 			return err
 		}
 
-		err = obj.node1.RequestNodes(ctx, nil)
+		err = obj.node1.RequestNodes(ctx, true, nil)
 		if err != nil {
 			return err
 		}
 
-		err = obj.node2.RequestNodes(ctx, nil)
+		err = obj.node2.RequestNodes(ctx, true, nil)
 		if err != nil {
 			return err
 		}
