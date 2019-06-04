@@ -386,6 +386,12 @@ func (n *jarvisNode) OnMsg(ctx context.Context, task *JarvisMsgTask) error {
 
 // onMsgNodeInfo
 func (n *jarvisNode) onMsgNodeInfo(ctx context.Context, msg *pb.JarvisMsg) error {
+
+	sn := n.coredb.GetNode(msg.MyAddr)
+	if sn != nil && sn.LastMsgID4RequestNodes > 0 {
+		sn.LastMsgID4RequestNodes = 0
+	}
+
 	ni := msg.GetNodeInfo()
 	return n.AddNodeBaseInfo(ni)
 }
@@ -1062,7 +1068,7 @@ func (n *jarvisNode) RequestNodes(ctx context.Context, isNeedLocalHost bool, fun
 	//!! 在网络IO很快的时候，假设一共有2个节点，但第一个节点很快返回的话，可能还没全部发送完成，就产生回调
 	//!! 所以这里分2次遍历
 	n.coredb.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
-		if !coredb.IsDeprecatedNode(v) && n.mgrClient2.isConnected(v.Addr) {
+		if !coredb.IsDeprecatedNode(v) && n.mgrClient2.isConnected(v.Addr) && v.LastMsgID4RequestNodes == 0 {
 			numsSend++
 		}
 
@@ -1072,7 +1078,9 @@ func (n *jarvisNode) RequestNodes(ctx context.Context, isNeedLocalHost bool, fun
 	n.coredb.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
 		jarvisbase.Debug(fmt.Sprintf("jarvisNode.RequestNodes %v", v))
 
-		if !coredb.IsDeprecatedNode(v) && n.mgrClient2.isConnected(v.Addr) {
+		if !coredb.IsDeprecatedNode(v) && n.mgrClient2.isConnected(v.Addr) && v.LastMsgID4RequestNodes == 0 {
+			v.LastMsgID4RequestNodes = 1
+
 			curResult := &ClientGroupProcMsgResults{}
 			totalResults = append(totalResults, curResult)
 
