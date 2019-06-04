@@ -123,7 +123,7 @@ func (obj *objRN) oncheck(ctx context.Context, funcCancel cancelFunc) error {
 		obj.node2ni.numsConnMe >= 1 && obj.node2ni.numsIConn >= 1 &&
 		!obj.requestnodes {
 
-		err := obj.node1.RequestNodes(ctx, func(ctx context.Context, jarvisnode JarvisNode,
+		err := obj.node1.RequestNodes(ctx, true, func(ctx context.Context, jarvisnode JarvisNode,
 			numsNode int, lstResult []*ClientGroupProcMsgResults) error {
 
 			jarvisbase.Info("objRN.onIConn:node1.RequestNodes",
@@ -150,7 +150,7 @@ func (obj *objRN) oncheck(ctx context.Context, funcCancel cancelFunc) error {
 			return err
 		}
 
-		err = obj.node2.RequestNodes(ctx, func(ctx context.Context, jarvisnode JarvisNode,
+		err = obj.node2.RequestNodes(ctx, true, func(ctx context.Context, jarvisnode JarvisNode,
 			numsNode int, lstResult []*ClientGroupProcMsgResults) error {
 
 			jarvisbase.Info("objRN.onIConn:node2.RequestNodes",

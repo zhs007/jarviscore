@@ -157,12 +157,12 @@ func (obj *objRCS2) oncheck(ctx context.Context, funcCancel context.CancelFunc) 
 			return err
 		}
 
-		err = obj.node1.RequestNodes(ctx, nil)
+		err = obj.node1.RequestNodes(ctx, true, nil)
 		if err != nil {
 			return err
 		}
 
-		err = obj.node2.RequestNodes(ctx, nil)
+		err = obj.node2.RequestNodes(ctx, true, nil)
 		if err != nil {
 			return err
 		}

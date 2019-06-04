@@ -161,6 +161,18 @@ func buildSignBuf(msg *pb.JarvisMsg) ([]byte, error) {
 
 			return append(str[:], buf[:]...), nil
 		}
+	} else if msg.MsgType == pb.MSGTYPE_REQUEST_NODES2 {
+		rn2 := msg.GetRequestNodes2()
+		if rn2 != nil {
+			str := []byte(fmt.Sprintf("%v%v%v%v%v%v", msg.MsgID, msg.MsgType, msg.DestAddr, msg.CurTime, msg.SrcAddr,
+				msg.ReplyMsgID))
+			buf, err := proto.Marshal(rn2)
+			if err != nil {
+				return nil, err
+			}
+
+			return append(str[:], buf[:]...), nil
+		}
 	}
 
 	return nil, ErrInvalidMsgType
@@ -329,6 +341,26 @@ func BuildRequestNodes(jarvisnode JarvisNode, srcAddr string,
 		DestAddr: destAddr,
 		MsgType:  pb.MSGTYPE_REQUEST_NODES,
 		// LastMsgID: jarvisnode.GetCoreDB().GetCurRecvMsgID(destAddr),
+	}
+
+	return msg, nil
+}
+
+// BuildRequestNodes2 - build jarvismsg with REQUEST_NODES2
+func BuildRequestNodes2(jarvisnode JarvisNode, srcAddr string,
+	destAddr string, isNeedLocalHost bool) (*pb.JarvisMsg, error) {
+
+	msg := &pb.JarvisMsg{
+		CurTime:  time.Now().Unix(),
+		SrcAddr:  srcAddr,
+		MyAddr:   srcAddr,
+		DestAddr: destAddr,
+		MsgType:  pb.MSGTYPE_REQUEST_NODES2,
+		Data: &pb.JarvisMsg_RequestNodes2{
+			RequestNodes2: &pb.RequestNodes2{
+				IsNeedLocalHost: isNeedLocalHost,
+			},
+		},
 	}
 
 	return msg, nil
