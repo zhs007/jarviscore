@@ -80,6 +80,9 @@ var inputTypeNodeInfo = graphql.NewInputObject(
 			"numsConnectFail": &graphql.InputObjectFieldConfig{
 				Type: graphql.Int,
 			},
+			"lastMsgID4RequestNodes": &graphql.InputObjectFieldConfig{
+				Type: graphqlext.Int64,
+			},
 		},
 	},
 )
