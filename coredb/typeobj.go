@@ -108,6 +108,9 @@ var typeNodeInfo = graphql.NewObject(
 			"numsConnectFail": &graphql.Field{
 				Type: graphql.Int,
 			},
+			"lastMsgID4RequestNodes": &graphql.Field{
+				Type: graphqlext.Int64,
+			},
 		},
 	},
 )
