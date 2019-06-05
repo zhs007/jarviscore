@@ -229,6 +229,15 @@ func (c *jarvisClient2) _getClientConn(addr string) *clientInfo2 {
 	return nil
 }
 
+func (c *jarvisClient2) _deleteClientConn(addr string) {
+	c.mapClient.Delete(addr)
+
+	curnode := c.node.FindNode(addr)
+	if curnode != nil {
+		mgrConn.delConn(curnode.ServAddr)
+	}
+}
+
 func (c *jarvisClient2) _getValidClientConn(addr string) (*clientInfo2, error) {
 	ci := c._getClientConn(addr)
 	if ci != nil {
@@ -322,6 +331,24 @@ func (c *jarvisClient2) _sendMsg(ctx context.Context, smsg *pb.JarvisMsg, funcOn
 
 	stream, err := ci2.client.ProcMsg(ctx, smsg)
 	if err != nil {
+		grpcerr, ok := status.FromError(err)
+		if ok && grpcerr.Code() == codes.Unimplemented {
+			jarvisbase.Warn("jarvisClient2._sendMsg:ProcMsg:Unimplemented", zap.Error(err))
+
+			destnode := c.node.FindNode(destaddr)
+			if destnode != nil {
+				c.node.mgrEvent.onNodeEvent(ctx, EventOnDeprecateNode, destnode)
+			}
+
+			if funcOnResult != nil {
+				c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeLocalErrorEnd, nil, err)
+			}
+
+			c._deleteClientConn(destaddr)
+
+			return err
+		}
+
 		jarvisbase.Warn("jarvisClient2._sendMsg:ProcMsg", zap.Error(err))
 
 		if funcOnResult != nil {
@@ -568,10 +595,10 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 			funcOnResult(ctx, c.node, lstResult)
 		}
 
-		err := conn.Close()
-		if err != nil {
-			jarvisbase.Warn("jarvisClient2._connectNode:Close", zap.Error(err1))
-		}
+		// err := conn.Close()
+		// if err != nil {
+		// 	jarvisbase.Warn("jarvisClient2._connectNode:Close", zap.Error(err1))
+		// }
 
 		mgrConn.delConn(servaddr)
 
@@ -601,6 +628,10 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 			if ok && grpcerr.Code() == codes.Unimplemented {
 				jarvisbase.Warn("jarvisClient2._connectNode:ProcMsg:Unimplemented", zap.Error(err))
 
+				if node != nil {
+					c.node.mgrEvent.onNodeEvent(ctx, EventOnDeprecateNode, node)
+				}
+
 				if funcOnResult != nil {
 					lstResult = append(lstResult, &JarvisMsgInfo{
 						JarvisResultType: JarvisResultTypeLocalErrorEnd,
@@ -610,10 +641,10 @@ func (c *jarvisClient2) _connectNode(ctx context.Context, servaddr string, node 
 					funcOnResult(ctx, c.node, lstResult)
 				}
 
-				err1 := conn.Close()
-				if err1 != nil {
-					jarvisbase.Warn("jarvisClient2._connectNode:Close", zap.Error(err))
-				}
+				// err1 := conn.Close()
+				// if err1 != nil {
+				// 	jarvisbase.Warn("jarvisClient2._connectNode:Close", zap.Error(err))
+				// }
 
 				mgrConn.delConn(servaddr)
 
@@ -701,6 +732,35 @@ func (c *jarvisClient2) _procRecvMsgStream(ctx context.Context,
 		}
 
 		if err != nil {
+			grpcerr, ok := status.FromError(err)
+			if ok && grpcerr.Code() == codes.Unimplemented {
+				jarvisbase.Warn("jarvisClient2._procRecvMsgStream:stream:Unimplemented", zap.Error(err))
+
+				destnode := c.node.FindNode(destaddr)
+				if destnode != nil {
+					c.node.mgrEvent.onNodeEvent(ctx, EventOnDeprecateNode, destnode)
+				}
+
+				if funcOnResult != nil {
+					c.node.OnReplyProcMsg(ctx, destaddr, newsendmsgid, JarvisResultTypeLocalErrorEnd, nil, err)
+				}
+
+				c._deleteClientConn(destaddr)
+
+				break
+
+				// err1 := conn.Close()
+				// if err1 != nil {
+				// 	jarvisbase.Warn("jarvisClient2._procRecvMsgStream:stream:Close", zap.Error(err))
+				// }
+
+				// mgrConn.delConn(servaddr)
+
+				// c.fsa.onConnFail(servaddr)
+
+				// return err
+			}
+
 			jarvisbase.Warn("jarvisClient2._procRecvMsgStream:stream", zap.Error(err))
 
 			if funcOnResult != nil {

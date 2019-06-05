@@ -3,9 +3,9 @@ package jarviscore
 import (
 	"sync"
 
+	jarvisbase "github.com/zhs007/jarviscore/base"
 	"google.golang.org/grpc/connectivity"
 
-	"github.com/zhs007/jarviscore/base"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
@@ -71,5 +71,10 @@ func (mgr *connMgr) getConn(servaddr string) (*grpc.ClientConn, error) {
 }
 
 func (mgr *connMgr) delConn(servaddr string) {
+	conn, _ := mgr.getConn(servaddr)
+	if conn != nil {
+		conn.Close()
+	}
+
 	mgr.mapConn.Delete(servaddr)
 }
