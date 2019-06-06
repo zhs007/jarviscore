@@ -1,10 +1,12 @@
 package jarvisbase
 
 import (
+	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"time"
 
+	"github.com/golang/protobuf/proto"
 	"go.uber.org/zap"
 )
 
@@ -28,4 +30,14 @@ func BuildLogSubFilename(appName string, version string) string {
 // BuildLogFilename -
 func BuildLogFilename(logtype string, subname string) string {
 	return fmt.Sprintf("%v.%v.log", subname, logtype)
+}
+
+// MD5Protobuf - md5 protobuf and return string
+func MD5Protobuf(pb proto.Message) (string, error) {
+	buf, err := proto.Marshal(pb)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%x", md5.Sum(buf)), nil
 }

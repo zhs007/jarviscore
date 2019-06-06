@@ -83,6 +83,12 @@ var inputTypeNodeInfo = graphql.NewInputObject(
 			"lastMsgID4RequestNodes": &graphql.InputObjectFieldConfig{
 				Type: graphqlext.Int64,
 			},
+			"nodesVersion": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"lastNodesVersion": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
 		},
 	},
 )

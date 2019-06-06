@@ -4,8 +4,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/zhs007/jarviscore/coredb/proto"
-	"github.com/zhs007/jarviscore/proto"
+	coredbpb "github.com/zhs007/jarviscore/coredb/proto"
+	jarviscorepb "github.com/zhs007/jarviscore/proto"
 )
 
 const keyMyPrivateData = "myprivatedata"
@@ -39,4 +39,9 @@ func makeTaskKey(task *jarviscorepb.JarvisTask) string {
 	}
 
 	return prefixKeyServiceTask + task.Name
+}
+
+// IsNodesVersionUpdated - check nodesVersion
+func IsNodesVersionUpdated(ni *coredbpb.NodeInfo) bool {
+	return ni.LastNodesVersion != ni.NodesVersion
 }

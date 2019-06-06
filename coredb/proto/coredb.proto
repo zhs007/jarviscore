@@ -82,6 +82,11 @@ message NodeInfo {
     int32 numsConnectFail = 24;
     // Only if this value is 0, I will execute requestnodes
     int64 lastMsgID4RequestNodes = 25;
+    // This is the version number of the node node data, which is usually a hash value.
+    // This value will be set to lastNodesVersion after requestnodes.
+    string nodesVersion = 26;
+    // This is the version number of the node node data, which is usually a hash value.
+    string lastNodesVersion = 27;
 }
 
 // node info list
@@ -90,6 +95,11 @@ message NodeInfoList {
     int32 endIndex = 2;
     int32 maxIndex = 3;
     repeated NodeInfo nodes = 4;
+}
+
+// node info list v2
+message NodeInfoList2 {
+    repeated NodeInfo nodes = 1;
 }
 
 // FileSystem
