@@ -433,18 +433,18 @@ func (n *jarvisNode) onMsgConnectNode(ctx context.Context, msg *pb.JarvisMsg, jm
 
 	cn := n.coredb.GetNode(ci.MyInfo.Addr)
 	if cn == nil {
-		err := n.coredb.UpdNodeBaseInfo(ci.MyInfo)
+		err := n.coredb.OnNodeConnected(ci.MyInfo)
 		if err != nil {
-			jarvisbase.Warn("jarvisNode.onMsgConnectNode:UpdNodeBaseInfo", zap.Error(err))
+			jarvisbase.Warn("jarvisNode.onMsgConnectNode:OnNodeConnected", zap.Error(err))
 
 			return err
 		}
 
 		cn = n.coredb.GetNode(ci.MyInfo.Addr)
 	} else {
-		err := n.coredb.UpdNodeBaseInfo(ci.MyInfo)
+		err := n.coredb.OnNodeConnected(ci.MyInfo)
 		if err != nil {
-			jarvisbase.Warn("jarvisNode.onMsgConnectNode:UpdNodeBaseInfo", zap.Error(err))
+			jarvisbase.Warn("jarvisNode.onMsgConnectNode:OnNodeConnected", zap.Error(err))
 
 			return err
 		}
@@ -462,7 +462,7 @@ func (n *jarvisNode) onMsgReplyConnect(ctx context.Context, msg *pb.JarvisMsg) e
 	ni := msg.GetNodeInfo()
 	cn := n.coredb.GetNode(ni.Addr)
 	if cn == nil {
-		err := n.coredb.UpdNodeBaseInfo(ni)
+		err := n.coredb.OnIConnectedNode(ni)
 		if err != nil {
 			jarvisbase.Warn("jarvisNode.onMsgReplyConnect:InsNode", zap.Error(err))
 
@@ -471,7 +471,7 @@ func (n *jarvisNode) onMsgReplyConnect(ctx context.Context, msg *pb.JarvisMsg) e
 
 		cn = n.coredb.GetNode(ni.Addr)
 	} else {
-		n.coredb.UpdNodeBaseInfo(ni)
+		n.coredb.OnIConnectedNode(ni)
 	}
 
 	if msg.LastMsgID > 0 && msg.LastMsgID > cn.LastSendMsgID {

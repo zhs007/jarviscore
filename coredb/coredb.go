@@ -397,6 +397,120 @@ func (db *CoreDB) UpdNodeBaseInfo(ni *jarviscorepb.NodeBaseInfo) error {
 	return nil
 }
 
+// OnNodeConnected -
+func (db *CoreDB) OnNodeConnected(ni *jarviscorepb.NodeBaseInfo) error {
+	cni := db.GetNode(ni.Addr)
+	if cni == nil {
+		cni = &coredbpb.NodeInfo{
+			ServAddr:      ni.ServAddr,
+			Addr:          ni.Addr,
+			Name:          ni.Name,
+			ConnectNums:   0,
+			ConnectedNums: 0,
+			// CtrlID:          0,
+			LstClientAddr:   nil,
+			AddTime:         time.Now().Unix(),
+			ConnectMe:       false,
+			NodeTypeVersion: ni.NodeTypeVersion,
+			NodeType:        ni.NodeType,
+			CoreVersion:     ni.CoreVersion,
+			LastRecvMsgID:   0,
+			ConnType:        coredbpb.CONNECTTYPE_UNKNOWN_CONN,
+		}
+	} else {
+		cni.ServAddr = ni.ServAddr
+		cni.Name = ni.Name
+		cni.NodeTypeVersion = ni.NodeTypeVersion
+		cni.NodeType = ni.NodeType
+		cni.CoreVersion = ni.CoreVersion
+		cni.Deprecated = false
+	}
+
+	params := make(map[string]interface{})
+
+	err := ankadb.MakeParamsFromMsg(params, "nodeInfo", cni)
+	if err != nil {
+		jarvisbase.Warn("CoreDB.OnNodeConnected:MakeParamsFromMsg", zap.Error(err))
+
+		return err
+	}
+
+	result, err := db.ankaDB.Query(context.Background(), queryUpdNodeInfo, params)
+	if err != nil {
+		jarvisbase.Warn("CoreDB.OnNodeConnected:Query", zap.Error(err))
+
+		return err
+	}
+
+	err = ankadb.GetResultError(result)
+	if err != nil {
+		jarvisbase.Warn("CoreDB.OnNodeConnected:GetResultError", zap.Error(err))
+
+		return err
+	}
+
+	db.mapNodes.Store(cni.Addr, cni)
+
+	return nil
+}
+
+// OnIConnectedNode -
+func (db *CoreDB) OnIConnectedNode(ni *jarviscorepb.NodeBaseInfo) error {
+	cni := db.GetNode(ni.Addr)
+	if cni == nil {
+		cni = &coredbpb.NodeInfo{
+			ServAddr:      ni.ServAddr,
+			Addr:          ni.Addr,
+			Name:          ni.Name,
+			ConnectNums:   0,
+			ConnectedNums: 0,
+			// CtrlID:          0,
+			LstClientAddr:   nil,
+			AddTime:         time.Now().Unix(),
+			ConnectMe:       false,
+			NodeTypeVersion: ni.NodeTypeVersion,
+			NodeType:        ni.NodeType,
+			CoreVersion:     ni.CoreVersion,
+			LastRecvMsgID:   0,
+			ConnType:        coredbpb.CONNECTTYPE_UNKNOWN_CONN,
+		}
+	} else {
+		cni.ServAddr = ni.ServAddr
+		cni.Name = ni.Name
+		cni.NodeTypeVersion = ni.NodeTypeVersion
+		cni.NodeType = ni.NodeType
+		cni.CoreVersion = ni.CoreVersion
+		cni.Deprecated = false
+	}
+
+	params := make(map[string]interface{})
+
+	err := ankadb.MakeParamsFromMsg(params, "nodeInfo", cni)
+	if err != nil {
+		jarvisbase.Warn("CoreDB.OnIConnectedNode:MakeParamsFromMsg", zap.Error(err))
+
+		return err
+	}
+
+	result, err := db.ankaDB.Query(context.Background(), queryUpdNodeInfo, params)
+	if err != nil {
+		jarvisbase.Warn("CoreDB.OnIConnectedNode:Query", zap.Error(err))
+
+		return err
+	}
+
+	err = ankadb.GetResultError(result)
+	if err != nil {
+		jarvisbase.Warn("CoreDB.OnIConnectedNode:GetResultError", zap.Error(err))
+
+		return err
+	}
+
+	db.mapNodes.Store(cni.Addr, cni)
+
+	return nil
+}
+
 // UpdNodeInfo -
 func (db *CoreDB) UpdNodeInfo(addr string) error {
 	cni := db.GetNode(addr)
