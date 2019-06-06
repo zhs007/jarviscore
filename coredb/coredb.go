@@ -321,7 +321,7 @@ func (db *CoreDB) loadAllNodes() error {
 		val.ConnType = coredbpb.CONNECTTYPE_UNKNOWN_CONN
 		val.Deprecated = false
 		val.LastMsgID4RequestNodes = 0
-		val.NodeTypeVersion = ""
+		val.NodesVersion = ""
 		val.LastNodesVersion = ""
 
 		if val.LastRecvMsgID < 0 {
@@ -892,7 +892,7 @@ func (db *CoreDB) CountMyNodesVersion() string {
 func (db *CoreDB) SetNodesVersion(addr string, nodesVersion string) error {
 	cn := db.GetNode(addr)
 	if cn != nil {
-		cn.NodeTypeVersion = nodesVersion
+		cn.NodesVersion = nodesVersion
 	}
 
 	return nil
