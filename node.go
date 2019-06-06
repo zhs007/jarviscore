@@ -26,6 +26,7 @@ type jarvisNode struct {
 	mgrCtrl          *ctrlMgr
 	mgrProcMsgResult *procMsgResultMgr
 	mgrWait4MyReply  *wait4MyReplyMgr
+	myNodesVersion   string
 }
 
 const (
@@ -296,6 +297,8 @@ func (n *jarvisNode) onNormalMsg(ctx context.Context, normal *NormalMsgTaskInfo,
 			return n.onMsgClearLogs(ctx, normal.Msg, jmsgrs)
 		} else if normal.Msg.MsgType == pb.MSGTYPE_REQUEST_NODES2 {
 			return n.onMsgRequestNodes2(ctx, normal.Msg, jmsgrs)
+		} else if normal.Msg.MsgType == pb.MSGTYPE_REPLY_MYNODESVERSION {
+			return n.onMsgReplyMyNodesVersion(ctx, normal.Msg)
 		}
 
 	}
@@ -994,11 +997,12 @@ func (n *jarvisNode) ClearLogs(ctx context.Context, addr string,
 
 // RequestNode - update node
 func (n *jarvisNode) RequestNode(ctx context.Context, addr string, isNeedLocalHost bool,
-	funcOnResult FuncOnProcMsgResult) error {
+	myNodesVersion string, nodesVersion string, funcOnResult FuncOnProcMsgResult) error {
 
 	ni := n.coredb.GetNode(addr)
 	if ni != nil && !coredb.IsDeprecatedNode(ni) {
-		sendmsg, err := BuildRequestNodes2(n, n.myinfo.Addr, ni.Addr, isNeedLocalHost)
+		sendmsg, err := BuildRequestNodes2(n, n.myinfo.Addr, ni.Addr, isNeedLocalHost,
+			myNodesVersion, nodesVersion)
 		if err != nil {
 			jarvisbase.Warn("jarvisNode.RequestNode:BuildRequestNodes2", zap.Error(err))
 
@@ -1062,47 +1066,98 @@ func (n *jarvisNode) ClearAllLogs(ctx context.Context, funcOnResult FuncOnGroupS
 func (n *jarvisNode) RequestNodes(ctx context.Context, isNeedLocalHost bool, funcOnResult FuncOnGroupSendMsgResult) error {
 
 	numsSend := 0
+	numsSend2 := 0
+	myNodesVersion := n.coredb.CountMyNodesVersion()
 
 	var totalResults []*ClientGroupProcMsgResults
+
+	// 如果自己的nodesVersion有更新，需要广播给所有节点
+	// 如果nodesVersion没有更新，需要处理nodesVersion更新的节点
 
 	//!! 在网络IO很快的时候，假设一共有2个节点，但第一个节点很快返回的话，可能还没全部发送完成，就产生回调
 	//!! 所以这里分2次遍历
 	n.coredb.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
 		if !coredb.IsDeprecatedNode(v) && n.mgrClient2.isConnected(v.Addr) && v.LastMsgID4RequestNodes == 0 {
+
+			if coredb.IsNodesVersionUpdated(v) {
+				numsSend2++
+			}
+
 			numsSend++
 		}
 
 		return nil
 	})
 
-	n.coredb.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
-		jarvisbase.Debug(fmt.Sprintf("jarvisNode.RequestNodes %v", v))
+	if n.myNodesVersion != myNodesVersion {
+		n.coredb.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
+			jarvisbase.Debug(fmt.Sprintf("jarvisNode.RequestNodes %v", v))
 
-		if !coredb.IsDeprecatedNode(v) && n.mgrClient2.isConnected(v.Addr) && v.LastMsgID4RequestNodes == 0 {
-			v.LastMsgID4RequestNodes = 1
+			if !coredb.IsDeprecatedNode(v) && n.mgrClient2.isConnected(v.Addr) && v.LastMsgID4RequestNodes == 0 {
+				v.LastMsgID4RequestNodes = 1
 
-			curResult := &ClientGroupProcMsgResults{}
-			totalResults = append(totalResults, curResult)
+				curResult := &ClientGroupProcMsgResults{}
+				totalResults = append(totalResults, curResult)
 
-			err := n.RequestNode(ctx, v.Addr, isNeedLocalHost,
-				func(ctx context.Context, jarvisnode JarvisNode, lstResult []*JarvisMsgInfo) error {
-					curResult.Results = lstResult
+				err := n.RequestNode(ctx, v.Addr, isNeedLocalHost, myNodesVersion, v.NodeTypeVersion,
+					func(ctx context.Context, jarvisnode JarvisNode, lstResult []*JarvisMsgInfo) error {
+						curResult.Results = lstResult
 
-					if funcOnResult != nil {
-						funcOnResult(ctx, jarvisnode, numsSend, totalResults)
-					}
+						if funcOnResult != nil {
+							funcOnResult(ctx, jarvisnode, numsSend, totalResults)
+						}
+
+						return nil
+					})
+				if err != nil {
+					jarvisbase.Warn("jarvisNode.RequestNodes:RequestNode", zap.Error(err))
 
 					return nil
-				})
-			if err != nil {
-				jarvisbase.Warn("jarvisNode.RequestNodes:RequestNode", zap.Error(err))
-
-				return nil
+				}
 			}
-		}
+
+			return nil
+		})
+
+		n.myNodesVersion = myNodesVersion
 
 		return nil
-	})
+	}
+
+	if numsSend2 > 0 {
+		n.coredb.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
+			jarvisbase.Debug(fmt.Sprintf("jarvisNode.RequestNodes %v", v))
+
+			if !coredb.IsDeprecatedNode(v) && n.mgrClient2.isConnected(v.Addr) && v.LastMsgID4RequestNodes == 0 &&
+				coredb.IsNodesVersionUpdated(v) {
+
+				v.LastMsgID4RequestNodes = 1
+
+				curResult := &ClientGroupProcMsgResults{}
+				totalResults = append(totalResults, curResult)
+
+				err := n.RequestNode(ctx, v.Addr, isNeedLocalHost, myNodesVersion, v.NodeTypeVersion,
+					func(ctx context.Context, jarvisnode JarvisNode, lstResult []*JarvisMsgInfo) error {
+						curResult.Results = lstResult
+
+						if funcOnResult != nil {
+							funcOnResult(ctx, jarvisnode, numsSend2, totalResults)
+						}
+
+						return nil
+					})
+				if err != nil {
+					jarvisbase.Warn("jarvisNode.RequestNodes:RequestNode", zap.Error(err))
+
+					return nil
+				}
+			}
+
+			return nil
+		})
+
+		return nil
+	}
 
 	return nil
 }
@@ -1164,12 +1219,20 @@ func (n *jarvisNode) onMsgRequestNodes2(ctx context.Context, msg *pb.JarvisMsg, 
 		return ErrStreamNil
 	}
 
+	myNodesVersion := n.coredb.CountMyNodesVersion()
+
 	defer n.replyStream2(msg.SrcAddr, msg.MsgID, jmsgrs, pb.REPLYTYPE_END, "")
 
 	n.onStartWait4MyReply(msg.SrcAddr, msg.MsgID)
 	defer n.onEndWait4MyReply(msg.SrcAddr, msg.MsgID)
 
 	rn2 := msg.GetRequestNodes2()
+
+	n.coredb.SetLastNodesVersion(msg.SrcAddr, rn2.MyNodesVersion)
+
+	if rn2.NodesVersion == myNodesVersion {
+		return nil
+	}
 
 	n.coredb.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
 		//!!! don't broadcast the localhost node
@@ -1204,6 +1267,20 @@ func (n *jarvisNode) onMsgRequestNodes2(ctx context.Context, msg *pb.JarvisMsg, 
 
 		return nil
 	})
+
+	sendmsg, err := BuildReplyMyNodesVersion(n, n.myinfo.Addr, msg.SrcAddr, myNodesVersion)
+	if err != nil {
+		jarvisbase.Warn("jarvisNode.onMsgRequestNodes2:BuildReplyMyNodesVersion", zap.Error(err))
+
+		return err
+	}
+
+	err = n.sendMsg2ClientStream(jmsgrs, msg.MsgID, sendmsg)
+	if err != nil {
+		jarvisbase.Warn("jarvisNode.onMsgRequestNodes2:BuildReplyMyNodesVersion:sendMsg2ClientStream", zap.Error(err))
+
+		return err
+	}
 
 	return nil
 }
@@ -1929,6 +2006,15 @@ func (n *jarvisNode) onMsgClearLogs(ctx context.Context, msg *pb.JarvisMsg, jmsg
 	defer n.onEndWait4MyReply(msg.SrcAddr, msg.MsgID)
 
 	jarvisbase.ClearLogs()
+
+	return nil
+}
+
+// onMsgReplyMyNodesVersion -
+func (n *jarvisNode) onMsgReplyMyNodesVersion(ctx context.Context, msg *pb.JarvisMsg) error {
+	rmnv := msg.GetReplyMyNodesVersion()
+
+	n.coredb.SetNodesVersion(msg.SrcAddr, rmnv.MyNodesVersion)
 
 	return nil
 }

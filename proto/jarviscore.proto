@@ -73,7 +73,9 @@ enum MSGTYPE {
     // reply log
     REPLY_LOG = 33;
     // request a node's child nodes version 2
-    REQUEST_NODES2 = 35;    
+    REQUEST_NODES2 = 35;
+    // reply my nodes version
+    REPLY_MYNODESVERSION = 36;
 }
 
 // REPLYTYPE - reply type
@@ -297,8 +299,18 @@ message ReplyLog {
 
 // RequestNodes2 - for REQUEST_NODES2
 message RequestNodes2 {
+    // isNeedLocalHost - is need give me localhost node
     bool isNeedLocalHost = 1;
+    // myNodesVersion - my nodes version
     string myNodesVersion = 2;
+    // nodesVersion - your nodes version
+    string nodesVersion = 3;
+}
+
+// ReplyMyNodesVersion - for REPLY_MYNODESVERSION
+message ReplyMyNodesVersion {
+    // myNodesVersion - my nodes version
+    string myNodesVersion = 1;
 }
 
 // JarvisMsg - jarvis base msg
@@ -344,6 +356,8 @@ message JarvisMsg {
         ReplyLog logInfo = 118;
         // REQUEST_NODES2
         RequestNodes2 requestNodes2 = 119;
+        // REPLY_MYNODESVERSION
+        ReplyMyNodesVersion replyMyNodesVersion = 120;
     }
 }
 

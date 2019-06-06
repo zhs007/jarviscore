@@ -2,6 +2,7 @@ package coredb
 
 import (
 	"context"
+	"sort"
 	"sync"
 	"time"
 
@@ -320,6 +321,8 @@ func (db *CoreDB) loadAllNodes() error {
 		val.ConnType = coredbpb.CONNECTTYPE_UNKNOWN_CONN
 		val.Deprecated = false
 		val.LastMsgID4RequestNodes = 0
+		val.NodeTypeVersion = ""
+		val.LastNodesVersion = ""
 
 		if val.LastRecvMsgID < 0 {
 			val.LastRecvMsgID = 0
@@ -854,7 +857,7 @@ func (db *CoreDB) CountMyNodesVersion() string {
 	lst := &coredbpb.NodeInfoList2{}
 
 	db.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
-		//!!! don't broadcast the deprecated node
+		//!!! skip the deprecated node
 		if v.Deprecated {
 			return nil
 		}
@@ -870,6 +873,10 @@ func (db *CoreDB) CountMyNodesVersion() string {
 		return nil
 	})
 
+	sort.Slice(lst.Nodes, func(i, j int) bool {
+		return lst.Nodes[i].Addr > lst.Nodes[j].Addr
+	})
+
 	str, err := jarvisbase.MD5Protobuf(lst)
 	if err != nil {
 		jarvisbase.Warn("CoreDB.CountMyNodesVersion:MD5Protobuf",
@@ -879,4 +886,24 @@ func (db *CoreDB) CountMyNodesVersion() string {
 	}
 
 	return str
+}
+
+// SetNodesVersion - set nodes version
+func (db *CoreDB) SetNodesVersion(addr string, nodesVersion string) error {
+	cn := db.GetNode(addr)
+	if cn != nil {
+		cn.NodeTypeVersion = nodesVersion
+	}
+
+	return nil
+}
+
+// SetLastNodesVersion - set last nodes version
+func (db *CoreDB) SetLastNodesVersion(addr string, nodesVersion string) error {
+	cn := db.GetNode(addr)
+	if cn != nil {
+		cn.LastNodesVersion = nodesVersion
+	}
+
+	return nil
 }
