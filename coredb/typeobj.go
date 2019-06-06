@@ -111,6 +111,12 @@ var typeNodeInfo = graphql.NewObject(
 			"lastMsgID4RequestNodes": &graphql.Field{
 				Type: graphqlext.Int64,
 			},
+			"nodesVersion": &graphql.Field{
+				Type: graphql.String,
+			},
+			"lastNodesVersion": &graphql.Field{
+				Type: graphql.String,
+			},
 		},
 	},
 )

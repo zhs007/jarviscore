@@ -32,6 +32,8 @@ type NodeInfo {
     timestampDeprecated: Int64
     numsConnectFail: Int32
     lastMsgID4RequestNodes: Int64
+    nodesVersion: String
+    lastNodesVersion: String
 }
 
 type NodeInfoList {

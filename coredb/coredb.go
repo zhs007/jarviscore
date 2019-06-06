@@ -848,3 +848,35 @@ func (db *CoreDB) AddTask(ctx context.Context, task *jarviscorepb.JarvisTask) er
 
 	return nil
 }
+
+// CountMyNodesVersion - count my nodes version
+func (db *CoreDB) CountMyNodesVersion() string {
+	lst := &coredbpb.NodeInfoList2{}
+
+	db.ForEachMapNodes(func(key string, v *coredbpb.NodeInfo) error {
+		//!!! don't broadcast the deprecated node
+		if v.Deprecated {
+			return nil
+		}
+
+		curnode := &coredbpb.NodeInfo{
+			ServAddr: v.ServAddr,
+			Addr:     v.Addr,
+			Name:     v.Name,
+		}
+
+		lst.Nodes = append(lst.Nodes, curnode)
+
+		return nil
+	})
+
+	str, err := jarvisbase.MD5Protobuf(lst)
+	if err != nil {
+		jarvisbase.Warn("CoreDB.CountMyNodesVersion:MD5Protobuf",
+			zap.Error(err))
+
+		return ""
+	}
+
+	return str
+}

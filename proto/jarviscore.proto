@@ -298,6 +298,7 @@ message ReplyLog {
 // RequestNodes2 - for REQUEST_NODES2
 message RequestNodes2 {
     bool isNeedLocalHost = 1;
+    string myNodesVersion = 2;
 }
 
 // JarvisMsg - jarvis base msg
