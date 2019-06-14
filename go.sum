@@ -41,8 +41,8 @@ github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UV
 github.com/syndtr/goleveldb v0.0.0-20190203031304-2f17a3356c66/go.mod h1:ZVVdQEZoIme9iO1Ch2Jdy24qqXrMMOU6lpPAyBWyWuQ=
 github.com/syndtr/goleveldb v1.0.0 h1:fBdIW9lB4Iz0n9khmH8w27SJ3QEJ7+IgjPEwGSZiFdE=
 github.com/syndtr/goleveldb v1.0.0/go.mod h1:ZVVdQEZoIme9iO1Ch2Jdy24qqXrMMOU6lpPAyBWyWuQ=
-github.com/zhs007/ankadb v0.3.28 h1:Wtl8rDIw6LoPuak2F8MSAU1gb1XUCb6macsXThOPVOU=
-github.com/zhs007/ankadb v0.3.28/go.mod h1:mtpiYhkJko7z4njgNUY8inCnsN0wZ9ZcVrZG3jd3pzU=
+github.com/zhs007/ankadb v0.3.29 h1:DaevDggCUwoFmTdhXpLwtfcbcMZC9/6y6An1xxOhjj8=
+github.com/zhs007/ankadb v0.3.29/go.mod h1:mtpiYhkJko7z4njgNUY8inCnsN0wZ9ZcVrZG3jd3pzU=
 go.uber.org/atomic v1.4.0 h1:cxzIVoETapQEqDhQu3QfnvXAV4AlzcvUCxkVUFw3+EU=
 go.uber.org/atomic v1.4.0/go.mod h1:gD2HeocX3+yG+ygLZcrzQJaqmWj9AIm7n08wl/qW/PE=
 go.uber.org/multierr v1.1.0 h1:HoEmRHQPVSqub6w2z2d2EOVs2fjyFRGyofhKuyDq0QI=
