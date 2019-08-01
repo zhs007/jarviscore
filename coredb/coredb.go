@@ -907,3 +907,105 @@ func (db *CoreDB) SetLastNodesVersion(addr string, nodesVersion string) error {
 
 	return nil
 }
+
+// AddLogInfo - add loginfo
+func (db *CoreDB) AddLogInfo(ctx context.Context, loginfo *jarviscorepb.LogInfo) error {
+	key := makeLogInfoKey(loginfo)
+
+	curdb := db.ankaDB.GetDBMgr().GetDB(CoreDBName)
+	if curdb == nil {
+		return ankadb.ErrCtxCurDB
+	}
+
+	err := ankadb.PutMsg2DB(curdb, []byte(key), loginfo)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DelLogInfo - del loginfo
+func (db *CoreDB) DelLogInfo(ctx context.Context, loginfo *jarviscorepb.LogInfo) error {
+	key := makeLogInfoKey(loginfo)
+
+	curdb := db.ankaDB.GetDBMgr().GetDB(CoreDBName)
+	if curdb == nil {
+		return ankadb.ErrCtxCurDB
+	}
+
+	err := curdb.Delete([]byte(key))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// GetAllLogInfos - get loginfo
+func (db *CoreDB) GetAllLogInfos(ctx context.Context) ([]*jarviscorepb.LogInfo, error) {
+	var lst []*jarviscorepb.LogInfo
+
+	curdb := db.ankaDB.GetDBMgr().GetDB(CoreDBName)
+	if curdb == nil {
+		return nil, ankadb.ErrCtxCurDB
+	}
+
+	it := curdb.NewIteratorWithPrefix([]byte(prefixLog))
+	if it.Error() != nil {
+		jarvisbase.Warn("CoreDB.GetAllLogInfos:NewIteratorWithPrefix",
+			zap.Error(it.Error()))
+
+		return nil, it.Error()
+	}
+
+	for {
+		if it.Valid() {
+			li := jarviscorepb.LogInfo{}
+			err := ankadb.GetMsgFromIterator(it, &li)
+			if err == nil {
+				lst = append(lst, &li)
+			}
+		}
+
+		if !it.Next() {
+			break
+		}
+	}
+
+	return lst, nil
+}
+
+// GetAppLogInfos - get app loginfo
+func (db *CoreDB) GetAppLogInfos(ctx context.Context, appName string) ([]*jarviscorepb.LogInfo, error) {
+	var lst []*jarviscorepb.LogInfo
+
+	curdb := db.ankaDB.GetDBMgr().GetDB(CoreDBName)
+	if curdb == nil {
+		return nil, ankadb.ErrCtxCurDB
+	}
+
+	it := curdb.NewIteratorWithPrefix([]byte(prefixLog + appName + ":"))
+	if it.Error() != nil {
+		jarvisbase.Warn("CoreDB.GetAppLogInfos:NewIteratorWithPrefix",
+			zap.Error(it.Error()))
+
+		return nil, it.Error()
+	}
+
+	for {
+		if it.Valid() {
+			li := jarviscorepb.LogInfo{}
+			err := ankadb.GetMsgFromIterator(it, &li)
+			if err == nil {
+				lst = append(lst, &li)
+			}
+		}
+
+		if !it.Next() {
+			break
+		}
+	}
+
+	return lst, nil
+}

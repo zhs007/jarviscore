@@ -128,6 +128,14 @@ message LogInfo {
     int64 bufLen = 5;
     // buf
     bytes buf = 6;
+    // curTime
+    int64 curTime = 7;
+    // logPath
+    string logPath = 8;
+    // dockerLogName
+    string dockerLogName = 9;
+    // dockerLogPath
+    string dockerLogPath = 10;
 }
 
 // ReplyConnect2 - used in REPLY_CONNECT2

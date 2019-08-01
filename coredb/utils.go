@@ -12,6 +12,7 @@ const keyMyPrivateData = "myprivatedata"
 const prefixKeyNodeInfo = "ni:"
 const prefixKeyNormalTask = "task:normal:"
 const prefixKeyServiceTask = "task:service:"
+const prefixLog = "log:"
 
 func makeNodeInfoKeyID(addr string) string {
 	return prefixKeyNodeInfo + addr
@@ -44,4 +45,8 @@ func makeTaskKey(task *jarviscorepb.JarvisTask) string {
 // IsNodesVersionUpdated - check nodesVersion
 func IsNodesVersionUpdated(ni *coredbpb.NodeInfo) bool {
 	return ni.LastNodesVersion != ni.NodesVersion
+}
+
+func makeLogInfoKey(loginfo *jarviscorepb.LogInfo) string {
+	return prefixLog + loginfo.AppName + ":" + strconv.FormatInt(loginfo.CurTime, 10)
 }
