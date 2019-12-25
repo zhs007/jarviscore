@@ -5,9 +5,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"runtime"
 	"sync"
-	"syscall"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -20,33 +18,6 @@ var logPath string
 // var curtime int64
 var panicFile *os.File
 var logSubName string
-
-func initPanicFile() error {
-	if runtime.GOOS == "windows" {
-		return nil
-	}
-
-	file, err := os.OpenFile(
-		path.Join(logPath, BuildLogFilename("panic", logSubName)),
-		os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		Warn("initPanicFile:OpenFile",
-			zap.Error(err))
-
-		return err
-	}
-
-	panicFile = file
-
-	if err = syscall.Dup2(int(file.Fd()), int(os.Stderr.Fd())); err != nil {
-		Warn("initPanicFile:Dup2",
-			zap.Error(err))
-
-		return err
-	}
-
-	return nil
-}
 
 func initLogger(level zapcore.Level, isConsole bool, logpath string,
 	subName string) (*zap.Logger, error) {
