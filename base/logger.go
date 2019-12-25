@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 	"sync"
 	"syscall"
 
@@ -21,6 +22,10 @@ var panicFile *os.File
 var logSubName string
 
 func initPanicFile() error {
+	if runtime.GOOS == "windows" {
+		return nil
+	}
+
 	file, err := os.OpenFile(
 		path.Join(logPath, BuildLogFilename("panic", logSubName)),
 		os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
