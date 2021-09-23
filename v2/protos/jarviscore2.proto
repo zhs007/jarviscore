@@ -1,0 +1,14 @@
+syntax = "proto3";
+package jarviscore2pb;
+option go_package = "github.com/zhs007/jarviscore/v2/jarviscore2pb";
+
+// jarvis task type
+enum TASKTYPE {
+    // normal
+    NORMAL = 0;
+}
+
+// Task
+message Task {
+    TASKTYPE type = 1;
+}
